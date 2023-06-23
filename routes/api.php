@@ -18,4 +18,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/ddi',[ddiController::class,'index'])->name('index');
+// Route::get('/ddi',[ddiController::class,'index'])->name('index');
+Route::resource('ddi','\App\Http\Controllers\DdisController',['parameters' => [
+    'ddi' => 'id'
+]]);
+Route::resource('cursos','\App\Http\Controllers\CursosController',['parameters' => [
+    'cursos' => 'id'
+]]);
