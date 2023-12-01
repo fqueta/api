@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
+use App\Http\Controllers\MatriculasController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +17,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 // Route::get('/ddi',[ddiController::class,'index'])->name('index');
 Route::resource('ddi','\App\Http\Controllers\DdisController',['parameters' => [
     'ddi' => 'id'
@@ -25,3 +24,8 @@ Route::resource('ddi','\App\Http\Controllers\DdisController',['parameters' => [
 Route::resource('cursos','\App\Http\Controllers\CursosController',['parameters' => [
     'cursos' => 'id'
 ]]);
+Route::prefix('v1')->group(function(){
+    Route::post('/login',[AuthController::class,'login']);
+    Route::middleware('auth:sanctum')->get('/user', [AuthController::class,'user']);
+    Route::get('/matriculas',[MatriculasController::class,'index'])->middleware('auth:sanctum');
+});
