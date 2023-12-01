@@ -28,4 +28,5 @@ Route::prefix('v1')->group(function(){
     Route::post('/login',[AuthController::class,'login']);
     Route::middleware('auth:sanctum')->get('/user', [AuthController::class,'user']);
     Route::get('/matriculas',[MatriculasController::class,'index'])->middleware('auth:sanctum');
+    Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
 });

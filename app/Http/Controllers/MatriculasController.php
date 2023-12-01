@@ -27,6 +27,7 @@ class MatriculasController extends Controller
             $d = $d->paginate(25);
         }
         $ret['exec'] = false;
+        $ret['status'] = 404;
         $ret['data'] = [];
         if($d->count() > 0){
             foreach ($d as $k => $v) {
@@ -34,8 +35,9 @@ class MatriculasController extends Controller
                     $d[$k]->numero_contrato = $nc;
                 }
             }
-            $ret = $d;
-            // $ret['exec'] = true;
+            $ret['data'] = $d;
+            $ret['exec'] = true;
+            $ret['status'] = 200;
         }
         return $ret;
     }
@@ -91,7 +93,19 @@ class MatriculasController extends Controller
      */
     public function show($id)
     {
-        //
+        $d = DB::table('matriculas')->find($id);
+
+        if(is_null($d)){
+            $ret['exec'] = false;
+            $ret['status'] = 404;
+            $ret['data'] = [];
+            return response()->json($ret);
+        }else{
+            $ret['exec'] = true;
+            $ret['status'] = 200;
+            $ret['data'] = $d;
+            return response()->json($ret);
+        }
     }
 
     /**
