@@ -20,12 +20,12 @@ class MatriculasController extends Controller
         ->join('clientes', 'clientes.id','=','matriculas.id_cliente')
         ->where('matriculas.excluido','=','n')->where('matriculas.deletado','=','n');
         if($request->has('status')){
-            // $d = DB::table('matriculas')->where('excluido','=','n')->where('deletado','=','n');
             $d = $d->where('matriculas.status', '=',$request->get('status'));
-            $d = $d->paginate(25);
-        }else{
-            $d = $d->paginate(25);
         }
+        if($request->has('id_cliente')){
+            $d = $d->where('matriculas.id_cliente', '=',$request->get('id_cliente'));
+        }
+        $d = $d->paginate(25);
         $ret['exec'] = false;
         $ret['status'] = 404;
         $ret['data'] = [];
