@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -28,13 +29,39 @@ class MatriculasController extends Controller
         $ret['exec'] = false;
         $ret['data'] = [];
         if($d->count() > 0){
-            // dd($d);
+            foreach ($d as $k => $v) {
+                if($nc=$this->numero_contrato($v->id)){
+                    $d[$k]->numero_contrato = $nc;
+                }
+            }
             $ret = $d;
             // $ret['exec'] = true;
         }
         return $ret;
     }
+    /**
+     * Metodo para exibir o numero do contrato
+     * @param int $id_matricula
+     */
+    public function numero_contrato($id_matricula=false){
+        $ret = false;
+        if($id_matricula){
+            //uso $ret = cursos::numero_contrato($id_matricula);
+            $ret = false;
+            if($id_matricula){
+                $json_contrato = Qlib::buscaValorDb0('matriculas','id',$id_matricula,'contrato');
+                $arr_contrato = Qlib::lib_json_array($json_contrato);
+                if(isset($arr_contrato['data_aceito_contrato']) && !empty($arr_contrato['data_aceito_contrato'])){
+                    $arrd = explode('-',$arr_contrato['data_aceito_contrato']);
+                    if(isset($arrd[1])){
+                        $ret = $id_matricula.'.'.$arrd[1].'.'.$arrd[0];
+                    }
+                }
 
+            }
+            return $ret;
+        }
+    }
     /**
      * Show the form for creating a new resource.
      *

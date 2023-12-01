@@ -10,8 +10,8 @@ class AuthController extends Controller
     {
         if(Auth::attempt($request->only('email','password'))){
             return  response()->json(['message'=>'Authorized','status'=>200,'data'=>[
-                    'token'=> $request->user()->createToken('developer')->plainTextToken
-                ],
+                        'token'=> $request->user()->createToken('developer')->plainTextToken
+                    ],
             ]);
         }else{
             return  response()->json(['message'=>'Not Authorized','status'=>403]);
