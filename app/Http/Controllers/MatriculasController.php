@@ -15,12 +15,15 @@ class MatriculasController extends Controller
     public function index(Request $request)
     {
         // dd($request->get('status'));
+        $d = DB::table('matriculas')->select('matriculas.*','clientes.')
+        ->join('clientes', 'clientes.id','=','matriculas.id_cliente')
+        ->where('matriculas.excluido','=','n')->where('matriculas.deletado','=','n');
         if($request->has('status')){
-            $d = DB::table('matriculas')->where('excluido','=','n')->where('deletado','=','n');
-            $d = $d->where('status', '=',$request->get('status'));
+            // $d = DB::table('matriculas')->where('excluido','=','n')->where('deletado','=','n');
+            $d = $d->where('matriculas.status', '=',$request->get('status'));
             $d = $d->paginate(25);
         }else{
-            $d = DB::table('matriculas')->where('excluido','=','n')->where('deletado','=','n')->paginate(25);
+            $d = $d->paginate(25);
         }
         $ret['exec'] = false;
         $ret['data'] = [];
