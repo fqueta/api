@@ -15,7 +15,7 @@ class MatriculasController extends Controller
     public function index(Request $request)
     {
         // dd($request->get('status'));
-        $d = DB::table('matriculas')->select('matriculas.*','clientes.')
+        $d = DB::table('matriculas')->select('matriculas.*','clientes.Nome','clientes.sobrenome','clientes.Email')
         ->join('clientes', 'clientes.id','=','matriculas.id_cliente')
         ->where('matriculas.excluido','=','n')->where('matriculas.deletado','=','n');
         if($request->has('status')){
