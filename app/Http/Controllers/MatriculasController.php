@@ -18,7 +18,7 @@ class MatriculasController extends Controller
         // dd($request->get('status'));
         $d = DB::table('matriculas')->select('matriculas.*','clientes.Nome','clientes.sobrenome','clientes.Email')
         ->join('clientes', 'clientes.id','=','matriculas.id_cliente')
-        ->where('matriculas.excluido','=','n')->where('matriculas.deletado','=','n');
+        ->where('matriculas.excluido','=','n')->where('matriculas.deletado','=','n')->orderBy('matriculas.id','asc');
         if($request->has('status')){
             $d = $d->where('matriculas.status', '=',$request->get('status'));
         }
