@@ -133,7 +133,7 @@ class MatriculasController extends Controller
     {
         $d = $request->all();
         $ret['exec'] = false;
-        $ret['status'] = 400;
+        $ret['status'] = 500;
         $ret['message'] = 'Error updating';
         if($d){
             $ret['exec'] = DB::table($this->table)->where('id',$id)->update($d);
@@ -142,7 +142,7 @@ class MatriculasController extends Controller
                 $ret['message'] = 'updated successfully';
             }
         }
-        return $ret;
+        return response()->json($ret);
     }
 
     /**
