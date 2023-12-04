@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\DB;
 
 class MatriculasController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public $table;
+    public function __construct()
+    {
+        $this->table = 'matriculas';
+    }
     public function index(Request $request)
     {
         // dd($request->get('status'));
-        $d = DB::table('matriculas')->select('matriculas.*','clientes.Nome','clientes.sobrenome','clientes.Email')
+        $d = DB::table($this->table)->select('matriculas.*','clientes.Nome','clientes.sobrenome','clientes.Email')
         ->join('clientes', 'clientes.id','=','matriculas.id_cliente')
         ->where('matriculas.excluido','=','n')->where('matriculas.deletado','=','n')->orderBy('matriculas.id','asc');
         if($request->has('status')){
@@ -96,7 +96,7 @@ class MatriculasController extends Controller
      */
     public function show($id)
     {
-        $d = DB::table('matriculas')->find($id);
+        $d = DB::table($this->table)->find($id);
 
         if(is_null($d)){
             $ret['exec'] = false;
@@ -136,7 +136,7 @@ class MatriculasController extends Controller
         $ret['status'] = 400;
         $ret['message'] = 'Error updating';
         if($d){
-            $ret['exec'] = DB::table('matriculas')->where('id',$id)->update($d);
+            $ret['exec'] = DB::table($this->table)->where('id',$id)->update($d);
             if($ret['exec']){
                 $ret['status'] = 200;
                 $ret['message'] = 'updated successfully';
