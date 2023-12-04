@@ -22,6 +22,9 @@ class MatriculasController extends Controller
         if($request->has('status')){
             $d = $d->where('matriculas.status', '=',$request->get('status'));
         }
+        if($request->has('token_externo')){
+            $d = $d->where('matriculas.token_externo', '=',$request->get('token_externo'));
+        }
         if($request->has('id_cliente')){
             $d = $d->where('matriculas.id_cliente', '=',$request->get('id_cliente'));
         }
@@ -128,7 +131,18 @@ class MatriculasController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $d = $request->all();
+        $ret['exec'] = false;
+        $ret['status'] = 400;
+        $ret['message'] = 'Error updating';
+        if($d){
+            $ret['exec'] = DB::table('matriculas')->where('id',$id)->update($d);
+            if($ret['exec']){
+                $ret['status'] = 200;
+                $ret['message'] = 'updated successfully';
+            }
+        }
+        return $ret;
     }
 
     /**

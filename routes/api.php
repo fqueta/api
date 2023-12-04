@@ -29,4 +29,5 @@ Route::prefix('v1')->group(function(){
     Route::middleware('auth:sanctum')->get('/user', [AuthController::class,'user']);
     Route::get('/matriculas',[MatriculasController::class,'index'])->middleware('auth:sanctum');
     Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
+    Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
 });
