@@ -1202,6 +1202,17 @@ class Qlib
         }
     }
     /**
+     * Metodo buscar o matricula_id com o token
+     * @param string $token
+     * @return string $ret;
+     */
+    static function get_matricula_id_by_token($token)
+    {
+        if($token){
+            return Qlib::buscaValorDb0('matriculas','token',$token,'ID');
+        }
+    }
+    /**
      * Metodo para salvar ou atualizar os meta users
      */
     static function update_usermeta($user_id,$meta_key=null,$meta_value=null)
@@ -1330,13 +1341,13 @@ class Qlib
             if ($meses==0)
             {
                 $data1 = date('d/m/Y',mktime(0,0,0,$mes,$dia,$ano));
-                return self::proximoDiaUtil(dtBanco($data1), $formato);
+                return self::proximoDiaUtil(self::dtBanco($data1), $formato);
             }
             else
             {
                 $data1 = date('d/m/Y',mktime(0,0,0,$mes+$meses,$dia,$ano));
                 if($retDiaUtl)
-                    return self::proximoDiaUtil(dtBanco($data1), $formato);
+                    return self::proximoDiaUtil(self::dtBanco($data1), $formato);
                 else
                     return $data1;
             }
@@ -1449,4 +1460,75 @@ class Qlib
         $url_atual = "http" . (isset($_SERVER['HTTPS']) ? (($_SERVER['HTTPS']=="on") ? "s" : "") : "") . "://" . "$_SERVER[HTTP_HOST]";
         return $url_atual;
     }
+    /**
+     * Metodo para salvar ou atualizar os meta posts
+     */
+    static function update_matriculameta($matricula_id,$meta_key=null,$meta_value=null)
+    {
+        $ret = false;
+        $tab = 'matriculameta';
+        if($matricula_id&&$meta_key&&$meta_value){
+            $verf = Qlib::totalReg($tab,"WHERE matricula_id='$matricula_id' AND meta_key='$meta_key'");
+            if($verf){
+                $ret=DB::table($tab)->where('matricula_id',$matricula_id)->where('meta_key',$meta_key)->update([
+                    'meta_value'=>$meta_value,
+                    'updated_at'=>self::dataBanco(),
+                ]);
+            }else{
+                $ret=DB::table($tab)->insert([
+                    'matricula_id'=>$matricula_id,
+                    'meta_value'=>$meta_value,
+                    'meta_key'=>$meta_key,
+                    'created_at'=>self::dataBanco(),
+                ]);
+            }
+        }
+        return $ret;
+    }
+    /**
+     * Metodo para pegar os meta matriculas
+     * @param string $matricula_id,$meta_key=matricula key,$strig;
+     */
+    static function get_matriculameta($matricula_id,$meta_key=null,$string=null)
+    {
+        $ret = false;
+        $tab = 'matriculameta';
+        if($matricula_id){
+            if($meta_key){
+                $d = DB::table($tab)->where('matricula_id',$matricula_id)->where('meta_key',$meta_key)->get();
+                if($d->count()){
+                    if($string){
+                        $ret = $d[0]->meta_value;
+                    }else{
+                        $ret = [$d[0]->meta_value];
+                    }
+                }else{
+                    $matricula_id = self::get_matricula_id_by_token($matricula_id);
+                    if($matricula_id){
+                        $ret = self::get_matriculameta($matricula_id,$meta_key,$string);
+                    }
+                }
+            }
+        }
+        return $ret;
+    }
+    /**
+     * Metodo para remover um matricula meta
+     */
+    static function delete_matriculameta($matricula_id,$meta_key=false){
+        $tab = 'matriculameta';
+        $ret = false;
+        if($matricula_id && $meta_key){
+            $ret = DB::table($tab)
+            ->where('matricula_id','=',$matricula_id)
+            ->where('meta_key','=',$meta_key)
+            ->delete();
+        }elseif($matricula_id){
+            $ret = DB::table($tab)
+            ->where('matricula_id','=',$matricula_id)
+            ->delete();
+        }
+        return $ret;
+    }
+
 }

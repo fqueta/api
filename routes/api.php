@@ -31,3 +31,4 @@ Route::prefix('v1')->group(function(){
     Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
 });
+
