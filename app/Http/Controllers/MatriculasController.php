@@ -239,6 +239,7 @@ class MatriculasController extends Controller
             if($ret['exec']){
                 $ret['status'] = 200;
                 $ret['message'] = 'updated successfully';
+                $ret['data'] = DB::table($this->table)->find($id);
             }
         }
         return response()->json($ret);
