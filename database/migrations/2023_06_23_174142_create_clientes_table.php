@@ -20,9 +20,9 @@ class CreateClientesTable extends Migration {
 			$table->enum('ativo', array('s','n'));
 			$table->string('Respons', 50)->nullable();
 			$table->integer('CodStatus')->nullable();
-			$table->timestamp('data')->default(DB::raw('CURRENT_TIMESTAMP'));
+			$table->timestamp('data')->default(\DB::raw('CURRENT_TIMESTAMP'));
 			$table->dateTime('DtMatricula')->nullable();
-			$table->dateTime('DtEmissaoContrato')->default('0000-00-00 00:00:00');
+			// $table->dateTime('DtEmissaoContrato')->default('0000-00-00 00:00:00');
 			$table->date('DtInitCurso')->nullable();
 			$table->date('DtFimCurso')->nullable();
 			$table->dateTime('atualizado');
@@ -98,8 +98,8 @@ class CreateClientesTable extends Migration {
 			$table->string('local_cad', 50)->nullable();
 			$table->string('Operador_Incluiu', 30)->nullable();
 			$table->string('OperadorEmissaoContrato', 30)->nullable();
-			$table->dateTime('DtSondagem')->default('0000-00-00 00:00:00');
-			$table->dateTime('DtNegativado')->default('0000-00-00 00:00:00');
+			// $table->dateTime('DtSondagem')->default('0000-00-00 00:00:00');
+			// $table->dateTime('DtNegativado')->default('0000-00-00 00:00:00');
 			$table->string('Operador_Matriculou', 30)->nullable();
 			$table->string('OperadorEmissaoCertif', 30)->nullable();
 			$table->date('DataiInformatica')->nullable();
