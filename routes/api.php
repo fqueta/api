@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
+use App\Http\Controllers\ZenviaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,9 @@ Route::resource('ddi','\App\Http\Controllers\DdisController',['parameters' => [
 Route::resource('cursos','\App\Http\Controllers\CursosController',['parameters' => [
     'cursos' => 'id'
 ]]);
+Route::prefix('webhook')->group(function(){
+    Route::post('/zenvia',[ZenviaController::class,'salvar_eventos']);
+});
 Route::prefix('v1')->group(function(){
     Route::post('/login',[AuthController::class,'login']);
     Route::middleware('auth:sanctum')->get('/user', [AuthController::class,'user']);
