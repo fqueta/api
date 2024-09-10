@@ -31,7 +31,7 @@ class ZenviaController extends Controller
     public function gravar($dados=[]){
         $ret['exec'] = false;
         if(isset($dados['id'])){
-            $tab = 'eventos_atendimento_lead';
+            $tab = 'eventos_atendimento';
             //verificar se o evento foi iniciodo
             $ev = DB::table($tab)->where('zenvia_id',$dados['id'])->get();
             // dump($dados);
