@@ -39,7 +39,7 @@ class ZenviaController extends Controller
             if($ev->count()>0){
                 //se envotrou agora é so salvar no campo config o json dos dados
                 // dump($dados);
-                $ret['savar'] = DB::table($tab)->where('zenvia_id',$dados['id'])->update(['config' => Qlib::lib_array_json($dados)]);
+                $ret['savar'] = DB::table($tab)->where('zenvia_id',$dados['id'])->update(['config' => Qlib::lib_array_json($dados),'finalizado'=>'s']);
                 if($ret['savar']){
                     $ev = DB::table($tab)->where('zenvia_id',$dados['id'])->get();
                     if($ev)
