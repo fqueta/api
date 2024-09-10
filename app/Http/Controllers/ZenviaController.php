@@ -31,15 +31,19 @@ class ZenviaController extends Controller
     public function gravar($dados=[]){
         $ret['exec'] = false;
         if(isset($dados['id'])){
+            $tab = 'eventos_atendimento_lead';
             //verificar se o evento foi iniciodo
-            $ev = DB::table('eventos_atendimento')->where('zenvia_id',$dados['id'])->get();
-            // $ev = DB::table('eventos_atendimento')->get();
-            $ret['exec'] = true;
+            $ev = DB::table($tab)->where('zenvia_id',$dados['id'])->get();
+            // dump($dados);
+            // dd($ev);
             if($ev->count()>0){
                 //se envotrou agora é so salvar no campo config o json dos dados
-                $ret['savar'] = DB::table('eventos_atendimento')->where('zenvia_id',$dados['id'])->update(['config' => Qlib::lib_array_json($dados)]);
+                // dump($dados);
+                $ret['savar'] = DB::table($tab)->where('zenvia_id',$dados['id'])->update(['config' => Qlib::lib_array_json($dados)]);
                 if($ret['savar']){
-                    $ev = DB::table('eventos_atendimento')->where('zenvia_id',$dados['id'])->get();
+                    $ev = DB::table($tab)->where('zenvia_id',$dados['id'])->get();
+                    if($ev)
+                    $ret['exec'] = true;
                 }
             }
             $ret['ev'] = $ev;
