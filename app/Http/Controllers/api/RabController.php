@@ -15,7 +15,10 @@ class RabController extends Controller
         $link = 'https://sistemas.anac.gov.br/aeronaves/cons_rab_resposta.asp?textMarca='.$rab.'&selectHabilitacao=&selectIcao=&selectModelo=&selectFabricante=&textNumeroSerie=';
         // $dom = new Dom;
         // $dom->loadFromUrl($link);
-
+        if(!defined('CURL_SSLVERSION_TLSv1_2')){
+            define('CURL_SSLVERSION_TLSv1_2','1
+            2');
+        }
         $response = Http::withOptions([
             'curl' => [
                 CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2, // Força o TLS 1.2
