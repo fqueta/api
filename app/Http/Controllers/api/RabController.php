@@ -16,7 +16,11 @@ class RabController extends Controller
         // $dom = new Dom;
         // $dom->loadFromUrl($link);
 
-        $response = Http::get($link);
+        $response = Http::withOptions([
+            'curl' => [
+                CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2, // Força o TLS 1.2
+            ],
+        ])->get($link);
         $html = $response->body();
         $crawler = new Crawler($html);
         $selet =  '.retorno-pesquisa table tbody tr';
