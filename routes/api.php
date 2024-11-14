@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\RabController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
@@ -34,5 +35,6 @@ Route::prefix('v1')->group(function(){
     Route::get('/matriculas',[MatriculasController::class,'index'])->middleware('auth:sanctum');
     Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
+    Route::get('/rab',[RabController::class,'index']);
 });
 
