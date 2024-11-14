@@ -26,7 +26,6 @@ class RabController extends Controller
         $html = $response->body();
         $crawler = new Crawler($html);
         $selet =  '.retorno-pesquisa table tbody tr';
-        $api = false;
         $ret = [
             'exec' => false,
             'data' => [],
