@@ -16,8 +16,7 @@ class RabController extends Controller
         // $dom = new Dom;
         // $dom->loadFromUrl($link);
         if(!defined('CURL_SSLVERSION_TLSv1_2')){
-            define('CURL_SSLVERSION_TLSv1_2','1
-            2');
+            define('CURL_SSLVERSION_TLSv1_2',1.2);
         }
         $response = Http::withOptions([
             'curl' => [
