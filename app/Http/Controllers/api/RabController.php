@@ -34,6 +34,7 @@ class RabController extends Controller
             return $node->text();
         });
         if($dados){
+            $ret['data']['Matrícula'] = $rab;
             foreach ($dados as $k => $v) {
                 $arr_d = explode(':',$v);
                 $key = trim($arr_d[0]);
