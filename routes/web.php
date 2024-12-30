@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PdfGenerateController;
+use App\Http\Controllers\TesteController;
 use App\Http\Controllers\YoutubeController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,4 @@ Route::get('/', function () {
 });
 Route::get('/orcamento-pdf/{token}', [PdfGenerateController::class,'gera_orcamento'])->name('orcamento.pdf');
 Route::get('/youtube', [YoutubeController::class,'envia'])->name('yt.send');
+Route::get('/teste', [TesteController::class,'index'])->name('teste');
