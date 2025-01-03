@@ -24,7 +24,8 @@ class PdfGenerateController extends Controller
                     $config = $orca->get_matricula_assinado($token);
                 }
                 // dd($config);
-                $pdf = Pdf::loadView('pdf.orcamento',$config);
+                // $pdf = Pdf::loadView('pdf.orcamento',$config);
+                $pdf = Pdf::loadView('pdf.orcamento-bk',$config);
                 // $pdf = Pdf::view('pdf.orcamento');
                 $path = storage_path('/orcamentos/');
                 $filename = 'orcamento_' . $token.'.pdf';

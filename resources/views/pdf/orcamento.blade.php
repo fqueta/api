@@ -7,7 +7,10 @@
     <title>Orçamento</title>
     <link rel="stylesheet" type="text/css" media="screen" href="https://crm.aeroclubejf.com.br/site/tema/aeroclubejf/aerocurso/css/style.css" />
     <style>
-        @page { margin: 0in; }
+         @page {
+            margin: 0cm;
+        }
+
         #overlay {
             background-image: url('https://crm.aeroclubejf.com.br/enviaImg/uploads/ead/5e3d812dd5612/6542b60fd4295.png');
             position:absolute;
@@ -21,8 +24,9 @@
             padding: 100px 10px 10px 10px;
         }
         body {
-            font-family: Denk One, sans-serif;
-            font-size: 14px;
+            margin: 0cm;
+            padding: 0cm;
+            font-family: Arial, sans-serif;
         }
 
         p {
@@ -40,6 +44,46 @@
         td{
             padding: 0 0 0 0 !important;
             margin: 0 0 0 0 !important;
+        }
+        .pagina {
+            position: relative;
+            width: 100%;
+            height: 100vh; /* Altura total da página */
+            page-break-after: always; /* Quebra de página após cada página */
+        }
+
+        /* Estilo específico para cada página */
+        .pagina-1 {
+            background-image: url('https://via.placeholder.com/1920x1080'); /* URL da imagem da página 1 */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .pagina-2 {
+            background-image: url('https://via.placeholder.com/1080x1920'); /* URL da imagem da página 2 */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .pagina-3 {
+            background-image: url('https://via.placeholder.com/800x600'); /* URL da imagem da página 3 */
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Estilo para o conteúdo sobre a imagem */
+        .conteudo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
