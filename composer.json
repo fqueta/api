@@ -14,7 +14,6 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^4.0",
         "maatwebsite/excel": "^3.1",
-        "spatie/browsershot": "^5.0",
         "symfony/css-selector": "^7.1",
         "symfony/dom-crawler": "^7.1"
     },
