@@ -1,8 +1,7 @@
 <?php
 
-use App\Http\Controllers\PdfBrowser;
 use App\Http\Controllers\PdfGenerateController;
-use App\Http\Controllers\PdfSanappy;
+use App\Http\Controllers\PdfSnappy;
 use App\Http\Controllers\TesteController;
 use App\Http\Controllers\YoutubeController;
 use Barryvdh\Snappy\Facades\SnappyPdf;
@@ -25,5 +24,5 @@ Route::get('/', function () {
 Route::get('/orcamento-pdf/{token}', [PdfGenerateController::class,'gera_orcamento'])->name('orcamento.pdf');
 Route::get('/youtube', [YoutubeController::class,'envia'])->name('yt.send');
 Route::get('/teste', [TesteController::class,'index'])->name('teste');
-Route::get('/pdf', [PdfSanappy::class,'gerarPdf'])->name('gerarPdf');
-Route::get('/pdf-com-imagem', [PdfSanappy::class, 'gerarPdfComImagemDeFundo'])->name('pdf.image');
+// Route::get('/pdf', [PdfSnappy::class,'gerarPdf'])->name('gerarPdf');
+Route::get('/pdf-com-imagem', [PdfGenerateController::class, 'gerarPdfComImagemDeFundo'])->name('pdf.image');

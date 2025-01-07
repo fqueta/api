@@ -144,14 +144,10 @@ class MatriculasController extends Controller
             $data = Qlib::get_matriculameta($matricula_id,$campo_meta2,true);
             if($data){
                 $ret['exec'] = true;
-                $dm = Matricula::select('matriculas.*','clientes.Nome','clientes.sobrenome')
-                ->join('clientes','matriculas.id_cliente','=','clientes.id')
-                ->where('matriculas.token',$token)
-                ->get();
-                if($dm->count() > 0){
-                    $dm = $dm->toArray();
-                    $dm = $dm[0];
-                }
+                $dm = $this->dm($token);
+                // if(!$dm){
+
+                // }
                 $ret['dm'] = $dm;
                 $ret['data'] = Qlib::lib_json_array($data);
                 $aer = DB::table('aeronaves')->where('excluido', '=','n')->where('deletado', '=','n')->get();
@@ -164,6 +160,35 @@ class MatriculasController extends Controller
                 $ret['aeronaves'] = $aeronaves_arr;
             }
         }
+        return $ret;
+    }
+    /**
+     * Dados de um orçamento ou dados da matricula
+     * @param string $token
+     * @param array $ret
+     */
+    public function dm($token){
+        $dm = Matricula::select('matriculas.*','clientes.Nome','clientes.sobrenome','cursos.tipo as tipo_curso','cursos.nome as nome_curso')
+        ->join('clientes','matriculas.id_cliente','=','clientes.id')
+        ->join('cursos','matriculas.id_curso','=','cursos.id')
+        ->where('matriculas.token',$token)
+        ->get();
+        if($dm->count() > 0){
+            $dm = $dm->toArray();
+            $dm = $dm[0];
+        }else{
+            return false;
+        }
+        $ret = $dm;
+        //  $ret['data'] = Qlib::lib_json_array($data);
+        //  $aer = DB::table('aeronaves')->where('excluido', '=','n')->where('deletado', '=','n')->get();
+        //  $aeronaves_arr = [];
+        //  if(count($aer)!=0){
+        //      foreach ($aer as $ka => $va) {
+        //          $aeronaves_arr[$va->id] = $va->nome;
+        //      }
+        //  }
+        //  $ret['aeronaves'] = $aeronaves_arr;
         return $ret;
     }
     /**
