@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Matricula;
+use App\Qlib\Qlib;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Barryvdh\Snappy\Facades\SnappyPdf;
 class PdfGenerateController extends Controller
 {
-    public function gera_orcamento($token=false){
+    public function gera_orcamento($token=false,$type='pdf'){
         if($token){
             $orca = new MatriculasController;
             $d = $orca->dm($token);
@@ -27,23 +28,51 @@ class PdfGenerateController extends Controller
                 $tipo_curso = isset($d['tipo_curso']) ? $d['tipo_curso'] : '';
                 $fundo = (new SiteController())->short_code($code,['comple'=>" AND tipo_curso='$tipo_curso'"]);
                 $paginas = [];
-                if(is_array($fundo)){
-                    //Montar as paginas do PDF
-                    foreach ($fundo as $k => $v) {
-                        $pagina = ($k+1);
-                        $title = '';//'<h1>Title pagina '.$pagina.'.</h1>';
-                        $content = '';//'<p>Conteudo da pagina '.$pagina.'.<p>';
-                        $padding = '100px 30px 10px 30px';
-                        if($k==0){
-                            //paigina inicial
+                $dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
+				if(!$dias){
+					$dias = 7;
+				}
+                $dadosD = explode(' ',$d['atualizado']);
+				$validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
+                $validade = Qlib::dataExibe($validade);
+                $res_orc = (new MatriculasController)->gerar_orcamento($token);
+                // $dadosCli = '<p align="center" style="font-size:15pt;">
+
+				// 				<b>Cliente:</b> '.$d['Nome'].' '.$d['sobrenome'].'
+				// 				<br>
+				// 				<b>Telefone:</b> '.$d['telefonezap'].'  '.$d['Tel'].' <br>
+				// 				<b>Email:</b> '.$d['Email'].'  <br>
+				// 				<b>Data:</b> '.Qlib::dataExibe($d['atualizado']).' <b>Validade:</b> '.$validade.'<br>
+				// 			</p>';
+                $dadosCli = isset($res_orc['dadosCli']) ? $res_orc['dadosCli'] : '';
+                // dd($res_orc);
+                $orcamento = isset($res_orc['table']) ? $res_orc['table'] : '';
+                if($type=='pdf'){
+                    if(is_array($fundo)){
+                        //Montar as paginas do PDF
+                        foreach ($fundo as $k => $v) {
+                            $pagina = ($k+1);
+                            $title = '';//'<h1>Title pagina '.$pagina.'.</h1>';
+                            $content = '';//'<p>Conteudo da pagina '.$pagina.'.<p>';
+                            $padding = '100px 30px 10px 30px';
+                            if($k==0){
+                                //paigina inicial
+                                $padding = '805px 30px 10px 30px';
+                                $content = $dadosCli;
+                            }
+                            if($k==1){
+                                //paigina inicial
+                                // $padding = '805px 30px 10px 30px';
+                                $content = $orcamento;
+                            }
+                            $paginas[$k] = [
+                                'bk_img'=>$v['url'],
+                                'title'=>$title,
+                                'content'=>$content,
+                                'padding'=>$padding,
+                                // 'margin'=>'0px',
+                            ];
                         }
-                        $paginas[$k] = [
-                            'bk_img'=>$v['url'],
-                            'title'=>$title,
-                            'content'=>$content,
-                            'padding'=>$padding,
-                            // 'margin'=>'0px',
-                        ];
                     }
                 }
                 // $pdf = Pdf::loadView('pdf.orcamento',$config);
@@ -53,9 +82,13 @@ class PdfGenerateController extends Controller
                 // $filename = 'Orçamento ' . $nome.'.pdf';
 
                 $filename = 'Orçamento ' . $nome;
-                $arquivo = $filename;
+                $arquivo = isset($res_orc['nome_arquivo']) ? $res_orc['nome_arquivo'] : $filename;
                 //,'paginas'=>['bk_img'=>'','title'=>'','content']
-                $ret = $this->gerarPdfComImagemDeFundo(['nome_arquivo' => $arquivo,'paginas'=>$paginas]);
+                if($type == 'pdf'){
+                    $ret = $this->gerarPdfComImagemDeFundo(['nome_arquivo' => $arquivo,'paginas'=>$paginas]);
+                }else{
+                    $ret['dadosCli'] = $dadosCli;
+                }
                 return $ret;
             }
         }
@@ -99,7 +132,7 @@ class PdfGenerateController extends Controller
              'paginas' =>$paginas,
          ];
          $html = view('pdf.pdf_com_imagem',$dados)->render();
-        //  return $html;
+         return $html;
          // Gerar o PDF
          $pdf = SnappyPdf::loadHTML($html)
              ->setPaper('a4') // Define o tamanho do papel

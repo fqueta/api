@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Curso;
+use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 
 class CursosController extends Controller
@@ -27,7 +28,23 @@ class CursosController extends Controller
         }
         return $ret;
     }
-
+    /**
+	 * Metodo para verificar se o curso é um recheck
+	 */
+	public function is_recheck($id_curso){
+		$ret = false;
+        $tab10 = 'cursos';
+		if($id_curso){
+			$conf = Qlib::buscaValorDb0($tab10,'id',$id_curso,'config');
+			if($conf){
+				$arr_con = Qlib::lib_json_array($conf);
+				if(isset($arr_con['adc']['recheck']) && $arr_con['adc']['recheck'] == 's'){
+					$ret = true;
+				}
+			}
+		}
+		return $ret;
+	}
     /**
      * Show the form for creating a new resource.
      *

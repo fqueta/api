@@ -11,7 +11,6 @@
         @page {
             margin: 0cm;
         }
-
         body {
             margin: 0cm;
             padding: 0cm;
@@ -23,6 +22,22 @@
             width: 100%;
             height: {{$altura_pagina}}; /* Altura total da página */
             page-break-after: always; /* Quebra de página após cada página */
+        }
+        .table{
+            width: 100%;
+            color: #212529;
+            margin-bottom: 0.50rem;
+        }
+        thead {
+            display: table-header-group;
+            vertical-align: middle;
+            unicode-bidi: isolate;
+            border-color: inherit;
+        }
+        .table th, .table td {
+            padding: 0.5rem;
+            vertical-align: top;
+            border-top: 1px solid #bbbcbd;
         }
         /* Estilo para o conteúdo sobre a imagem */
         .conteudo {

@@ -28,7 +28,7 @@ class Qlib
     }
     /**
      * Verifica se o usuario logado tem permissao de admin ou alguma expessífica
-     */
+    */
     static function dataLocal(){
         $dataLocal = date('d/m/Y H:i:s', time());
         return $dataLocal;
@@ -64,26 +64,25 @@ class Qlib
 				//$sql = "SELECT valor FROM qoptions WHERE url = '$valor' AND ativo='s' AND excluido='n' AND deletado='n'";
 
                 //$result = Qlib::dados_tab('qoptions',['sql'=>$sql]);
-                $result = Qoption::where('url','=',$valor)->
-                where('ativo','=','s')->
-                where('excluido','=','n')->
-                where('deletado','=','n')->
-                select('valor')->
-                get();
-
-				if(isset($result[0]->valor)) {
-						// output data of each row
-						$ret = $result[0]->valor;
-						if($valor=='urlroot'){
-							$ret = str_replace('/home/ctloja/public_html/lojas/','/home/ctdelive/lojas/',$ret);
-						}
-                        if($type=='array'){
-                            $ret = Qlib::lib_json_array($ret);
-                        }
-                        if($type=='json'){
-                            $ret = Qlib::lib_array_json($ret);
-                        }
-				}
+            $result = Qoption::where('option_name','=',$valor)->
+            //    where('autoload','=','yes')->
+               where('excluido','=','n')->
+               where('deletado','=','n')->
+               select('option_value')->
+               get();
+               if(isset($result[0]['option_value'])) {
+                   // output data of each row
+                   $ret = $result[0]['option_value'];
+					if($valor=='urlroot'){
+						$ret = str_replace('/home/ctloja/public_html/lojas/','/home/ctdelive/lojas/',$ret);
+					}
+                       if($type=='array'){
+                           $ret = Qlib::lib_json_array($ret);
+                       }
+                       if($type=='json'){
+                           $ret = Qlib::lib_array_json($ret);
+                       }
+			}
 			//}
 		}
 		return $ret;
@@ -1527,6 +1526,34 @@ class Qlib
             $ret = DB::table($tab)
             ->where('matricula_id','=',$matricula_id)
             ->delete();
+        }
+        return $ret;
+    }
+
+    /**
+     * Salva ou atualiza uma configuração na tabela de configuração qoption_remoto
+     */
+    static function update_config($option_name,$option_value=null,$obs=false)
+    {
+        $ret = false;
+        $tab = 'qoptions_remoto';
+        if($option_name&&$option_value){
+            $verf = Qlib::totalReg($tab,"WHERE option_name='$option_name'");
+            if($verf){
+                $ret=DB::table($tab)->where('option_name',$option_name)->update([
+                    'option_value'=>$option_value,
+                    'obs'=>$obs,
+                    // 'updated_at'=>self::dataBanco(),
+                ]);
+            }else{
+                $ret=DB::table($tab)->insert([
+                    'option_name'=>$option_name,
+                    'option_value'=>$option_value,
+                    'obs'=>$obs,
+                    // 'meta_key'=>$meta_key,
+                    // 'created_at'=>self::dataBanco(),
+                ]);
+            }
         }
         return $ret;
     }
