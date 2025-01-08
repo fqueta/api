@@ -11,9 +11,11 @@ class TesteController extends Controller
         $ret['exec'] = false;
         // $ret = (new SiteController())->short_code('fundo_proposta',['compl'=>'']);
         $token = $request->get('token');
-        $ret = (new MatriculasController)->gerar_orcamento($token);
+        // $ret = (new MatriculasController)->gerar_orcamento($token);
         // $ret = Qlib::qoption('validade_orcamento');
-        // dd($ret);
+        $ret = Qlib::dados_tab('cursos',['id' => 97]);
+
+        dd($ret);
         return $ret;
     }
 }

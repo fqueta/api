@@ -4,6 +4,8 @@ namespace App\Qlib;
 use App\Http\Controllers\admin\EventController;
 use App\Http\Controllers\admin\PostController;
 use App\Http\Controllers\LeilaoController;
+use App\Http\Controllers\MatriculasController;
+use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -546,42 +548,46 @@ class Qlib
         }
         return $ret;
     }
-    static public function dados_tab($tab = null,$config)
+    static public function dados_tab($tab = null,$config=[])
     {
         $ret = false;
+        $sql = isset($config['sql']) ? $config['sql']:false;
+        $comple_sql = isset($config['comple_sql']) ? $config['comple_sql']:false;
         if($tab){
             $id = isset($config['id']) ? $config['id']:false;
-            $sql = isset($config['sql']) ? $config['sql']:false;
-            if($sql){
-                $d = DB::select($sql);
-                $arr_list = $d;
-                $list = false;
-                foreach ($arr_list as $k => $v) {
-                    if(is_object($v)){
-                        $list[$k] = (array)$v;
-                        foreach ($list[$k] as $k1 => $v1) {
-                            if(Qlib::isJson($v1)){
-                                $list[$k][$k1] = Qlib::lib_json_array($v1);
-                            }
+        }
+        if(!$sql && $comple_sql && $tab){
+            $sql = "SELECT * FROM " . $tab.' '.$comple_sql;
+        }
+        if($sql){
+            $d = DB::select($sql);
+            $arr_list = $d;
+            $list = false;
+            foreach ($arr_list as $k => $v) {
+                if(is_object($v)){
+                    $list[$k] = (array)$v;
+                    foreach ($list[$k] as $k1 => $v1) {
+                        if(Qlib::isJson($v1)){
+                            $list[$k][$k1] = Qlib::lib_json_array($v1);
+                        }
+                    }
+                }
+            }
+            $ret = $list;
+            return $ret;
+        }elseif($tab && $id){
+            $obj_list = DB::table($tab)->find($id);
+        }
+        if($list=(array)$obj_list){
+            //dd($obj_list);
+                if(is_array($list)){
+                    foreach ($list as $k => $v) {
+                        if(Qlib::isJson($v)){
+                            $list[$k] = Qlib::lib_json_array($v);
                         }
                     }
                 }
                 $ret = $list;
-                return $ret;
-            }else{
-                $obj_list = DB::table($tab)->find($id);
-            }
-            if($list=(array)$obj_list){
-                //dd($obj_list);
-                    if(is_array($list)){
-                        foreach ($list as $k => $v) {
-                            if(Qlib::isJson($v)){
-                                $list[$k] = Qlib::lib_json_array($v);
-                            }
-                        }
-                    }
-                    $ret = $list;
-            }
         }
         return $ret;
     }
@@ -1557,5 +1563,648 @@ class Qlib
         }
         return $ret;
     }
+    /**
+     * Verifica que esta sendo executado de uma uma area de adminstração
+     */
+    static function is_admin_area(){
+        $urlA = Qlib::UrlAtual();
+        $p = explode('/',$urlA);
 
+        if(isset($p[3])&&$p[3]=='admin'){
+            $ret = true;
+        }else{
+            $ret = false;
+        }
+        return $ret;
+    }
+    /**
+     * Metodo para verificar o plano de pagamento
+     */
+    static function verificaPlano($config=false){
+
+		$ret['exec'] = false;
+
+		if(isset($config['token_matricula'])){
+
+			$compleSql = isset($config['compleSql']) ? $config['compleSql'] : false;
+
+			// $dadosPlano = dados_tab('lcf_planos As p','p.*,m.id_curso',"
+			// JOIN ".$GLOBALS['tab12']." As m ON m.token=p.token_matricula
+			// WHERE token_matricula='".$config['token_matricula']."' $compleSql");
+			$dadosPlano = self::dados_tab('lcf_planos',['comple_sql'=>"WHERE token_matricula='".$config['token_matricula']."' $compleSql"]);
+
+			if($dadosPlano){
+				$ret['exec'] = true;
+				if(isset($dadosPlano['config'])){
+					$dadosPlano['config'] = Qlib::lib_json_array($dadosPlano['config']);
+					if(isset($dadosPlano['config']['id'])){
+						$dt = self::dados_tab('parcelamento',['comple_sql'=>"WHERE id='".$dadosPlano['config']['id']."'"]);
+						if($dt){
+							$ret['dadosTabela'] = $dt[0];
+						}
+					}
+				}
+				$ret['dadosPlano'] = $dadosPlano;
+			}
+			$ret['dadosMatricula'] = false;
+			$dadosMatricula = (new MatriculasController)->dm($config['token_matricula']);
+			if($dadosMatricula){
+				$ret['dadosMatricula'] = $dadosMatricula;
+			}
+		}
+		return $ret;
+	}
+    /**
+     * Metodo para verificar a compraça do aluno
+     */
+    static function verificaCobAluno($tokenOs,$id_cliente,$opc='matricula',$catego_cob=15){
+
+        $categoria = !empty($catego_cob) ? $catego_cob :15;
+        $dplano = self::verificaPlano(['token_matricula'=>$tokenOs]);
+        // dd($dplano);
+        $id_plano = isset($dplano['dadosPlano'][0]['id'])?$dplano['dadosPlano'][0]['id']:false;
+        if($id_plano){
+            $comple = " WHERE `ref_compra` ='".$tokenOs."' AND `id_cliente`='".$id_cliente."' AND `categoria` = '".$categoria."' AND local='$id_plano'";
+        }else{
+            $comple = " WHERE `ref_compra` ='".$tokenOs."' AND `id_cliente`='".$id_cliente."' AND `categoria` = '".$categoria."' ";
+        }
+
+        $sql = "SELECT * FROM ".$GLOBALS['lcf_entradas']. " $comple";
+
+        $ret['enc'] = false;
+        $ret['algum_pogo'] = false;
+
+        $dados = DB::select($sql);
+        dd($dados);
+        if($dados){
+
+            $ret['enc'] = true;
+
+            $ret['dados'] = $dados;
+
+            if(checar_2($GLOBALS['lcf_entradas'], $comple." AND pago = 's'")){
+
+                $ret['algum_pogo'] = true;
+
+            }else{
+                $ret['algum_pogo'] = false;
+
+            }
+
+
+        }else{
+            $comple = " WHERE `ref_compra` ='".$tokenOs."' AND `id_cliente`='".$id_cliente."' AND `categoria` = '".$categoria."' ";
+            $sql = "SELECT * FROM ".$GLOBALS['lcf_entradas']. " $comple";
+            $dados = buscaValoresDb($sql);
+            if($dados){
+                $ret['enc'] = true;
+            }
+        }
+
+        return $ret;
+
+    }
+    /**
+     * Monta botes de ação relacionada a matricula
+     */
+    static public function btsAcaoMatricula($config=false){
+
+		$ret = false;
+
+		//forma pagamento boleto = 3; cartao = 2
+
+		if(isset($config['forma_pagamento'])){
+
+			$config['campo'] = isset($config['campo'])?$config['campo']:'valor';
+
+			$config['token_matricula'] = isset($config['token_matricula'])?$config['token_matricula']:false;
+
+			$config['id_cliente'] = isset($config['id_cliente'])?$config['id_cliente']:false;
+			$tipo_curso = Null;
+			if(isset($config['token_matricula'])){
+				$dm = (new MatriculasController)->dm($config['token_matricula']);
+				if(isset($dm['tipo_curso'])){
+					$tipo_curso = $dm['tipo_curso'];
+				}
+			}
+			if(is_array($config)){
+
+					$ret .= '<div class=" text-right" id="campo_'.$config['campo'].'">';
+
+					if($config['campo'] == 'inscricao'){
+
+						$verificaCobAluno = verificaCobAluno($config['token_matricula'],$config['id_cliente'],$opc='matricula',$GLOBALS['categoriaMatricula']);
+
+						if($verificaCobAluno['enc']){
+
+							if(is_adminstrator(3))
+
+							$ret .= '<a href="javascript:void(0)" class="btn btn-danger" que-ini="'.$config['campo'].'-remove" title="Remover matrícula"> Revomer matrícula</a>';
+
+						}else{
+
+							$ret .= '<a href="javascript:void(0)" class="btn btn-success" que-ini="'.$config['campo'].'" title="Use esta opção somente quando o aluno já tiver pago a matrícula"> Matricular</a>';
+
+							if(is_adminstrator(5)){
+
+								$ret .= '<a href="javascript:void(0)" class="btn btn-primary" que-ini="'.$config['campo'].'-boleto" title="Use esta opção para gerar o boleto da matrícula"> <i class="fa fa-barcode"></i></a>';
+
+							}
+
+						}
+
+					}
+
+					if($config['campo'] == 'valor'){
+
+						$display = 'block';
+
+						$verificaCobAluno = verificaCobAluno($config['token_matricula'],$config['id_cliente'],$opc='matricula',$GLOBALS['categoriaMensalidade']);
+						// lib_print($verificaCobAluno);
+						if($verificaCobAluno['enc']){
+
+							$display = 'none';
+
+							if($verificaCobAluno['algum_pogo']){
+
+								$disabledRemove = 'disabled';
+
+								$seletor = 'onClick="alerta(\'Não é possível remover cobranças por aqui por que tem faturas pagas, ou boletos gerados. Entre em contato com o suporte.'.suporteTec().'\')"';
+
+								if(is_adminstrator(3))
+
+									$display = 'block';
+
+							}else{
+
+								$disabledRemove = false;
+
+								$seletor = 'que-cob="'.$config['campo'].'-remove"';
+
+								if(is_adminstrator(3))
+
+									$display = 'block';
+
+							}
+
+							$ret .= '<a href="javascript:void(0)" onclick="removeCorbracaAluno();" '.$disabledRemove.' style="display:'.$display.'" class="btn btn-danger" '.$seletor.' title="Remover cobranças"> Revomer cobranças</a>';
+
+						}else{
+
+							if($config['forma_pagamento']==2 || $config['forma_pagamento']==7){  //cartao
+
+								//$ret .= '<a href="javascript:void(0)" class="btn btn-default" onclick="cursos_LinkPagamentoCartao();" que-cob="'.$config['campo'].'" title="Use esta opção somente para gerar um link de pagamento no cartão"><i class="fa fa-link"></i> pagamento</a>';
+
+								$tema_bt = '<input id="link-pagamento" type="hidden" disabled class="form-control" value="{tk_login}" name="tk_login"><!--<span style="position:absolute;top:20px;right:13px"><button data-copy-link-pag="true" type="button" onClick="copyTextToClipboard($(\'#link-pagamento\').val());" class="btn btn-default"><i class="fa fa-copy"></i></button></span>--><a href="javascript:void(0)" class="btn btn-default" onclick="copyTextToClipboard($(\'#link-pagamento\').val());cursos_clearPayment(\''.$config['token_matricula'].'\');" que-cob="'.$config['campo'].'" title="Gerar e copiar o link para área de transferência"><i class="fa fa-link"></i> pagamento</a>';
+
+								$ret .= user_site_gerarToken($config['token_matricula'],$tema_bt); //app/user_site
+
+
+							}
+
+							if($config['forma_pagamento']==3 && isAdmin(3)){ //boleto
+								if($tipo_curso==4){
+									$tema_bt = '<input id="link-pagamento" type="hidden" disabled class="form-control" value="{tk_login}" name="tk_login"><!--<span style="position:absolute;top:20px;right:13px"><button data-copy-link-pag="true" type="button" onClick="copyTextToClipboard($(\'#link-pagamento\').val());" class="btn btn-default"><i class="fa fa-copy"></i></button></span>--><a href="javascript:void(0)" class="btn btn-default" onclick="copyTextToClipboard($(\'#link-pagamento\').val());cursos_clearPayment(\''.$config['token_matricula'].'\');" que-cob="'.$config['campo'].'" title="Gerar e copiar o link para área de transferência"><i class="fa fa-link"></i> pagamento</a>';
+
+									$ret .= user_site_gerarToken($config['token_matricula'],$tema_bt); //app/user_site
+								}
+
+								$ret .= '<a href="javascript:void(0)" class="btn btn-primary" onclick="criarCobrancaAluno();" que-cob="'.$config['campo'].'" title="Use esta opção somente para gerar as cobranças"> Gerar cobranças.</a>';
+
+							}
+
+						}
+
+					}
+
+					$ret .= '</div>';
+
+			}
+
+		}
+		return $ret;
+	}
+    /**
+     * Metodo para retornar uma pagina com as informações de pagamento do curso
+     */
+    static public function infoPagCurso($config=false){
+		global $categoriaMensalidade;
+        $ret['exec'] = false;
+        $categoriaMensalidade = Qlib::qoption('categoriaMensalidade') ? Qlib::qoption('categoriaMensalidade') : '';
+		$ret['html'] = false;
+
+		$ret['resumo_front'] = false;
+
+		$ret['dadosPlano'] = false;
+		if(isset($config['token'])){
+
+			$dadosMatricula = (new MatriculasController )->dm($config['token']);
+			//1 - varificar se ja foi gerado um plano uma matricula pode ter 2 plano um do tipo matricula e outro do tipo mensalidades
+
+			//2 - se tem montar um painel com as informações
+
+			if(!$dadosMatricula){
+				return $ret;
+			}
+			$tipo_curso = isset($dadosMatricula['tipo_curso']) ? $dadosMatricula['tipo_curso'] : 0;
+			$ret['html'] .= '<div class="col-sm-12 padding-none desc-pagcurso">';
+
+
+
+			$tr = false;
+			$dp = self::qoption('dias_pagamento');
+			if($dp){
+				$dp = base64_encode($dp);
+			}
+
+			$tema1 =
+
+			'
+			<dias_pagamento style="display:none">'.$dp.'</dias_pagamento>
+			<table id="plano-parcelamento" class="table">
+
+				<thead>
+
+					<tr>
+
+						<th colspan="7" class="text-center"><h5>Plano de pagamento escolhido: {nome_tabela} </h5></th>
+
+					</tr>
+
+					<tr>
+
+						<th colspan="7" class="text-center"><label>Forma de pagamento</label> <b class="forma_pagamento text-danger">{forma_pagamento}</b></th>
+
+					</tr>
+
+					<tr>
+
+
+						<th class="">1° Vencimento</th>
+						<th class="">dia pagamento.</th>
+
+						<th class="text-center">Parcelas</th>';
+						if($tipo_curso!=4){
+							$tema1 .= '<th class="text-right">Valor</th>';
+							$tema1 .= '<th class="text-right">Total</th>';
+						}
+
+						if(self::isAdmin(3)){
+							$tema1 .='
+
+							<th class="text-center" style="width:30%">Açao</th><th class="text-center" style="width:10%">...</th>';
+						}
+				$tema1 .='
+
+					</tr>
+
+				</thead>
+
+				<tbody>
+
+				{tr}
+
+				</tbody>
+
+			</table>';
+			$tema2 = '
+
+			<tr id="trp-{id}">
+
+				<!--<td>{categoria}<input type="hidden" name="reg_pagamento[categoria]" /></td>-->
+
+				<td>{data_pri_cob}</td>
+				<td id="dia-vencimento">{dia_vencimento}</td>
+
+				<td class="text-center">{parcelas}<input type="hidden" name="reg_pagamento[parcelas]" value="{val_parcelas}"/></td>';
+			if($tipo_curso!=4){
+				$tema2 .= '<td class="text-right"><input type="hidden" name="reg_pagamento[valor]" value=""{val_valor}"/>{valor_label}</td>';
+				$tema2 .= '<td class="text-right">{total_plano}</td>';
+			}
+			if(self::isAdmin(3)){
+				$tema2 .= '
+
+				<td class="acao text-right">{acao}</td>
+				<td class="acao text-right">{del}</td>
+				';
+			}
+
+			$tema2 .= '
+			</tr>';
+
+			$temavalor =
+
+			'<div class="row mt-3 mb-3">
+
+				<div class="col-md-3">
+
+					<img src="{img_url}" width="100%" alt="{nome_curso}" />
+
+				</div>
+
+				<div class="col-md-9">
+
+					<h4>{nome_curso}</h4>
+
+					<h2>R$ {valor} / mês</h2>
+
+					<p>A cobrança se encerrará ao final de <b>{parcelas} cobranças.</b>
+
+					Plano de Recorrência Mensal no <b class="text-danger">{forma_pagamento}</b></p>
+
+				</div>
+
+
+
+			</div>';
+			$compleTem2= '<h2>{parcelas} X R$ {valor}</h2>';
+			$compleTem3= '';
+			if(isset($tipo_curso)&&$tipo_curso==4){
+				$compleTem2= '';
+				// $compleTem3= '<div class="col-md-12">{tabela_parcelamento}</div>';
+				$compleTem3= '<div class="col-md-12">{obs}</div>';
+			}
+			$temavalor2 =
+
+			'<div class="row mt-3 mb-3">
+
+				<div class="col-md-3">
+
+					<img src="{img_url}" width="100%" alt="{nome_curso}" />
+
+				</div>
+
+				<div class="col-md-9">
+
+					<h4>{nome_curso}</h4>
+
+					'.$compleTem2.'
+
+					<p><b class="text-danger">{forma_pagamento}</b></p>
+
+				</div>
+				'.$compleTem3.'
+
+
+			</div>';
+
+			$arr_categoria = Qlib::sql_array("SELECT * FROM lcf_categorias ORDER BY nome ASC ",'nome','id');
+
+			$dadosPlano =  Qlib::dados_tab('lcf_planos',['comple_sql'=>"WHERE token_matricula='".$config['token']."'"]);
+			$total = 0;
+
+			$parcelas = 0;
+
+			$forma_pagamento = false;
+
+			$fp = false;
+
+			$btn_finalizar_compra = false;
+
+			// loop for para adicionar um plano baseado no cadastro do curso no caso de não encontrar nada
+			for ($i=1; $i <= 2; $i++) {
+
+				if($dadosPlano){
+
+						$ret['dadosPlano'] = $dadosPlano;
+
+						foreach ($dadosPlano as $key => $value) {
+
+							$fp=isset($value['forma_pagamento'])?$value['forma_pagamento']:Null;
+
+							$dadosPlano[$key]['config'] = self::lib_json_array($value['config']);
+
+							$forma_pagamento = self::buscaValorDb0($GLOBALS['lcf_formas_pagamentos'],'id', $value['forma_pagamento'],'nome');
+
+							$totalPl = ($value['parcelas']*$value['valor']);
+
+							$tr .= str_replace('{parcelas}','<parcelas>'.$value['parcelas'].'</parcelas>X',$tema2);
+
+							$tr = str_replace('{valor}','<valor>'.$value['valor'].'</valor>',$tr);
+
+							$tr = str_replace('{valor_label}','R$ <valor>'.number_format($value['valor'],2,',','.').'</valor>',$tr);
+
+							$tr = str_replace('{total_plano}','R$ <vl_total>'.number_format($totalPl,2,',','.').'</vl_total>',$tr);
+							$tr = str_replace('{dia_vencimento}',$value['dia_pagamento'],$tr);
+							$tr = str_replace('{categoria}',$arr_categoria[$value['categoria']],$tr);
+
+							$tr = str_replace('{id}',$value['id'],$tr);
+
+							$tr = str_replace('{data_pri_cob}','<data_pri_cob>'.self::dataExibe($value['data_pri_cob']).'</data_pri_cob><input type="hidden" value="'.$value['data_pri_cob'].'" name="data_pri_cob" />',$tr);
+
+							$tr = str_replace('{val_valor}',$value['valor'],$tr);
+
+							if($value['categoria']==$GLOBALS['categoriaMensalidade']){
+
+							$acao = self::btsAcaoMatricula($value);
+
+						}else{
+
+							$acao = false;
+
+						}
+						if(self::isAdmin(3)){
+
+							$del = '<button type="button" class="btn btn-default" onclick="cursos_editPlano(\''.$value['id'].'\')" title="Editar"><i class="fa fa-pencil"></i></button>';
+
+						}else{
+
+							$del = false;
+
+						}
+						$verificaCobAluno = self::verificaCobAluno($config['token'],@$config['id_cliente'],$opc='matricula',$GLOBALS['categoriaMensalidade']);
+						if($verificaCobAluno['enc']){
+							$dispBtnRemove = 'none';
+						}else{
+							$dispBtnRemove = '';
+						}
+						$del .= '<button type="button" class="btn btn-danger" style="display:'.$dispBtnRemove.'" onclick="cursos_removePlano(\''.$value['id'].'\')" title="Excluir"><i class="fa fa-trash"></i></button>';
+
+						$parcelas = $value['parcelas'];
+
+						$tr = str_replace('{acao}',$acao,$tr);
+
+						$tr = str_replace('{del}',$del,$tr);
+
+						$total += $value['valor'];
+
+					}
+
+					if($total>0){
+						if($forma_pagamento=='Boleto'){
+
+							$btn_finalizar_compra = '<button type="button" {event} class="btn btn-primary btn-block btn-lg">Solicitar Boletos <i class="fa fa-chevron-right pull-right" aria-hidden="true"></i></button>';
+						}else{
+							$btn_finalizar_compra = '<button type="button" {event} class="btn btn-primary btn-block btn-lg">Pagar agora <i class="fa fa-chevron-right pull-right" aria-hidden="true"></i></button>';
+						}
+
+					}
+
+
+
+					break;
+
+				}else{
+
+					$dm = $dadosMatricula;
+                    // dd($dm);
+					if($dm['parcelas_curso']>0 && $dm['valor_parcela_curso']>0 && $dm['valor']>0){
+						$id_fp = 2;  //Id forma pagamento cartao 2 = recorrencia 7 = limite total
+						if(isset($dm['tipo_curso'])&&$dm['tipo_curso']==1){
+							//Se o tipo de curso for EAD
+							$id_fp = 7;  //Id forma pagamento cartao 2 = recorrencia 7 = limite total
+						}
+						$sl = cursos::gerarPlanos([
+
+							"entrada"=> false,
+
+							"parcelas"=> $dm['parcelas_curso'],
+
+							"valor"=> $dm['valor_parcela_curso'],
+
+							"total_plano"=> $dm['valor'],
+
+							"categoria"=> $GLOBALS['categoriaMensalidade'],
+
+							"dados_tabela"=>[
+
+								'id'=>'',
+
+								'forma_pagamento'=>$id_fp,
+
+								'token_matricula'=>$dm['token_matricula']
+
+							],
+
+							"token_matricula"=> $config['token']
+
+						]);
+
+						$salvar = lib_json_array($sl);
+
+						if(isset($salvar['exec'])&& $salvar['exec']){
+
+							$arr_reg_inscricao = [
+
+								'valor'=>$dm['inscricao'],
+
+								'valor_parcela'=>$dm['inscricao'],
+
+								'parcelas'=>1,
+
+								'desconto'=>0,
+
+								'tipo_desconto'=>'',
+
+							];
+
+							$ret['reg_inscricao'] = salvarAlterar("UPDATE IGNORE ".$GLOBALS['tab12']." SET reg_inscricao = '".lib_array_json($arr_reg_inscricao)."' WHERE token='".$config['token']."'");
+
+							$dadosPlano = dados_tab('lcf_planos','*',"WHERE token_matricula='".$config['token']."'");
+
+						}else{
+
+							$ret['html'] .= @$salvar['exec'];
+
+						}
+
+					}
+
+				}
+
+			} //fim do for
+
+			$ret['tabela_parcelamento'] = false;
+			$ret['tabela_parcelamento_cliente'] = false;
+			$obs = false;
+			if(isset($dadosMatricula['tipo_curso']) && $dadosMatricula['tipo_curso']==4 && isset($dadosPlano['config']) && !empty($dadosPlano['config']) && ($cfp=$dadosPlano['config'])){
+				$ar_c = Qlib::lib_json_array($cfp);
+				$tr_matricula = false;
+				$ttp1 = '<table class="table"><thead><!--<th colspan="2" class="text-center">'.__translate('Resumo do pagamento',true).'</th>-->{tr_matricula}<tr><th>Parcelas</th><th class="text-right">Valores</th></tr></thead><tbody>{trp}</tbody></table>';
+				$ttp2 = '<tr><td>[parcelas]</td><td class="text-right">[valores]</td></tr>';
+				$trp = false;
+				$dadosTabela = dados_tab($GLOBALS['tab55'],'*',"WHERE id='".$ar_c['id']."'");
+				if($dadosTabela){
+					$ret['dadosTabela'] = $dadosTabela;
+					$obs = $dadosTabela[0]['obs'];
+					$ret['tabela_parcelamento_cliente'] = self::tabela_parcelamento_cliente($ar_c['id']);
+				}
+
+				if(isset($ar_c['id']) && $ar_c['id']>0){
+					$matricula = buscaValorDb($GLOBALS['tab55'],'id',$ar_c['id'],'valor');
+					if($matricula){
+						$tr_matricula='<tr><th>Matrícula</th><th class="text-right">'.number_format($matricula,2,',','.').'</th></tr>';
+					}
+				}
+				if(isset($ar_c['parcelas']) && is_array($ar_c['parcelas'])){
+					foreach ($ar_c['parcelas'] as $k => $v) {
+						$trp .= str_replace('[parcelas]',$v['parcela'].'X',$ttp2);
+						$trp = str_replace('[valores]',$v['valor'],$trp);
+					}
+				}
+				$tpa = str_replace('{trp}',$trp,$ttp1);
+				$tpa = str_replace('{tr_matricula}',$tr_matricula,$tpa);
+				$ret['tabela_parcelamento'] = $tpa;
+				$ret['obs'] = $obs;
+			}
+
+			$ret['dadosMatricula'] = $dadosMatricula;
+
+
+			$ret['html'] .= str_replace('{tr}',$tr,$tema1);
+
+			$ret['html'] .= '<input type="hidden" value="'.base64_encode($tema2).' id="tema2" /><input type="hidden" id="token_matricula" value="'.$config['token'].'" /></div>';
+
+			$ret['html'] = str_replace('{forma_pagamento}',$forma_pagamento,$ret['html']);
+
+			$nome_tabela = Qlib::buscaValorDb0('parcelamento','id',@$dadosPlano['config']['id'],'nome');
+
+			$ret['html'] = str_replace('{nome_tabela}',$nome_tabela,$ret['html']);
+
+			$ret['btn_finalizar_compra'] = str_replace('{event}','onclick="finalizarCompraEcomerce()" que-acao="finalizar_compra"',$btn_finalizar_compra);
+
+			//para exibiçção no front area do cliente
+
+
+			$image_link = (new SiteController)->dadosImagemModGal('arquivo',"id_produto='".$dadosMatricula['token_curso']."' AND ordem = '1'");
+
+			if(isset($image_link[0]['url']))
+
+				$img_url = str_replace('https://aeroclubejf','https://crm.aeroclubejf',$image_link[0]['url']);
+
+			else
+
+				$img_url = url('/').'img/indisponivel.gif';
+
+
+			$total_parcelado = round(((int)$parcelas*(double)$total),2);
+			$ret['valores'] = ['total'=>$total,'parcelas'=>$parcelas,'total_parcelado'=>$total_parcelado,'forma_pagamento'=>$forma_pagamento ];
+
+			if($fp==2){
+
+				$ret['resumo_front'] = str_replace('{nome_curso}',$dadosMatricula['nome_curso'],$temavalor);
+
+			}else{
+
+				$ret['resumo_front'] = str_replace('{nome_curso}',$dadosMatricula['nome_curso'],$temavalor2);
+
+			}
+			$ret['resumo_front'] = str_replace('{valor}',number_format($total,2,',','.'),$ret['resumo_front']);
+
+			$ret['resumo_front'] = str_replace('{parcelas}',$ret['valores']['parcelas'],$ret['resumo_front']);
+
+			$ret['resumo_front'] = str_replace('{forma_pagamento}',$forma_pagamento,$ret['resumo_front']);
+
+			$ret['resumo_front'] = str_replace('{img_url}',$img_url,$ret['resumo_front']);
+			$ret['resumo_front'] = str_replace('{tabela_parcelamento}',$ret['tabela_parcelamento'],$ret['resumo_front']);
+			if(isset($dadosMatricula['tipo_curso']) && $dadosMatricula['tipo_curso']==4){
+				$ret['resumo_front'] = str_replace('{obs}','',$ret['resumo_front']);
+			}else{
+				$ret['resumo_front'] = str_replace('{obs}',$obs,$ret['resumo_front']);
+			}
+
+
+		}
+		return $ret;
+	}
 }

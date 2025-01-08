@@ -36,6 +36,7 @@ class PdfGenerateController extends Controller
 				$validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
                 $validade = Qlib::dataExibe($validade);
                 $res_orc = (new MatriculasController)->gerar_orcamento($token);
+                // dd($res_orc);
                 // $dadosCli = '<p align="center" style="font-size:15pt;">
 
 				// 				<b>Cliente:</b> '.$d['Nome'].' '.$d['sobrenome'].'
@@ -45,8 +46,14 @@ class PdfGenerateController extends Controller
 				// 				<b>Data:</b> '.Qlib::dataExibe($d['atualizado']).' <b>Validade:</b> '.$validade.'<br>
 				// 			</p>';
                 $dadosCli = isset($res_orc['dadosCli']) ? $res_orc['dadosCli'] : '';
-                // dd($res_orc);
                 $orcamento = isset($res_orc['table']) ? $res_orc['table'] : '';
+                // if(!$orcamento){
+                //     $orcamento = isset($res_orc['table2']) ? $res_orc['table2'] : '';
+                // }
+                if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
+                    $orcamento .= $res_orc['listMod']['html'];
+                }
+                dd($res_orc);
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF

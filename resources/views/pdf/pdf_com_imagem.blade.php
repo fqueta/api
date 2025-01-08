@@ -35,7 +35,7 @@
             border-color: inherit;
         }
         .table th, .table td {
-            padding: 0.5rem;
+            padding: 0.1rem;
             vertical-align: top;
             border-top: 1px solid #bbbcbd;
         }
