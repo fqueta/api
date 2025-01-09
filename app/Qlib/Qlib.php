@@ -19,6 +19,12 @@ use DateTime;
 
 class Qlib
 {
+    public function __construct(){
+        global $tab11,$tab12,$tab50;
+        $tab11 = 'turmas';
+        $tab12 = 'matriculas';
+        $tab50 = 'tabela_nomes';
+    }
     static public function lib_print($data){
       if(is_array($data) || is_object($data)){
         echo '<pre>';
@@ -548,16 +554,37 @@ class Qlib
         }
         return $ret;
     }
+    /**
+     * Metodo para retornar uma consulta SQL em array
+     */
+    static function buscaValoresDb($sql,$debug=false){
+        if($debug){
+            dump($sql);
+        }
+        if($sql){
+            $dados = DB::select($sql);
+            $arrayResults = array_map(function ($item) {
+                return (array) $item;
+            }, $dados);
+            return $arrayResults;
+        }else{
+            return false;
+        }
+    }
     static public function dados_tab($tab = null,$config=[])
     {
         $ret = false;
         $sql = isset($config['sql']) ? $config['sql']:false;
         $comple_sql = isset($config['comple_sql']) ? $config['comple_sql']:false;
+        $campos = isset($config['campos']) ? $config['campos']:'*';
+        if(!$comple_sql){
+            $comple_sql = isset($config['where']) ? $config['where']:false;
+        }
         if($tab){
             $id = isset($config['id']) ? $config['id']:false;
         }
         if(!$sql && $comple_sql && $tab){
-            $sql = "SELECT * FROM " . $tab.' '.$comple_sql;
+            $sql = "SELECT $campos FROM " . $tab.' '.$comple_sql;
         }
         if($sql){
             $d = DB::select($sql);
@@ -1593,8 +1620,10 @@ class Qlib
 			// WHERE token_matricula='".$config['token_matricula']."' $compleSql");
 			$dadosPlano = self::dados_tab('lcf_planos',['comple_sql'=>"WHERE token_matricula='".$config['token_matricula']."' $compleSql"]);
 
-			if($dadosPlano){
+            if(isset($dadosPlano[0])){
 				$ret['exec'] = true;
+                // dd($dadosPlano);
+                $dadosPlano = $dadosPlano[0];
 				if(isset($dadosPlano['config'])){
 					$dadosPlano['config'] = Qlib::lib_json_array($dadosPlano['config']);
 					if(isset($dadosPlano['config']['id'])){
@@ -1629,20 +1658,19 @@ class Qlib
             $comple = " WHERE `ref_compra` ='".$tokenOs."' AND `id_cliente`='".$id_cliente."' AND `categoria` = '".$categoria."' ";
         }
 
-        $sql = "SELECT * FROM ".$GLOBALS['lcf_entradas']. " $comple";
+        $sql = "SELECT * FROM ".'lcf_entradas'. " $comple";
 
         $ret['enc'] = false;
         $ret['algum_pogo'] = false;
 
         $dados = DB::select($sql);
-        dd($dados);
         if($dados){
 
             $ret['enc'] = true;
 
             $ret['dados'] = $dados;
 
-            if(checar_2($GLOBALS['lcf_entradas'], $comple." AND pago = 's'")){
+            if(Qlib::totalReg('lcf_entradas', $comple." AND pago = 's'")){
 
                 $ret['algum_pogo'] = true;
 
@@ -1654,8 +1682,8 @@ class Qlib
 
         }else{
             $comple = " WHERE `ref_compra` ='".$tokenOs."' AND `id_cliente`='".$id_cliente."' AND `categoria` = '".$categoria."' ";
-            $sql = "SELECT * FROM ".$GLOBALS['lcf_entradas']. " $comple";
-            $dados = buscaValoresDb($sql);
+            $sql = "SELECT * FROM lcf_entradas  $comple";
+            $dados = self::buscaValoresDb($sql);
             if($dados){
                 $ret['enc'] = true;
             }
@@ -1974,7 +2002,7 @@ class Qlib
 
 							$dadosPlano[$key]['config'] = self::lib_json_array($value['config']);
 
-							$forma_pagamento = self::buscaValorDb0($GLOBALS['lcf_formas_pagamentos'],'id', $value['forma_pagamento'],'nome');
+							$forma_pagamento = self::buscaValorDb0('lcf_formas_pagamentos','id', $value['forma_pagamento'],'nome');
 
 							$totalPl = ($value['parcelas']*$value['valor']);
 
@@ -2064,7 +2092,7 @@ class Qlib
 
 							"total_plano"=> $dm['valor'],
 
-							"categoria"=> $GLOBALS['categoriaMensalidade'],
+							"categoria"=> $categoriaMensalidade,
 
 							"dados_tabela"=>[
 

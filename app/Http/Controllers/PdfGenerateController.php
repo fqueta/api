@@ -35,7 +35,7 @@ class PdfGenerateController extends Controller
                 $dadosD = explode(' ',$d['atualizado']);
 				$validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
                 $validade = Qlib::dataExibe($validade);
-                $res_orc = (new MatriculasController)->gerar_orcamento($token);
+                $res_orc = (new MatriculasController)->gerar_orcamento($token,'s');
                 // dd($res_orc);
                 // $dadosCli = '<p align="center" style="font-size:15pt;">
 
@@ -47,13 +47,13 @@ class PdfGenerateController extends Controller
 				// 			</p>';
                 $dadosCli = isset($res_orc['dadosCli']) ? $res_orc['dadosCli'] : '';
                 $orcamento = isset($res_orc['table']) ? $res_orc['table'] : '';
+                $parcelamento = isset($res_orc['parcelamento']) ? $res_orc['parcelamento'] : '';
                 // if(!$orcamento){
                 //     $orcamento = isset($res_orc['table2']) ? $res_orc['table2'] : '';
                 // }
                 if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
                     $orcamento .= $res_orc['listMod']['html'];
                 }
-                dd($res_orc);
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
@@ -61,16 +61,22 @@ class PdfGenerateController extends Controller
                             $pagina = ($k+1);
                             $title = '';//'<h1>Title pagina '.$pagina.'.</h1>';
                             $content = '';//'<p>Conteudo da pagina '.$pagina.'.<p>';
-                            $padding = '100px 30px 10px 30px';
+                            $padding = '110px 30px 10px 30px';
                             if($k==0){
                                 //paigina inicial
                                 $padding = '805px 30px 10px 30px';
                                 $content = $dadosCli;
                             }
                             if($k==1){
-                                //paigina inicial
                                 // $padding = '805px 30px 10px 30px';
                                 $content = $orcamento;
+                            }
+                            if($k==2){
+                                if($tipo_curso!=4){
+                                    $title = '<h2>Parcelamento</h2>';
+                                }
+                                $padding = '120px 30px 10px 30px';
+                                $content = $parcelamento;
                             }
                             $paginas[$k] = [
                                 'bk_img'=>$v['url'],
@@ -91,8 +97,9 @@ class PdfGenerateController extends Controller
                 $filename = 'Orçamento ' . $nome;
                 $arquivo = isset($res_orc['nome_arquivo']) ? $res_orc['nome_arquivo'] : $filename;
                 //,'paginas'=>['bk_img'=>'','title'=>'','content']
+                $t_pdf = request()->get('t_pdf')?request()->get('t_pdf') : false;
                 if($type == 'pdf'){
-                    $ret = $this->gerarPdfComImagemDeFundo(['nome_arquivo' => $arquivo,'paginas'=>$paginas]);
+                    $ret = $this->gerarPdfComImagemDeFundo(['nome_arquivo' => $arquivo,'paginas'=>$paginas,'t_pdf'=>$t_pdf]);
                 }else{
                     $ret['dadosCli'] = $dadosCli;
                 }
@@ -108,6 +115,7 @@ class PdfGenerateController extends Controller
 
      public function gerarPdfComImagemDeFundo($config=[])
      {
+         $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : true;
          $nome_arquivo = isset($config['nome_arquivo']) ? $config['nome_arquivo'] : 'Pdf_com_imagem';
          $paginas = isset($config['paginas']) ? $config['paginas'] : [
              [
@@ -139,7 +147,9 @@ class PdfGenerateController extends Controller
              'paginas' =>$paginas,
          ];
          $html = view('pdf.pdf_com_imagem',$dados)->render();
-         return $html;
+         if($t_pdf=='false'){
+             return $html;
+         }
          // Gerar o PDF
          $pdf = SnappyPdf::loadHTML($html)
              ->setPaper('a4') // Define o tamanho do papel

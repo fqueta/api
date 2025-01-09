@@ -76,7 +76,7 @@ class MatriculasController extends Controller
     public function numero_contrato($id_matricula=false){
         $ret = false;
         if($id_matricula){
-            //uso $ret = cursos::numero_contrato($id_matricula);
+            //uso $ret = (new CursosController)->numero_contrato($id_matricula);
             $ret = false;
             if($id_matricula){
                 $json_contrato = Qlib::buscaValorDb0('matriculas','id',$id_matricula,'contrato');
@@ -170,7 +170,7 @@ class MatriculasController extends Controller
     public function dm($token){
         $dm = Matricula::select('matriculas.*',
         'clientes.Nome','clientes.sobrenome','clientes.telefonezap','clientes.Tel','clientes.Email',
-        'cursos.tipo as tipo_curso','cursos.modulos as modulos_curso','cursos.parcelas as parcelas_curso','cursos.valor_parcela as valor_parcela_curso','cursos.nome as nome_curso','cursos.titulo as titulo_curso','cursos.inscricao as inscricao_curso','cursos.valor as valor_curso','cursos.token as token_curso')
+        'cursos.tipo as tipo_curso','cursos.config','cursos.modulos as modulos_curso','cursos.parcelas as parcelas_curso','cursos.valor_parcela as valor_parcela_curso','cursos.nome as nome_curso','cursos.titulo as titulo_curso','cursos.inscricao as inscricao_curso','cursos.valor as valor_curso','cursos.token as token_curso')
         ->join('clientes','matriculas.id_cliente','=','clientes.id')
         ->join('cursos','matriculas.id_curso','=','cursos.id')
         ->where('matriculas.token',$token)
@@ -248,11 +248,11 @@ class MatriculasController extends Controller
 
     // }
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Metodo para gerar um orçamento atualizado
+     * @param string $tokenOrc token do orçamento
+     * @param string $exibir_parcelamento 's' para sim 'n' para não
      */
-    public function gerar_orcamento($tokenOrc,$css_table=''){
+    public function gerar_orcamento($tokenOrc,$exibir_parcelamento=false){
         global $tab10,$tab12,$tab15,$tab50;
         $tab10 = 'cursos';
         $tab15 = 'clientes';
@@ -262,19 +262,27 @@ class MatriculasController extends Controller
             $mensComb = false;
             $tab12 = 'matriculas';
 			$is_signed = $this->verificaDataAssinatura(['campo_bus'=>'token','token'=>$tokenOrc]);
-			// $is_signed = false;
 			$arr_tabelas = Qlib::sql_array("SELECT * FROM $tab50 WHERE ativo = 's' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','url');
-
-			// $sql  = "SELECT * FROM ".$GLOBALS['tab12']." WHERE `token` = '".$tokenOrc."' AND ".compleDelete();
-            // dd($arr_tabelas);
-			// $dados = buscaValoresDb($sql);
-            $dados = $this->dm($tokenOrc);
+			$dados = $this->dm($tokenOrc);
 
 			$dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
             if($dados){
 				$dadosOrc = false;
 				$tipo_curso = $dados['tipo_curso'];
 				$valor_combustivel = 0;
+                $btn_aceito_aceitar = '';
+                // $aceito_proposta = buscaValorDb($GLOBALS['tab12'],'token',$_GET['tk'],'contrato');
+				// $arr_aceito = lib_json_array($aceito_proposta);
+				if($is_signed){
+                    // $men = 'Proposta aceita em '.dataExibe(@$arr_aceito['data_aceito_contrato']).' Ip: '.$arr_aceito['ip'].'';
+					$men = 'Proposta aceita em '.Qlib::dataExibe($is_signed).'';
+					$btn_a = '<span style="color:#b94a48">'.__($men).'</span>';
+				}else{
+                    $btn_aceito_proposta = (new SiteController)->short_code('btn_aceito_proposta',false,false);
+                    $link = '/solicitar-orcamento/proposta/'.$tokenOrc;
+					$btn_a = '<a href="'.$link.'" target="_BLANK"><img src="'.@$btn_aceito_proposta[0]['url'].'" width="250px"/></a>';
+				}
+				$btn_aceito_aceitar = '<div align="center">'.$btn_a.'</div>';
 				if(!empty($dados['orc'])){
                         if(is_array($dados['orc'])){
                            $dadosOrc = $dados['orc'];
@@ -352,6 +360,9 @@ class MatriculasController extends Controller
                                               <b>Email:</b> '.$dados['Email'].'  <br>
                                               <b>Data:</b> '.Qlib::dataExibe($dados['atualizado']).' <b>Validade:</b> '.$validade.'<br>
                                           </p>';
+                            if($this->is_pdf()){
+                                $dadosCli .= $btn_aceito_aceitar;
+                            }
 						$ret['validade'] = $validade;
 						// $ret['dadosCli'] = '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>';
 						$ret['dadosCli'] = $dadosCli;
@@ -945,7 +956,7 @@ class MatriculasController extends Controller
 							<p class="apresentacao" style="font-family:helvetica;font-size:13pt;">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
 							Temos o prazer em lhe apresentar nossa proposta comercial<br>Curso: <strong>'.$dados['titulo_curso'].'</strong></p>
 							<br>
-							<table id="table4" cellspacing="0" '.$css_table.' class="table">
+							<table id="table4" cellspacing="0" class="table">
 								<thead >
 									<tr>
 										<th style="width:'.$arr_wid2[0].'"><div align="left">ITEM</div></th>
@@ -978,6 +989,9 @@ class MatriculasController extends Controller
                             <b>Email:</b> '.$dados['Email'].'  <br>
                             <b>Data:</b> '.Qlib::dataExibe($dados['atualizado']).' <b>Validade:</b> '.$validade.'<br>
                         </p>';
+                        if($this->is_pdf()){
+                            $dadosCli .= $btn_aceito_aceitar;
+                        }
 						$ret['dadosCli'] =  $dadosCli;
 						$i=1;
 						$tr = str_replace('{num}',$i,$tema2);
@@ -1003,15 +1017,18 @@ class MatriculasController extends Controller
 							$espacoTable = false;
 						}
 						if($dados['tipo_curso']==4){
-                                  // dd($dados);
-							$totalOrcamento = '1X R$ '.number_format($dados['inscricao_curso'],2,',','.').' + '.$dados['parcelas_curso'].'X'.number_format($dados['valor_parcela_curso'],2,',','.');
-							 $ret['totalOrcamento'] = $totalOrcamento;
-							 $totGeral = $totalOrcamento;
+                            if($dados['valor_parcela_curso']==0){
+                                $totalOrcamento = '1X R$ '.number_format($dados['inscricao_curso'],2,',','.').' + 1 X R$ '.number_format($dados['valor'],2,',','.');
+                            }else{
+                                $totalOrcamento = '1X R$ '.number_format($dados['inscricao_curso'],2,',','.').' + '.$dados['parcelas_curso'].'X'.number_format($dados['valor_parcela_curso'],2,',','.');
+                            }
+							$ret['totalOrcamento'] = $totalOrcamento;
+							$totGeral = $totalOrcamento;
 						}else{
 							$ret['totalOrcamento'] = $totalOrcamento;
 							$totGeral = 'R$'.number_format($totalOrcamento,'2',',','.');
 						}
-						$valorParcelado = false;
+                        $valorParcelado = false;
 						if(isset($dados['parcelas_curso'])&&$dados['parcelas_curso']>0){
 							if($dados['tipo_curso']==4){
 								$valorParcelado = '';
@@ -1041,7 +1058,7 @@ class MatriculasController extends Controller
 								$resumo = Qlib::infoPagCurso([
 									'token'=>$dados['token'],
 								]);
-								if(isset($resumo['tabela_parcelamento']) && !empty($resumo['tabela_parcelamento'])){
+                                if(isset($resumo['tabela_parcelamento']) && !empty($resumo['tabela_parcelamento'])){
 									$tabela_parcelamento =  $resumo['tabela_parcelamento'];
 									// $ret['table'] = $listMod['html'].$resumo['tabela_parcelamento'];
 									if($this->is_pdf()){
@@ -1065,12 +1082,28 @@ class MatriculasController extends Controller
 						//$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
 					}
 				}
-			}else{
-				$ret['table'] = Qlib::formatMensagem0('Erro: Orçamento não encontrado!!','danger',10000);
+            }else{
+                $ret['table'] = Qlib::formatMensagem0('Erro: Orçamento não encontrado!!','danger',10000);
 			}
+            //Adcionar as tabelas de parcelamentos
+            $ret['parcelamento'] = '';
+            if(isset($ret['totalCurso']) && $ret['totalCurso']> 0 && ($exibir_parcelamento=='s')){
+                $configPar['valor'] 	= $ret['totalCurso'];
+                $configPar['titulo'] 	= 'PAGAMENTO PARCELADO';
+                $configPar['tam'] 		= 6;
+                $configPar['id_curso'] 	= isset($dados['id_curso']) ? $dados['id_curso'] : null;
+                $configPar['id_turma'] 	= isset($dados['id_turma']) ? $dados['id_turma'] : null;
+                $configPar['token_matricula'] 	= $dados['token'];
+                if(isset($dados['sele_valores'])){
+                    $configPar['tabela_preco'] 	= $dados['sele_valores'];
+                }
+                $parcelamentoT = new FinanceiroController;
+                $parcelamento = '<div class="col-sm-12 padding-none planos-parcelamentos">'.$parcelamentoT->execute($configPar).'</div>';
+                $ret['parcelamento'] = $parcelamento;
+            }
 
 			$ret['dados'] = @$dados;
-			// $dados = Cursos::dadosMatricula(@$dados['token']);
+			// $dados = (new CursosController)->dadosMatricula(@$dados['token']);
 			// if($dados){
 			// 	$ret['dados_gravados'] = @$dados;
 			// }
@@ -1087,7 +1120,8 @@ class MatriculasController extends Controller
         $config['modulos'] = isset($config['modulos_curso']) ? $config['modulos_curso'] : false; //html ou pdf
         $is_pdf = $this->is_pdf();
         $arr_orc=[];
-        if($token_matricula){
+        // dd($orc);
+        if($token_matricula && !$orc){
             if(!$orc){
                 $d_or =  $this->dm($token_matricula);//dados od orçamento
             }
@@ -1095,6 +1129,8 @@ class MatriculasController extends Controller
             if($orc){
                 $arr_orc = Qlib::lib_json_array($orc);
             }
+        }else{
+            $arr_orc = $orc;
         }
         if(!isset($config['modulos']) && $id_curso){
             // $dm = Qlib::dados_tab($GLOBALS['tab10'],'*',"WHERE id = '$id_curso'");
@@ -1183,9 +1219,9 @@ class MatriculasController extends Controller
                         $siga = isset($v['sele'])?$v['sele']:false;
                     }else{
                         $siga = true;
-                        // if($is_pdf){
-                        //     $siga = isset($v['sele'])?$v['sele']:false;
-                        // }
+                        if($is_pdf){
+                            $siga = isset($v['sele'])?$v['sele']:false;
+                        }
                         // dump($is_pdf);
                     }
                     if((isset($v['curso_id']) || isset($v['curso'])) && $v['titulo']!='' && $siga){
@@ -1279,7 +1315,7 @@ class MatriculasController extends Controller
         </tfoot>';
         $tmsomaTaxa = false;
         if($this->is_pdf()){
-            $tm1 = '<table style="width:100%;margin-left:-10px">
+            $tm1 = '<table class="table" style="">
                         <thead>
                         <tr>
                             <th colspan="2" class="text-left"><h3>Taxas</h3></th>
@@ -1363,7 +1399,7 @@ class MatriculasController extends Controller
         return $ret;
     }
 
-    public function verificaDataAssinatura($config){
+    public function verificaDataAssinatura($config,$type_return='bool'){
 		$campo_bus = isset($config['campo_bus'])?$config['campo_bus'] : 'token';
 		$token = isset($config['token'])?$config['token'] : 'token';
 		$contrato = isset($config['contrato'])?$config['contrato'] : false;
@@ -1382,7 +1418,11 @@ class MatriculasController extends Controller
 		}else{
 			$dataContrato = false;
 		}
-		return $dataContrato;
+        if($type_return=='array'){
+            return $arr;
+        }else{
+            return $dataContrato;
+        }
 	}
     public function pacotesAeronaves($id_aviao=false){
         global $tab54;
@@ -1676,13 +1716,14 @@ class MatriculasController extends Controller
         $ret['valor'] = 0;
         $ret['custo'] = 0;
         if(isset($config['aviao'])&&!empty($config['aviao'])){
-            $arr_pacotoes = pacotesAeronaves($config['aviao']);
-            $arr_tabelas = sql_array("SELECT * FROM ".$GLOBALS['tab50']." WHERE ativo = 's' AND ".compleDelete()." ORDER BY nome ASC",'url2','url');
+            $arr_pacotoes = $this->pacotesAeronaves($config['aviao']);
+            $arr_tabelas = Qlib::sql_array("SELECT * FROM ".$GLOBALS['tab50']." WHERE ativo = 's' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'url2','url');
 
             $valor = NULL;
             $custo = NULL;
             $id_turma = isset($_GET['id_turma']) ? $_GET['id_turma'] : 0;
-            $numePrevTurma = cursos::numePrevTurma(['id_turma'=>$id_turma]);
+            $numePrevTurma = (new CursosController)->numePrevTurma(['id_turma'=>$id_turma]);
+            dd($numePrevTurma);
             foreach($arr_pacotoes As $kei=>$val){
                 if($todosModulos){
                     $horas = somaHoraAviao($todosModulos,$config['aviao']);
