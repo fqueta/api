@@ -279,8 +279,8 @@ class MatriculasController extends Controller
 					$btn_a = '<span style="color:#b94a48">'.__($men).'</span>';
 				}else{
                     $btn_aceito_proposta = (new SiteController)->short_code('btn_aceito_proposta',false,false);
-                    $link = '/solicitar-orcamento/proposta/'.$tokenOrc;
-					$btn_a = '<a href="'.$link.'" target="_BLANK"><img src="'.@$btn_aceito_proposta[0]['url'].'" width="250px"/></a>';
+                    $link = 'https://crm.aeroclubejf.com.br/solicitar-orcamento/proposta/'.$tokenOrc;
+					$btn_a = '<a href="'.$link.'" target="_BLANK" style="display:block;height: 65px; width:250px"><span style="display:none;">cliente aqui</span><img src="'.@$btn_aceito_proposta[0]['url'].'" style="width:250px;cursor:pointer"/></a>';
 				}
 				$btn_aceito_aceitar = '<div align="center">'.$btn_a.'</div>';
 				if(!empty($dados['orc'])){
