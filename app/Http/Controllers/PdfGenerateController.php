@@ -98,6 +98,7 @@ class PdfGenerateController extends Controller
                 $arquivo = isset($res_orc['nome_arquivo']) ? $res_orc['nome_arquivo'] : $filename;
                 //,'paginas'=>['bk_img'=>'','title'=>'','content']
                 $t_pdf = request()->get('t_pdf')?request()->get('t_pdf') : false;
+                $f_exibe = request()->get('f_exibe')?request()->get('f_exibe') : 'navegador';
                 if($type == 'pdf'){
                     $ret = $this->gerarPdfComImagemDeFundo(['nome_arquivo' => $arquivo,'paginas'=>$paginas,'t_pdf'=>$t_pdf]);
                 }else{
@@ -116,6 +117,8 @@ class PdfGenerateController extends Controller
      public function gerarPdfComImagemDeFundo($config=[])
      {
          $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : true;
+         $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'navegador'; // navegador ou download
+
          $nome_arquivo = isset($config['nome_arquivo']) ? $config['nome_arquivo'] : 'Pdf_com_imagem';
          $paginas = isset($config['paginas']) ? $config['paginas'] : [
              [
@@ -159,7 +162,11 @@ class PdfGenerateController extends Controller
              ->setOption('margin-right', 0)
              ->setOption('enable-local-file-access', true); // Necessário para imagens locais
          // $pdf->setOption('header-html', view('header')->render());
-         return $pdf->download($nome_arquivo.'.pdf');
-         // return $pdf->output('pdf_com_imagem_n.pdf');
+        if($f_exibe=='download'){
+            return $pdf->download($nome_arquivo.'.pdf');
+        }else{
+            return $pdf->inline($nome_arquivo.'.pdf');
+        }
+        // return $pdf->output('pdf_com_imagem_n.pdf');
     }
 }
