@@ -7,6 +7,8 @@ use App\Qlib\Qlib;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Illuminate\Support\Facades\Storage;
+
 class PdfGenerateController extends Controller
 {
     public function gera_orcamento($token=false,$type='pdf'){
@@ -100,7 +102,7 @@ class PdfGenerateController extends Controller
                 $t_pdf = request()->get('t_pdf')?request()->get('t_pdf') : false;
                 $f_exibe = request()->get('f_exibe')?request()->get('f_exibe') : 'navegador';
                 if($type == 'pdf'){
-                    $ret = $this->gerarPdfComImagemDeFundo(['nome_arquivo' => $arquivo,'paginas'=>$paginas,'t_pdf'=>$t_pdf]);
+                    $ret = $this->gerarPdfComImagemDeFundo(['token'=>$token,'nome_arquivo' => $arquivo,'paginas'=>$paginas,'t_pdf'=>$t_pdf,'f_exibe'=>$f_exibe]);
                 }else{
                     $ret['dadosCli'] = $dadosCli;
                 }
@@ -116,11 +118,12 @@ class PdfGenerateController extends Controller
 
      public function gerarPdfComImagemDeFundo($config=[])
      {
-         $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : true;
-         $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'navegador'; // navegador ou download
+        $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : true;
+        $token = isset($config['token']) ? $config['token'] : uniqid();
+        $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'navegador'; // navegador ou download
 
-         $nome_arquivo = isset($config['nome_arquivo']) ? $config['nome_arquivo'] : 'Pdf_com_imagem';
-         $paginas = isset($config['paginas']) ? $config['paginas'] : [
+        $nome_arquivo = isset($config['nome_arquivo']) ? $config['nome_arquivo'] : 'Pdf_com_imagem';
+        $paginas = isset($config['paginas']) ? $config['paginas'] : [
              [
                  'bk_img'=>'https://crm.aeroclubejf.com.br/enviaImg/uploads/ead/5e3d812dd5612/6542b60fd4295.png',
                  'title'=>'<h2>Página1</h2>',
@@ -163,8 +166,18 @@ class PdfGenerateController extends Controller
              ->setOption('enable-local-file-access', true); // Necessário para imagens locais
          // $pdf->setOption('header-html', view('header')->render());
         if($f_exibe=='download'){
+            //faz download
             return $pdf->download($nome_arquivo.'.pdf');
+        }elseif($f_exibe=='server'){
+            $fileName = 'orcamentos/'.$token.'/proposta.pdf';
+            //grava statico no servidor
+            $pdfbin = $pdf->output();
+            Storage::put($fileName, $pdfbin);
+
+        // Retornar uma mensagem ou caminho do arquivo salvo
+            return response()->json(['message' => 'PDF salvo com sucesso!', 'path' => $fileName]);
         }else{
+            //grava statico no navegador
             return $pdf->inline($nome_arquivo.'.pdf');
         }
         // return $pdf->output('pdf_com_imagem_n.pdf');
