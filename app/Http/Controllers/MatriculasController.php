@@ -354,7 +354,7 @@ class MatriculasController extends Controller
                               $validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
                               $validade = Qlib::dataExibe($validade);
                               $dadosCli = '<p align="center" style="font-size:15pt;">
-                                              <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].' <b>N° </b> '.$dados['id'].'
+                                              <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].' <b>N°: </b> '.$dados['id'].'
                                               <br>
                                               <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
                                               <b>Email:</b> '.$dados['Email'].'  <br>
@@ -983,7 +983,7 @@ class MatriculasController extends Controller
 						$validade = Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
                         $dadosCli = '
                         <p align="center" style="font-size:15pt;">
-                            <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].'  <b>N° </b> '.$dados['id'].'
+                            <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].'  <b>N°: </b> '.$dados['id'].'
                             <br>
                             <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
                             <b>Email:</b> '.$dados['Email'].'  <br>
