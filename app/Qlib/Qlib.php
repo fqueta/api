@@ -1521,7 +1521,7 @@ class Qlib
      * Metodo para pegar os meta matriculas
      * @param string $matricula_id,$meta_key=matricula key,$strig;
      */
-    static function get_matriculameta($matricula_id,$meta_key=null,$string=null)
+    static function get_matriculameta($matricula_id,$meta_key=null,$string=true)
     {
         $ret = false;
         $tab = 'matriculameta';
