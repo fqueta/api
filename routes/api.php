@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\api\OrcamentoController;
 use App\Http\Controllers\api\RabController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
 use App\Http\Controllers\ZenviaController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,5 +38,17 @@ Route::prefix('v1')->group(function(){
     Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
     Route::get('/rab',[RabController::class,'index']);
+    Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
 });
+// Route::post('/tokens/create', function (Request $request) {
+//     //$token = $request->user()->createToken($request->token_name);
 
+//     //return ['token' => $token->plainTextToken];
+//     $user = User::where('Email' , $username)->where( 'Password' , $password)->where('UserStatus' , config('global.active'))->first();
+//     if($user){
+//         $success['token'] =  $user->createToken('MyApp')->accessToken;
+//         return response()->json(['success' => $success], $this->successStatus);
+//     }else{
+//         return response()->json(['error'=>'Unauthorised'], 401);
+//     }
+// });
