@@ -652,7 +652,7 @@ class MatriculasController extends Controller
 										$descontoFooter .= '
 										<tr class="vermelho">
 											<td colspan="4">
-												<div align="right"><strong>DESCONTO ('.$dados['desconto_porcento'].'%) </strong></div>
+												<div align="right"><strong>Desconto ('.$dados['desconto_porcento'].'%) </strong></div>
 											</td>
 											<td>
 												<div align="right"><b> '.number_format($valor_descPor,'2',',','.').'</b></div>
