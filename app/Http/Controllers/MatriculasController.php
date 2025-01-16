@@ -635,7 +635,7 @@ class MatriculasController extends Controller
 										$descontoFooter .= '
 										<tr class="vermelho">
 											<td colspan="4">
-												<div align="right"><strong>DESCONTO ESPECIAL</strong></div>
+												<div align="right"><strong>Desconto do mês</strong></div>
 											</td>
 											<td>
 												<div align="right"><b> '.number_format($dados['desconto'],'2',',','.').'</b></div>
@@ -652,7 +652,7 @@ class MatriculasController extends Controller
 										$descontoFooter .= '
 										<tr class="vermelho">
 											<td colspan="4">
-												<div align="right"><strong>Desconto ('.$dados['desconto_porcento'].'%) </strong></div>
+												<div align="right"><strong>Desconto do mês ('.$dados['desconto_porcento'].'%) </strong></div>
 											</td>
 											<td>
 												<div align="right"><b> '.number_format($valor_descPor,'2',',','.').'</b></div>
@@ -663,7 +663,7 @@ class MatriculasController extends Controller
 									if($desconto_turma && $desconto_turma>0){
                                         $id_matricula = isset($dados['id']) ? $dados['id'] : null;
                                         $tipo = 'v';
-                                        $nome_desconto = 'DESCONTO ESPECIAL';
+                                        $nome_desconto = 'Desconto do mês';
                                         if($id_matricula){
                                             $d_desconto = Qlib::get_matriculameta($id_matricula,'d_desconto');
                                             if($d_desconto){
