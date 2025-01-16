@@ -643,7 +643,8 @@ class MatriculasController extends Controller
 										</tr>';
 									}
 									if(isset($dados['desconto_porcento'])&& $dados['desconto_porcento']>0){
-                                        $valor_descPor = ((double)$dados['desconto_porcento']*$subtotal1)/100;
+                                        $dp = Qlib::precoDbdase($dados['desconto_porcento']);
+                                        $valor_descPor = ($dp*$subtotal1)/100;
 										$valRoud = (round($valor_descPor,2));
 										$totalCurso = ($totalCurso) - $valRoud;
 										$ret['desconto'] += $valRoud;
