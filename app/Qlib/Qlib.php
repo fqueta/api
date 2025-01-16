@@ -624,7 +624,7 @@ class Qlib
         if($tab && $campo_bus && $valor && $select){
             $sql = "SELECT $select FROM $tab WHERE $campo_bus='$valor' $compleSql";
             if(isset($debug)&&$debug){
-                echo $sql;
+                dump($sql);
             }
             $d = DB::select($sql);
             if($d)

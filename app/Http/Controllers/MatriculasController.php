@@ -307,17 +307,26 @@ class MatriculasController extends Controller
 					$dados['sele_valores'] = @$dadosOrc['sele_valores'];
 					$arr_config_tabela = array();
 					// lib_print($dadosOrc['tipo']);
-                       if(isset($dadosOrc['sele_valores']) && !empty($dadosOrc['sele_valores'])){
+                    if(isset($dadosOrc['sele_valores']) && !empty($dadosOrc['sele_valores'])){
 						$ret['tabela_preco'] = $dadosOrc['sele_valores'];
 						$configTabela = Qlib::buscaValorDb0($tab50,'url',$dadosOrc['sele_valores'],'config');
 						if(!empty($configTabela)){
-							$arr_config_tabela = json_decode($configTabela,true);
-							if(isset($arr_config_tabela['desconto']['valor'])&&!empty($arr_config_tabela['desconto']['valor'])){
-								$dadosOrc['desconto_porcento'] = $arr_config_tabela['desconto']['valor'];
+                            $arr_config_tabela = json_decode($configTabela,true);
+                            $tipo_desconto = isset($arr_config_tabela['desconto']['tipo']) ? $arr_config_tabela['desconto']['tipo'] : '';
+                            $valor_desconto = isset($arr_config_tabela['desconto']['valor']) ? $arr_config_tabela['desconto']['valor'] : '';
+							// if(isset($arr_config_tabela['desconto']['valor']) && !empty($arr_config_tabela['desconto']['valor']) && $tipo_desconto=='porcentagem'){
+                            //     $dadosOrc['desconto_porcento'] = $valor_desconto;
+							// }
+                            if($tipo_desconto=='porcentagem' && !empty($valor_desconto)){
+                                $dadosOrc['desconto_porcento'] = $valor_desconto;
+                            }
+                            if($tipo_desconto=='valor' && !empty($valor_desconto)){
+                                $dadosOrc['desconto'] = $valor_desconto;
+                            }
+                            if(isset($arr_config_tabela['validade']['dias'])&&!empty($arr_config_tabela['validade']['dias'])){
+                                $dias = $arr_config_tabela['validade']['dias'];
 							}
-                               if(isset($arr_config_tabela['validade']['dias'])&&!empty($arr_config_tabela['validade']['dias'])){
-								$dias = $arr_config_tabela['validade']['dias'];
-							}
+                            // dump($arr_config_tabela,$configTabela);
 						}
 					}
 					$dados['modulos'] = @$dadosOrc['modulos'];
@@ -325,7 +334,7 @@ class MatriculasController extends Controller
 					$dados['combustivel'] = isset($dadosOrc['combustivel'])?$dadosOrc['combustivel']:false;
 					$dados['desconto_porcento'] = @$dadosOrc['desconto_porcento'];
 					if(isset($dadosOrc['desconto']) && !empty($dadosOrc['desconto'])){
-						$dados['desconto'] = @$dadosOrc['desconto'];
+						$dados['desconto'] = $dadosOrc['desconto'];
 						$dados['desconto'] = Qlib::precoDbdase(@$dados['desconto']);
 					}
 					$dados['entrada'] = @$dadosOrc['entrada'];
@@ -575,31 +584,31 @@ class MatriculasController extends Controller
 								$footer = '';
 								$totalCurso = $subtotal1;
 								//precisamos verificar se o total padrão é maior que o valor
-								if($subtotal1>$subtotal1comDesconto){
-									$descontoFooter = NULL;
-									$footer .= '
-									<tr>
-										<td colspan="3"><div align="right"> Subtotal</div></td>
-										<td><div align="center"><b>'.$totalHoras.'</b></div></td>
-										<td><div align="right"><b>'.number_format($totalCurso,'2',',','.').'</b></div></td>
-									</tr>';
-									//verificar qual o valor da diferença por isso é o desconto aplicado em cima do valor padrão
-									$desconto0 = (double)$subtotal1 - (double)$subtotal1comDesconto;
-									if($desconto0>0){
-										$descontoFooter .= '
-										<tr class="vermelho">
-											<td colspan="4">
-												<div align="right"><strong>DESCONTO</strong></div>
-											</td>
-											<td>
-												<div align="right"><b> '.number_format($desconto0,'2',',','.').'</b></div>
-											</td>
-										</tr>';
-										$totalCurso = ($totalCurso) - $desconto0;
-									}
-									$descontoFooter .= '<tr class="verde"><td colspan="4" class="total-curso"><div align="right"><strong>Total do curso:</strong></div></td><td class="total-curso"><div align="right"><b> '.number_format($totalCurso,'2',',','.').'</b></div></td></tr>';
-									$subtotal1 = $totalCurso;
-								}
+								// if($subtotal1>$subtotal1comDesconto){
+								// 	$descontoFooter = NULL;
+								// 	$footer .= '
+								// 	<tr>
+								// 		<td colspan="3"><div align="right"> Subtotal</div></td>
+								// 		<td><div align="center"><b>'.$totalHoras.'</b></div></td>
+								// 		<td><div align="right"><b>'.number_format($totalCurso,'2',',','.').'</b></div></td>
+								// 	</tr>';
+								// 	//verificar qual o valor da diferença por isso é o desconto aplicado em cima do valor padrão
+								// 	$desconto0 = (double)$subtotal1 - (double)$subtotal1comDesconto;
+								// 	if($desconto0>0){
+								// 		$descontoFooter .= '
+								// 		<tr class="vermelho">
+								// 			<td colspan="4">
+								// 				<div align="right"><strong>DESCONTO</strong></div>
+								// 			</td>
+								// 			<td>
+								// 				<div align="right"><b> '.number_format($desconto0,'2',',','.').'</b></div>
+								// 			</td>
+								// 		</tr>';
+								// 		$totalCurso = ($totalCurso) - $desconto0;
+								// 	}
+								// 	$descontoFooter .= '<tr class="verde"><td colspan="4" class="total-curso"><div align="right"><strong>Total do curso:</strong></div></td><td class="total-curso"><div align="right"><b> '.number_format($totalCurso,'2',',','.').'</b></div></td></tr>';
+								// 	$subtotal1 = $totalCurso;
+								// }
 								$desconto_turma = Qlib::get_matriculameta($dados["id"],'desconto');
                                 if($desconto_turma){
                                     $desconto_turma = Qlib::precoBanco($desconto_turma);
