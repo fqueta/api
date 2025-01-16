@@ -786,8 +786,11 @@ class MatriculasController extends Controller
 											$valt = Qlib::precoDbdase($vt['name_valor']);
 											$taxasValor += (double)$valt;
 											$label = isset($vt['name_label'])?$vt['name_label']:'N/I';
-											if($valt){
-												$v_exibe = number_format($valt,'2',',','.');
+											if($valt && !is_null($valt)){
+												if(is_string($valt)){
+                                                    $valt = (double)$valt;
+                                                }
+                                                $v_exibe = number_format($valt,'2',',','.');
 											}else{
 												$v_exibe = '0,00';
 											}
