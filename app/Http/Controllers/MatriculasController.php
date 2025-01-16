@@ -601,6 +601,11 @@ class MatriculasController extends Controller
 									$subtotal1 = $totalCurso;
 								}
 								$desconto_turma = Qlib::get_matriculameta($dados["id"],'desconto');
+                                if($desconto_turma){
+                                    $desconto_turma = Qlib::precoBanco($desconto_turma);
+                                    // $desconto_turma = number_format($desconto_turma,',','.');
+                                }
+                                // dump($desconto_turma);
                                 if((isset($dados['desconto']) && $dados['desconto'] >0) || (isset($dados['entrada']) && $dados['entrada'] >0) || (isset($dados['desconto_porcento']) && $dados['desconto_porcento']>0) || $desconto_turma){
 									// $totalCurso = $ret['total'];
 									if(!$footer){
@@ -654,13 +659,16 @@ class MatriculasController extends Controller
                                             if($d_desconto){
                                                 $arr_desconto = Qlib::decodeArray($d_desconto);
                                                 $tipo = isset($arr_desconto['tipo']) ? $arr_desconto['tipo'] : $tipo;
+                                                // $taxas = isset($arr_desconto['taxas']) ? $arr_desconto['taxas'] : $tipo;
+
                                                 if($tipo == 'v'){
                                                     $nome_desconto = @$arr_desconto['nome'];
                                                 }
                                             }
+                                            // dump($desconto_turma, $nome_desconto);
                                         }
                                         if($tipo=='v'){
-                                            $valor_descPor = $desconto_turma;
+                                            $valor_descPor = (double)$desconto_turma;
                                         }else{
                                             $valor_descPor = ((double)$desconto_turma*$totalCurso)/100;
                                             $nome_desconto .= ' ('.$desconto_turma.'%)';
