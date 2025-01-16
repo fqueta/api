@@ -247,6 +247,20 @@ class MatriculasController extends Controller
     //     return $ret;
 
     // }
+    public function tag_apresentacao_orcamento($dados){
+        $dadosD = explode(' ',$dados['atualizado']);
+        $dias = isset($dias)?$dias: 7;
+        $validade = Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
+        $ret = '
+                <p align="center" style="font-size:15pt;">
+                    <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].'  <b>N°: </b> '.$dados['id'].'
+                    <br>
+                    <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
+                    <b>Email:</b> '.$dados['Email'].'  <br>
+                    <b>Data:</b> '.Qlib::dataExibe($dados['atualizado']).' <b>Validade:</b> '.Qlib::dataExibe($validade).'<br>
+                </p>';
+        return $ret;
+    }
     /**
      * Metodo para gerar um orçamento atualizado
      * @param string $tokenOrc token do orçamento
@@ -353,13 +367,7 @@ class MatriculasController extends Controller
                               $dadosD = explode(' ',$dados['atualizado']);
                               $validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
                               $validade = Qlib::dataExibe($validade);
-                              $dadosCli = '<p align="center" style="font-size:15pt;">
-                                              <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].' <b>N°: </b> '.$dados['id'].'
-                                              <br>
-                                              <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
-                                              <b>Email:</b> '.$dados['Email'].'  <br>
-                                              <b>Data:</b> '.Qlib::dataExibe($dados['atualizado']).' <b>Validade:</b> '.$validade.'<br>
-                                          </p>';
+                              $dadosCli = $this->tag_apresentacao_orcamento($dados);
                             if($this->is_pdf()){
                                 $dadosCli .= $btn_aceito_aceitar;
                             }
@@ -593,7 +601,7 @@ class MatriculasController extends Controller
 									$subtotal1 = $totalCurso;
 								}
 								$desconto_turma = Qlib::get_matriculameta($dados["id"],'desconto');
-                                      if((isset($dados['desconto']) && $dados['desconto'] >0) || (isset($dados['entrada']) && $dados['entrada'] >0) || (isset($dados['desconto_porcento']) && $dados['desconto_porcento']>0) || $desconto_turma){
+                                if((isset($dados['desconto']) && $dados['desconto'] >0) || (isset($dados['entrada']) && $dados['entrada'] >0) || (isset($dados['desconto_porcento']) && $dados['desconto_porcento']>0) || $desconto_turma){
 									// $totalCurso = $ret['total'];
 									if(!$footer){
 										$footer = '
@@ -604,6 +612,7 @@ class MatriculasController extends Controller
 										</tr>';
 									}
 									if(isset($dados['desconto'])&&$dados['desconto']>0){
+
 										$dados['desconto'] = (double)$dados['desconto'];
 										$totalCurso = ($totalCurso) - $dados['desconto'];
 										//$totalOrcamento = ($totalCurso) - ($dados['desconto']);
@@ -620,7 +629,7 @@ class MatriculasController extends Controller
 										</tr>';
 									}
 									if(isset($dados['desconto_porcento'])&& $dados['desconto_porcento']>0){
-										$valor_descPor = ((double)$dados['desconto_porcento']*$subtotal1)/100;
+                                        $valor_descPor = ((double)$dados['desconto_porcento']*$subtotal1)/100;
 										$valRoud = (round($valor_descPor,2));
 										$totalCurso = ($totalCurso) - $valRoud;
 										$ret['desconto'] += $valRoud;
@@ -635,16 +644,35 @@ class MatriculasController extends Controller
 											</td>
 										</tr>';
 									}
+                                    // dump($dados);
 									if($desconto_turma && $desconto_turma>0){
-										$valor_descPor = ((double)$desconto_turma*$totalCurso)/100;
-										$valRoud = (round($valor_descPor,2));
-										$totalCurso = ($totalCurso) - $valRoud;
+                                        $id_matricula = isset($dados['id']) ? $dados['id'] : null;
+                                        $tipo = 'v';
+                                        $nome_desconto = 'DESCONTO ESPECIAL';
+                                        if($id_matricula){
+                                            $d_desconto = Qlib::get_matriculameta($id_matricula,'d_desconto');
+                                            if($d_desconto){
+                                                $arr_desconto = Qlib::decodeArray($d_desconto);
+                                                $tipo = isset($arr_desconto['tipo']) ? $arr_desconto['tipo'] : $tipo;
+                                                if($tipo == 'v'){
+                                                    $nome_desconto = @$arr_desconto['nome'];
+                                                }
+                                            }
+                                        }
+                                        if($tipo=='v'){
+                                            $valor_descPor = $desconto_turma;
+                                        }else{
+                                            $valor_descPor = ((double)$desconto_turma*$totalCurso)/100;
+                                            $nome_desconto .= ' ('.$desconto_turma.'%)';
+                                        }
+                                        $valRoud = (round($valor_descPor,2));
+                                        $totalCurso = ($totalCurso) - $valRoud;
 										$ret['desconto'] += $valRoud;
 										$totalOrcamento = $totalCurso;
 										$descontoFooter .= '
 										<tr class="vermelho">
 											<td colspan="4">
-												<div align="right"><strong>DESCONTO ESPECIAL ('.$desconto_turma.'%) </strong></div>
+												<div align="right"><strong>'.$nome_desconto.'</strong></div>
 											</td>
 											<td>
 												<div align="right"><b> '.number_format($valor_descPor,'2',',','.').'</b></div>
@@ -979,16 +1007,10 @@ class MatriculasController extends Controller
 						';
 						$ret['nome_arquivo'] = 'Proposta '.$dados['id']. ' '.$dados['Nome'].' '.$dados['nome_curso'];
 						//$validade = ultimoDiaMes($valdata[1],$valdata[0]).'/'.$valdata[1].'/'.$valdata[0];
-						$dias = isset($dias)?$dias: 7;
-						$validade = Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
-                        $dadosCli = '
-                        <p align="center" style="font-size:15pt;">
-                            <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].'  <b>N°: </b> '.$dados['id'].'
-                            <br>
-                            <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
-                            <b>Email:</b> '.$dados['Email'].'  <br>
-                            <b>Data:</b> '.Qlib::dataExibe($dados['atualizado']).' <b>Validade:</b> '.$validade.'<br>
-                        </p>';
+						$dadosD = explode(' ',$dados['atualizado']);
+                        $dias = isset($dias)?$dias: 7;
+                        $validade = Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
+                        $dadosCli = $this->tag_apresentacao_orcamento($dados);
                         if($this->is_pdf()){
                             $dadosCli .= $btn_aceito_aceitar;
                         }

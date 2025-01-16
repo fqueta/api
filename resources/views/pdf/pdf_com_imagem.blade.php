@@ -68,6 +68,12 @@
             margin-right: -15px;
             margin-left: -15px;
         }
+        .vermelho{
+            color: #F00;
+        }
+        .verde{
+            color:green;
+        }
     </style>
     @if(isset($paginas))
         @foreach ($paginas as $k=>$v)

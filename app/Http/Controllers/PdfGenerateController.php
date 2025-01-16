@@ -163,7 +163,9 @@ class PdfGenerateController extends Controller
              ->setOption('margin-bottom', 0)
              ->setOption('margin-left', 0)
              ->setOption('margin-right', 0)
-             ->setOption('enable-local-file-access', true); // Necessário para imagens locais
+             ->setOption('enable-local-file-access', true);
+            //  ->setOption('ignore-certificate-errors', true); // Necessário para imagens locais
+
          // $pdf->setOption('header-html', view('header')->render());
         if($f_exibe=='download'){
             //faz download
