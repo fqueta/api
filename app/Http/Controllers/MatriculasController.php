@@ -371,15 +371,15 @@ class MatriculasController extends Controller
 						$ret['nome_arquivo'] = 'Proposta '.$dados['id']. ' '.$dados['Nome'].' '.$dados['nome_curso'];
 						//$validade = ultimoDiaMes($valdata[1],$valdata[0]).'/'.$valdata[1].'/'.$valdata[0];
 						if(!$dias){
-                                  $dias = 7;
-                              }
-                              $dadosD = explode(' ',$dados['atualizado']);
-                              $validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
-                              $validade = Qlib::dataExibe($validade);
-                              $dadosCli = $this->tag_apresentacao_orcamento($dados);
-                            if($this->is_pdf()){
-                                $dadosCli .= $btn_aceito_aceitar;
-                            }
+                            $dias = 7;
+                        }
+                        $dadosD = explode(' ',$dados['atualizado']);
+                        $validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
+                        $validade = Qlib::dataExibe($validade);
+                        $dadosCli = $this->tag_apresentacao_orcamento($dados);
+                        if($this->is_pdf()){
+                            $dadosCli .= $btn_aceito_aceitar;
+                        }
 						$ret['validade'] = $validade;
 						// $ret['dadosCli'] = '<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>';
 						$ret['dadosCli'] = $dadosCli;
@@ -999,7 +999,7 @@ class MatriculasController extends Controller
 						//$validade = ultimoDiaMes($valdata[1],$valdata[0]).'/'.$valdata[1].'/'.$valdata[0];
 						$dias = isset($dias)?$dias: 7;
 						$validade = Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
-						$ret['validade'] = $validade;
+						$ret['validade'] = Qlib::dataExibe($validade);
 						$ret['total'] = $totalOrcamento;
 						$tema = '
 							<p class="apresentacao" style="font-family:helvetica;font-size:13pt;">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
