@@ -543,7 +543,7 @@ class MatriculasController extends Controller
 									if(Qlib::isAdmin(10)){
 									}else {
 										if($arrTotais && is_array($arrTotais)){
-											$total = $arrTotais[$kei];
+											$total = isset($arrTotais[$kei]) ? $arrTotais[$kei] : 0; ;
 										}
 									}
 									if($is_signed){
