@@ -39,7 +39,8 @@ class OrcamentoController extends Controller
     {
         $d = request()->all();
         $token = $id;
-        $ret = (new MatriculasController)->gerar_orcamento($token);
+        $exibe_parcelamento = isset($d['ep']) ? $d['ep'] : null;
+        $ret = (new MatriculasController)->gerar_orcamento($token, $exibe_parcelamento);
 
         return response()->json($ret);
     }
