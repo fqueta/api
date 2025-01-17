@@ -824,14 +824,14 @@ class MatriculasController extends Controller
 							$totalCurso = isset($totalCurso) ? $totalCurso:$ret['total'];
 							//fim incluir matricula
 							if($taxasValor>0){
+                                $val_t = Qlib::precoDbdase($taxasValor);
 								if(Qlib::qoption('somar_taxas_orcamento')=='s'){
 									if($tipo_curso==2){
-                                        $val = Qlib::precoDbdase($taxasValor);
-										$totalOrcamento += $val;
+										$totalOrcamento += $val_t;
 									}
-									$subtotal2 += $taxasValor;
+									$subtotal2 += $val_t;
 								}
-								$taxasValorMatri = ($taxasValor);
+								$taxasValorMatri = ($val_t);
 								/*if(isset($dados['inscricao_curso'])){
 									$taxasValorMatri = ($taxasValor)+($dados['inscricao_curso']);
 								}*/
