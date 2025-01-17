@@ -826,7 +826,8 @@ class MatriculasController extends Controller
 							if($taxasValor>0){
 								if(Qlib::qoption('somar_taxas_orcamento')=='s'){
 									if($tipo_curso==2){
-										$totalOrcamento += $taxasValor;
+                                        $val = Qlib::precoDbdase($taxasValor);
+										$totalOrcamento += $val;
 									}
 									$subtotal2 += $taxasValor;
 								}
