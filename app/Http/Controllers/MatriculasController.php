@@ -877,14 +877,7 @@ class MatriculasController extends Controller
                                                 <td style="width:85%"><div align="right"> <strong style="">'.$title_desconto_taxa2.'</strong></div></td>
                                                 <td style="width:'.$arr_wid2[3].'"><div align="right" style=""> <b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
                                             </tr>';
-                                        $tr3_adm .='<tr class="vermelho">
-                                            <td colspan="2" style="width:100%"><div align="right"><strong>'.$title_desconto_taxa1.':</strong></div></td>
-                                            <td colspan="" style="width:100%"><div align="right"><b>'.number_format($val_t,'2',',','.').'</b></div></td>
-                                        </tr>';
-                                        $tr3_adm .='<tr class="vermelho">
-                                            <td colspan="2" style="width:100%"><div align="right"><strong>'.$title_desconto_taxa2.':</strong></div></td>
-                                            <td colspan="" style="width:100%"><div align="right"><b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
-                                        </tr>';
+
 
                                     }
 									$lbCurm = 'Curso + Matrícula';
@@ -904,6 +897,16 @@ class MatriculasController extends Controller
 												<td colspan="2" style="width:100%"><div align="right"><strong>'.$laber_taxas.':</strong></div></td>
 												<td colspan="" style="width:100%"><div align="right"><b>'.number_format($taxasValorMatri,'2',',','.').'</b></div></td>
 											</tr>';
+                                if($valor_desconto_taxa>0){
+                                    $tr3_adm .='<tr class="vermelho">
+                                        <td colspan="2" style="width:100%"><div align="right"><strong>'.$title_desconto_taxa1.':</strong></div></td>
+                                        <td colspan="" style="width:100%"><div align="right"><b>'.number_format($val_t,'2',',','.').'</b></div></td>
+                                    </tr>';
+                                    $tr3_adm .='<tr class="vermelho">
+                                        <td colspan="2" style="width:100%"><div align="right"><strong>'.$title_desconto_taxa2.':</strong></div></td>
+                                        <td colspan="" style="width:100%"><div align="right"><b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
+                                    </tr>';
+                                }
 								$tr3_adm .='<tr id="">
 												<td colspan="2" style="width:100%"><div align="right"><strong>'.$lbCurm.'</strong></div></td>
 												<td colspan="" style="width:100%"><div align="right"><b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
