@@ -95,7 +95,7 @@ class CursosController extends Controller
      */
 
     public function turmaDisponivel($id_curso=false,$dataLimit=false,$diasAntes=10){
-
+        global $tab11;
 		$ret['disponivel'] = true;
 
 		$ret['turmas'] = false;

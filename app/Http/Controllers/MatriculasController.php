@@ -285,6 +285,9 @@ class MatriculasController extends Controller
 				$tipo_curso = $dados['tipo_curso'];
 				$valor_combustivel = 0;
                 $btn_aceito_aceitar = '';
+                if(isset($dados['config']) && !empty($dados['config'])){
+                    $dados['config'] = Qlib::lib_json_array($dados['config']);
+                }
                 // $aceito_proposta = buscaValorDb($GLOBALS['tab12'],'token',$_GET['tk'],'contrato');
 				// $arr_aceito = lib_json_array($aceito_proposta);
 				if($is_signed){
@@ -782,9 +785,9 @@ class MatriculasController extends Controller
 								if(!empty($dados['orc']) && ($arr_tx2=Qlib::lib_json_array($dados['orc']))){
 									if(isset($arr_tx2['taxas2'])&&is_array($arr_tx2['taxas2'])){
 										$i2++;
-										foreach ($arr_tx2['taxas2'] as $kt => $vt) {
+                                        foreach ($arr_tx2['taxas2'] as $kt => $vt) {
 											$valt = Qlib::precoDbdase($vt['name_valor']);
-											$taxasValor += (double)$valt;
+                                           $taxasValor += (double)$valt;
 											$label = isset($vt['name_label'])?$vt['name_label']:'N/I';
 											if($valt && !is_null($valt)){
 												if(is_string($valt)){
@@ -806,7 +809,7 @@ class MatriculasController extends Controller
 								}
 								if($taxasHtml){
 									$mens_taxa = false;
-								}
+                                }
 								//$taxasHtml = $taxasHtml ? $taxasHtml : '<span>*valor de taxas não incluso</span>';
 								$tr2 .=		$taxasHtml;
 								$tr3_adm .= $taxasHtml;
@@ -835,12 +838,47 @@ class MatriculasController extends Controller
 								/*if(isset($dados['inscricao_curso'])){
 									$taxasValorMatri = ($taxasValor)+($dados['inscricao_curso']);
 								}*/
-									$tr3 .= '
+                                $valor_desconto_taxa = 0;
+                                $title_desconto_taxa1 = __('Desconto nas taxas');
+
+                                if($val_t>0){
+                                    //temos as taxas
+                                    $tipo_desconto_taxa = isset($dados['config']['tipo_desconto_taxa']) ? $dados['config']['tipo_desconto_taxa'] : '';
+                                    $desconto_taxa = isset($dados['config']['desconto_taxa']) ? $dados['config']['desconto_taxa'] : 0;
+                                    $desconto_taxa = Qlib::precoDbdase($desconto_taxa);
+                                    if($tipo_desconto_taxa=='p'){
+                                        $title_desconto_taxa1 = __('Desconto nas taxas').' ('.$desconto_taxa.'%)';
+                                        $valor_desconto_taxa = $val_t * $desconto_taxa/100;
+                                    }
+                                    if($tipo_desconto_taxa=='v' && $desconto_taxa!=0){
+                                        $valor_desconto_taxa = $val_t - $desconto_taxa;
+                                    }
+                                }
+                                $laber_taxas = __('Total de taxas Não inclusas no orçamento');
+
+								$tr3 .= '
 									<tr id="matri" class="total">
 										<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-										<td style="width:85%"><div align="right"> <strong style="color:#F00;">Total de TAXAS não inclusas no Orçamento</strong></div></td>
+										<td style="width:85%"><div align="right"> <strong style="color:#F00;">'.$laber_taxas.'</strong></div></td>
 										<td style="width:'.$arr_wid2[3].'"><div align="right" style="color:#F00;"> <b>'.number_format($taxasValorMatri,'2',',','.').'</b></div></td>
 									</tr>';
+                                    if($valor_desconto_taxa>0){
+                                        $title_desconto_taxa2 = $laber_taxas;
+                                        $val_t = $val_t-$valor_desconto_taxa;
+                                        $tr3 .= '
+                                            <tr class="">
+                                                <td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
+                                                <td style="width:85%"><div align="right"> <strong style="">'.$title_desconto_taxa1.'</strong></div></td>
+                                                <td style="width:'.$arr_wid2[3].'"><div align="right" style=""> <b>'.number_format($val_t,'2',',','.').'</b></div></td>
+                                            </tr>';
+                                        $tr3 .= '
+                                            <tr class="vermelho">
+                                                <td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
+                                                <td style="width:85%"><div align="right"> <strong style="">'.$title_desconto_taxa2.'</strong></div></td>
+                                                <td style="width:'.$arr_wid2[3].'"><div align="right" style=""> <b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
+                                            </tr>';
+
+                                    }
 									$lbCurm = 'Curso + Matrícula';
 									if(Qlib::qoption('somar_taxas_orcamento')=='s'){
 										$lbCurm .= ' + Taxas';
@@ -851,7 +889,6 @@ class MatriculasController extends Controller
 										<td style="width:85%"><div align="right"> <b>'.$lbCurm.'</b></div></td>
 										<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
 									</tr>';
-								$laber_taxas = 'Total de taxas Não inclusas no orçamento';
 								if(Qlib::qoption('somar_taxas_orcamento')=='s'){
 									$laber_taxas = 'Total de taxas (A vista)';
 								}
