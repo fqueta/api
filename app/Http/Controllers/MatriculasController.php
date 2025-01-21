@@ -507,9 +507,9 @@ class MatriculasController extends Controller
 									<p style="font-family:arial;font-size:9pt;text-align:right">*'.$label_sele_valores.'</p>
 								</div>
 							</div>
-							<div class="row">
+							<!--<div class="row">
 							{link_proposta}
-							</div>
+							</div>-->
 							';
 							$tr = false;
 							$tr2 = false;
