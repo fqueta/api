@@ -848,6 +848,9 @@ class MatriculasController extends Controller
                                     $desconto_taxa = Qlib::precoDbdase($desconto_taxa);
                                     if($tipo_desconto_taxa=='p'){
                                         $title_desconto_taxa1 = __('Desconto nas taxas').' ('.$desconto_taxa.'%)';
+                                        if(is_string($desconto_taxa)){
+                                            $desconto_taxa = (double)$desconto_taxa;
+                                        }
                                         $valor_desconto_taxa = $val_t * $desconto_taxa/100;
                                     }
                                     if($tipo_desconto_taxa=='v' && $desconto_taxa!=0){
