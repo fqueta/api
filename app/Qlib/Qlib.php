@@ -16,6 +16,7 @@ use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Qoption;
 use DateTime;
+use Illuminate\Support\Facades\Storage;
 
 class Qlib
 {
@@ -2235,4 +2236,61 @@ class Qlib
 		}
 		return $ret;
 	}
+    /**
+     * Metodo para criar e editacar um carquivo json
+     */
+    static function saveEditJson($data,$arquivo='arquivo.json',$pasta='json_testes'){
+        // $data = [
+        //     'nome' => 'João',
+        //     'email' => 'joao@example.com',
+        //     'idade' => 30,
+        // ];
+
+        try {
+            $caminho = $pasta.'/'.$arquivo;
+            if (Storage::exists($caminho)) {
+                // Lê o conteúdo do arquivo
+                $jsonData = Storage::get($caminho);
+                // Decodifica o JSON em um array
+                if(is_string($data)){
+                    if(json_validate($data)){
+                        $data = Qlib::lib_json_array($data);
+                    }else{
+                        $ret['mens'] = 'Tipo de dados invalidos'.$data;
+                    }
+                }else{
+                    $data_a = json_decode($jsonData, true);
+                }
+                if (is_array($data)) {
+                    // Modifica os dados
+                    // $data['idade'] = 31;
+                    array_push($data_a,$data);
+                    // dd($data_a);
+
+                    // Codifica novamente para JSON
+                    $novoJsonData = json_encode($data_a, JSON_PRETTY_PRINT);
+                    // Salva as alterações no arquivo
+                    Storage::put($caminho, $novoJsonData);
+                    $ret['exec'] = true;
+                    $ret['mens'] = 'Executado com sucesso';
+                } else {
+                    $ret['exec'] = false;
+                    $ret['mens'] = "O arquivo JSON está corrompido ou não é válido.";
+                }
+            } else {
+                $datasalv[] = $data;
+                $jsonData = json_encode($datasalv, JSON_PRETTY_PRINT);
+                // Salva no diretório especificado
+                Storage::put($caminho, $jsonData);
+                $ret['exec'] = true;
+                $ret['mens'] = 'Executado com sucesso';
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
+            $ret['exec'] = false;
+            $ret['error'] = $th->getMessage();
+            // $ret['mens'] = 'Erro';
+        }
+        return $ret;
+    }
 }
