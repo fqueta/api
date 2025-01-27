@@ -1965,6 +1965,616 @@ class MatriculasController extends Controller
 		}
 		return $ret;
 	}
+    /**
+     * Metodo para criar um orçamento
+     */
+    public function salvarMatricula($config=false){
+
+        $ret = false;
+
+
+        //Exemplo
+
+        /*
+
+        $config = array('id_cliente'=>'','id_curso'=>'','status'=>'');
+
+        $ret = salvarMatricula($config);
+
+        */
+
+        if($config){
+            /*Fim Configurações automaticas*/
+            // if(isAdmin(1)){
+            // 	echo "statat: $statusAtual <br> situ  $situacaoAtual";
+            // 	echo "<br>form situ:".$config['situacao'];
+            // 	dd($config);
+            // 	// $config['situacao'] = 'a';
+            // }
+            $statusAtual = buscaValorDb($GLOBALS['tab12'],'token',$config['token'],'status');
+            $situacaoAtual = buscaValorDb($GLOBALS['tab12'],'token',$config['token'],'situacao');
+            $config['situacao'] = isset($config['situacao'])?$config['situacao']:$situacaoAtual;
+            //verifica se o contrato está assinado
+            $is_signed = Cursos::verificaDataAssinatura(['campo_bus'=>'token','token'=>@$config['token']]);
+            if(isset($config['origem']) && $config['origem']=='atendimento_flow'){
+                if(isset($config['id']) && !isset($config['token'])){
+                    $dm = dados_tab($GLOBALS['tab12'],'token,situacao,id_cliente,id_curso',"WHERE id='".$config['id']."'");
+                    if($dm){
+                        foreach ($dm[0] as $k1 => $v1) {
+                            $config[$k1] = $v1;
+                        }
+                        //$config['token'] = buscaValorDb($GLOBALS['tab12'],'id',$config['id'],'token');
+                    }
+
+                }
+            }
+
+            $config['token'] 	= isset($config['token'])	?$config['token']	:uniqid();
+
+            $config['conf'] 	= isset($config['conf'])	?$config['conf']	:'s';
+
+            $local			 	= isset($config['local'])	?$config['local']	:false;
+
+
+            $cond_valid = isset($config['cond_valid'])?$config['cond_valid'] : "WHERE `id_cliente` = '".$config['id_cliente']."' AND id_curso='".$config['id_curso']."' AND ".compleDelete();
+            $tipo_curso = 0;
+
+
+            if(isset($config['id_curso'])){
+
+                $cursoRecorrente = cursoRecorrente($config['id_curso']);
+                if($cursoRecorrente){
+                    //Vamos verificar se ja tem horas compradas para esse curso que está no status != 5 (Curso concluido)
+                    $tem_proposta = tem_proposta($config['id_curso'],$config['id_cliente'],$config['token']);
+                    // if(is_sandbox()){
+                    // 	lib_print($tem_proposta);
+                    // }
+                    if($tem_proposta['exec']){
+                        //Se tiver bloquear o processo de salvamento
+                        return lib_array_json($tem_proposta);
+                    }
+                    $cond_valid = "WHERE `token` = '".$config['token']."' AND ".compleDelete();
+                }
+                $tipo_curso = Cursos::tipo($config['id_curso']);
+            }
+
+            $type_alt = isset($config['type_alt'])? $config['type_alt'] : 2;
+
+            $tabUser = $GLOBALS['tab12'];
+
+            /*Inicio Configurações automaticas*/
+
+            $config['aluno']			 = isset($config['aluno']) ? $config['aluno'] : buscaValorDb($GLOBALS['tab15'],'id',$config['id_cliente'],'Nome').' '.buscaValorDb($GLOBALS['tab15'],'id',$config['id_cliente'],'sobrenome');
+
+            $config['responsavel'] = isset($config['responsavel']) ? $config['responsavel'] : buscaValorDb($GLOBALS['tab16'],'id',@$config['id_responsavel'],'Nome');
+
+            if(isset($config['dados']['orc'])){
+
+                $config['orc'] = $config['dados']['orc'];
+
+            }
+
+            $ead = new temaEAD;
+
+            if(isset($config['tag'])){
+
+                //Os pontos são calculados mediate tag
+
+                $config['pontos'] = $ead->pontuaTags($config);
+
+            }
+
+            if(isset($config['situacao'])&&$config['situacao']=='n'){
+
+                //situação = n indica que ainda não recebeu atendimento mais se chegou ate aqui é porque de alguma forma esta em andamento = a
+
+                $config['situacao'] = 'a';
+
+            }
+
+
+            if($statusAtual==1&&$config['situacao']=='2'){
+
+                $config['situacao'] = 'g';
+
+                //$config['data_matricula'] = $GLOBALS['dataLocal'];
+
+                $config['data_matricula'] = date('d/m/Y');
+
+                $config['data_contrato'] = $GLOBALS['dtBanco'];
+
+            }elseif($config['status']==8){
+                //Rescição de contrato para isso é necessario que tenha o contrato assinado
+                if(isAdmin(3)){
+                    $mensagem = formatMensagemInfo('Não é possível salvar este status para clientes sem <b>CONTRATO ASSINADO</b>','danger');
+                    if(!isset($config['id']) || !isset($config['id'])){
+                        $ret['exec'] = false;
+                        $ret['mens'] = $mensagem;
+                        $ret['mensa'] = $mensagem;
+                        return lib_array_json($ret);
+                    }
+                    $numero_contrato = Cursos::numero_contrato($config['id']);
+                    // dd($numero_contrato);
+                    if(!$numero_contrato){
+                        $ret['exec'] = false;
+                        $ret['mensa'] = $mensagem;
+                        $ret['mens'] = $mensagem;
+                        return lib_array_json($ret);
+                    }
+                    // lib_print($config);//exit;
+                }
+            }elseif($statusAtual>'1'&&$config['status']==1){
+
+
+                $config['situacao'] = 'a';
+
+                $config['data_matricula'] = '00/00/0000';
+
+                $config['data_contrato'] = '0000-00-00';
+            // removido a instrução de que se o status for 1 ele voltar para a situaçção de atendimento solicitação da luiza em 15/02/2024
+            }elseif($situacaoAtual!='g'&&isset($config['situacao'])&&$config['situacao']=='g'){
+
+                $config['situacao'] = 'g';
+
+                //$config['data_matricula'] = $GLOBALS['dataLocal'];
+
+                $config['data_matricula'] = date('d/m/Y');
+                // $config['data_contrato'] = $GLOBALS['dtBanco'];
+                $config['data_contrato'] = $is_signed;
+                $config['status']=2;
+                //print_r($config);
+
+                /*Gravar a proposta de orçamento fixo*/
+
+                $modulos = gerarOrcamento($config['token']);
+
+                if($modulos){
+
+                    $config['proposta'] = encodeArray($modulos);
+
+                }
+
+            }elseif($situacaoAtual!='p'&&isset($config['situacao'])&&$config['situacao']=='p'){
+
+                $config['data_matricula'] = date('d/m/Y');
+
+                $config['data_contrato'] = $GLOBALS['dtBanco'];
+
+                /*Gravar a proposta de orçamento fixo*/
+
+                $modulos = gerarOrcamento($config['token']);
+
+                if($modulos){
+
+                    $config['proposta'] = encodeArray($modulos);
+
+                }
+
+            }
+            if(isset($config['total'])){
+                $config['total'] = precoDbdase($config['total']);
+            }
+            $config2 = array(
+
+                        'tab'=>$tabUser,
+
+                        'valida'=>true,
+
+                        'condicao_validar'=>$cond_valid,
+
+                        'ac'=>$config['ac'],
+
+                        'sqlAux'=>false,
+
+                        'type_alt'=>$type_alt,
+
+                        'dadosForm' => $config
+
+            );
+            // if(isAdmin(1)){
+            // 	lib_print($config2);
+            // 	lib_print($config);
+            // 	return $ret;
+            // }
+            $config['salv_historico'] = isset($config['salv_historico']) ? $config['salv_historico'] :true;
+
+            if($config['salv_historico']){
+
+                $config_historico = array('ac'=>$config['ac'],'post'=>$config,'tab'=>$tabUser,'status'=>@$config['status']);
+
+                $config2['sqlAux'] = sqlSalvarHistorico_matricula($config_historico);
+
+            }
+            $tipo_curso = 2;
+            if(isAdmin(10)){
+                $tipo_curso = Cursos::tipo($config['id_curso']);
+            }
+            if($is_signed){
+                //se está assinado remover a atualização de orçamento
+                unset($config2['dadosForm']['orc']);
+                if($tipo_curso==4){
+                    $total_salvo = buscaValorDb($GLOBALS['tab12'],'token',$config['token'],'total');
+
+                    if($total_salvo!='0.00'){
+                        unset($config2['dadosForm']['inscricao'],$config2['dadosForm']['subtotal'],$config2['dadosForm']['desconto'],$config2['dadosForm']['total'],$config2['dadosForm']['proposta']);
+                    }
+
+                }
+                if($config['situacao']=='g'){
+                    if(!isset($config['meta']['ganhos_plano']) && isset($config['id'])){
+                        $ret['remover_meta'] = cursos::delete_matriculameta($config['id'],'ganhos_plano');
+                    }
+                    // $config['meta']['ganhos_plano'] = isset($config['meta']['ganhos_plano'])?$config['meta']['ganhos_plano']:'';
+                }
+            }
+
+            $ret = json_decode(lib_salvarFormulario($config2),true);
+
+            // if(is_sandbox()){
+            // 	// lib_print($config2);
+            // 	lib_print($ret);
+            // }
+            if(isset($config['meta'])){
+                $ret['meta'] = cursos::sava_meta_fields($config);
+
+                // echo $situacaoAtual.' '.$config['situacao'];
+            }
+            if(isAdmin(10)){
+                if(isset($config['meta']['desconto']) && empty($config['meta']['desconto']) && isset($config['id']) && !empty($config['id'])){
+                    /**remove desconto meta */
+                    $ret['remover_meta_desconto'] = cursos::delete_matriculameta($config['id'],'desconto');
+                    $ret['remover_meta_desconto'] = cursos::delete_matriculameta($config['id'],'d_desconto');
+                }else{
+                    //verificar se existe algum desconto salvo...
+                    $existe_desconto = cursos::get_matriculameta($config['id'],'desconto');
+                    // if(is_sandbox()){
+                    // 	dd($existe_desconto);
+                    // }
+                    if(!isset($config['meta']['desconto']) && $existe_desconto){
+                        //se tem desconto salvo mais não tem mais um post com o meta campos que grava ou atualiza ele nesse caso tem que ser removido
+                        $ret['remover_meta_desconto'] = cursos::delete_matriculameta($config['id'],'desconto');
+                        $ret['remover_meta_desconto'] = cursos::delete_matriculameta($config['id'],'d_desconto');
+                    }
+                }
+
+            }
+            // salvar evento de ganho
+            if($config['situacao']=='g'){
+                if($tipo_curso==4){
+                    $ignora_parcelamento = false;
+                }else{
+                    $ignora_parcelamento = false;
+                }
+                $ret['reg_ganho'] = cursos::reg_ganho($config['token'],$ignora_parcelamento);
+            }
+
+            if(isset($config['token']) && isset($config['rescisao']['enviar_leilao']) && $config['rescisao']['enviar_leilao']=='s'){
+                if(isset($config['token'])){
+                    $ret['envia_rescisao_leilao'] = cursos::envia_rescisao_leilao($config['token']);
+                }
+
+            }
+
+
+
+            /*inicio salvar valor do negocio (matricula)*/
+
+            if(isset($config['token'])&& !empty($config['token']) && $ret['exec'] && $tipo_curso!=4){
+
+
+                if(isset($config['orc']['modulos'])&& !empty($config['orc']['modulos'])){
+
+                    if($config['ac']=='cad'){
+
+                        $gerarOrcamento = gerarOrcamento($config['token']);
+
+                        if(isset($gerarOrcamento['totalCurso'])&&isset($gerarOrcamento['totalOrcamento']) && !$is_signed){
+
+                            $total = $gerarOrcamento['totalOrcamento'];
+
+                            $subtotal = $gerarOrcamento['totalCurso'];
+
+                            $porcentagem_comissao = queta_option('comissao');
+
+                            if(isset($config['orc']['sele_valores'])){
+
+                                    $dadosTab = buscaValorDb($GLOBALS['tab50'],'url',$config['orc']['sele_valores'],'config');
+
+                                    if($dadosTab){
+
+                                        $arr_conf = json_decode($dadosTab,true);
+
+                                        if(isset($arr_conf['comissao'])){
+
+                                            $porcentagem_comissao = str_replace(',','.',$arr_conf['comissao']);
+
+                                        }
+
+                                    }
+
+                            }
+
+                            $valor_comissao = ((double)$subtotal)*((double)$porcentagem_comissao/100);
+
+                            $valor_comissao = round($valor_comissao,2);
+
+                            $sqlAt = "UPDATE ".$GLOBALS['tab12']." SET total = '".$total."',subtotal = '".$subtotal."',porcentagem_comissao = '".$porcentagem_comissao."',valor_comissao = '".$valor_comissao."' WHERE token = '".$config['token']."'";
+
+                            $ret['atualizaTotalOrcamento'] = salvarAlterar($sqlAt);
+
+                        }
+
+                        //if(is_adminstrator(1)){
+
+                            //lib_print($ret);exit;
+
+                        //}
+
+                    }
+
+                    if($config['ac']=='alt' && isset($config['situacao'])&&$config['situacao']!='g'){
+
+                        $gerarOrcamento = gerarOrcamento($config['token']);
+
+                        $ret['valorAtual'] = buscaValorDb($GLOBALS['tab12'],'token',$config['token'],'total');
+
+                        //if(isset($gerarOrcamento['totalOrcamento'])&& $gerarOrcamento['totalOrcamento']!=$ret['valorAtual']){
+
+                        if(isset($gerarOrcamento['totalOrcamento'])&&isset($gerarOrcamento['totalCurso'])){
+
+                            $total = $gerarOrcamento['totalOrcamento'];
+
+                            $subtotal = $gerarOrcamento['totalCurso'];
+
+                            $porcentagem_comissao = queta_option('comissao');
+
+
+                            if(isset($config['orc']['sele_valores'])){
+
+                                    $dadosTab = buscaValorDb($GLOBALS['tab50'],'url',$config['orc']['sele_valores'],'config');
+
+                                    if($dadosTab){
+
+                                        $arr_conf = json_decode($dadosTab,true);
+
+                                        if(isset($arr_conf['comissao'])){
+
+                                            $porcentagem_comissao = str_replace(',','.',$arr_conf['comissao']);
+
+                                        }
+
+                                    }
+
+                            }
+                            if(isAdmin(10)){
+                                $vav = (new Orcamentos)->verificaAutorizacaoVenda($config['token']);
+                                if($vav){
+                                    $porcentagem_comissao=0;
+                                }
+
+                            }
+                            $valor_comissao = ((double)$subtotal)*((double)$porcentagem_comissao/100);
+
+                            $valor_comissao = precoDbdase(round($valor_comissao,2));
+                            $compleSalv = false;
+                            if(isset($gerarOrcamento['salvaTotais']) && is_array($gerarOrcamento['salvaTotais'])){
+                                $compleSalv = ",totais='".lib_array_json($gerarOrcamento['salvaTotais'])."'";
+                                // lib_print($gerarOrcamento['salvaTotais']);
+                            }
+                            if(!$is_signed){
+                                $sqlAt = "UPDATE IGNORE ".$GLOBALS['tab12']." SET total = '". precoDbdase($total)."',subtotal = '".precoDbdase($subtotal)."',porcentagem_comissao = '".$porcentagem_comissao."',valor_comissao = '".$valor_comissao."'$compleSalv WHERE token = '".$config['token']."'";
+                                $ret['atualizaTotalOrcamento'] = salvarAlterar($sqlAt);
+                            }
+
+                            // if(is_adminstrator(1)){
+
+                            // 	echo $sqlAt;
+                            // 	lib_print($gerarOrcamento);
+
+                            // }
+
+
+
+
+
+
+                        }
+
+                        //if(is_adminstrator(1)){
+
+                            //lib_print($ret);exit;
+
+                        //}
+
+                    }
+
+                }else{
+
+                    $dadosCurso = dados_tab($GLOBALS['tab10'],'*',"WHERE id = '".$config['id_curso']."'");
+
+                    $porcentagem_comissao = false;
+
+                    if(isset($config['id_curso'])&&$config['id_curso']>0  && $config['status']==1){
+
+                        if($dadosCurso){
+
+                            $valorCurso = (isset($config['total'])&&$config['total']!=0)? $config['total'] : $dadosCurso[0]['valor'];
+
+                            $inscricao = $dadosCurso[0]['inscricao'];
+
+                            $categoria = $dadosCurso[0]['categoria'];
+
+                            $configProduto = $dadosCurso[0]['config'];
+
+                            $arr_config = lib_json_array($configProduto);
+
+                            if(isset($arr_config['comissao']) && !empty($arr_config['comissao'])){
+
+                                $porcentagem_comissao = str_replace(',','.',$arr_config['comissao']);
+
+                            }
+
+                            //$comissao = buscaValorDb($GLOBALS['tab10'],'id',$config['id_curso'],'categoria');
+
+                        }else{
+
+                            $valorCurso =(isset($config['total'])&&$config['total']!=0)? $config['total'] : buscaValorDb($GLOBALS['tab10'],'id',$config['id_curso'],'valor');
+
+                            $inscricao = buscaValorDb($GLOBALS['tab10'],'id',$config['id_curso'],'inscricao');
+
+                            $categoria = buscaValorDb($GLOBALS['tab10'],'id',$config['id_curso'],'categoria');
+
+                        //$comissao = buscaValorDb($GLOBALS['tab10'],'id',$config['id_curso'],'categoria');
+
+                        }
+
+                        $total = (double)$valorCurso+(double)$inscricao;
+                        $desconto = isset($config['desconto']) ? $config['desconto']: 0;
+                        $porcentagem_comissao = $porcentagem_comissao ? $porcentagem_comissao: queta_option('comissao');
+
+                        $valor_comissao = ($total)*($porcentagem_comissao/100);
+
+                        $valor_comissao = round($valor_comissao,2);
+
+                        if($config['ac']=='cad'){
+
+                            if($categoria!='cursos_presencias'){
+
+                                $valor_comissao = $valor_comissao?$valor_comissao: 0;
+
+                                //$porcentagem_comissao = 0;
+
+                            }
+
+                            if(isset($total) && !$is_signed){
+
+                                $sqlAt = "UPDATE IGNORE ".$GLOBALS['tab12']." SET total = '".$total."',porcentagem_comissao = '".$porcentagem_comissao."',valor_comissao = '".$valor_comissao."' WHERE token = '".$config['token']."'";
+
+                                $ret['atualizaTotalOrcamento'] = salvarAlterar($sqlAt);
+
+                            }
+
+                        }
+
+                        if($config['ac']=='alt'){
+                            // if($categoria=='cursos_presencias'){
+
+                            // 	$gerarOrcamento = gerarOrcamento($config['token']);
+
+                            // 	$total = @$gerarOrcamento['totalOrcamento'];
+
+                            // 	$valor_comissao = ($total)*($porcentagem_comissao/100);
+
+                            // 	$valor_comissao = round($valor_comissao,2);
+
+                            // }else{
+
+                                $gerarOrcamento = gerarOrcamento($config['token']);
+                                //CURSOS TIPO 1=EAD TIPO 4=PLANO DE FORMAÇÃO
+
+                                if($tipo_curso==1 || $tipo_curso==4){
+                                    $total = @$gerarOrcamento['total'];
+                                }else{
+                                    $total = @$gerarOrcamento['totalOrcamento'];
+                                }
+                                // if(isAdmin(1)){
+                                // 	echo $tipo_curso;
+                                // 	dd($gerarOrcamento);
+                                // }
+
+                                $total = (double)$total;
+                                if($desconto){
+                                    $total = ($total - precoDbdase($desconto));
+                                    // echo $total;
+                                    // dd($gerarOrcamento);
+                                }
+
+                                $valor_comissao = ($total)*($porcentagem_comissao/100);
+
+                                $valor_comissao = round($valor_comissao,2);
+
+                                //$porcentagem_comissao = 0;
+
+                                //$valor_comissao = 0;
+
+
+                            //}
+                            $valor_comissao = str_replace(',','.',$valor_comissao);
+
+                            $ret['valorAtual'] = buscaValorDb($GLOBALS['tab12'],'token',$config['token'],'total');
+
+                            if(!$is_signed){
+                                $sqlAt = "UPDATE IGNORE ".$GLOBALS['tab12']." SET total = '".$total."',porcentagem_comissao = '".$porcentagem_comissao."',valor_comissao = '".$valor_comissao."' WHERE token = '".$config['token']."'";
+                                $ret['atualizaTotalOrcamento'] = salvarAlterar($sqlAt);
+                                // if(isAdmin(1)){
+                                // 	lib_print($ret);
+                                // }
+                                // if(isAdmin(1)){
+                                // 	dd($gerarOrcamento);
+                                // }
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                if(isset($config['bt_press']) && $config['bt_press']=='continuar'&&isset($ret['idCad'])){
+
+                    $configLi = array('id'=>$ret['idCad']);
+
+                    $atendimento_flow = new atendimento_flow;
+
+                    $ret['listarTarefas'] = $atendimento_flow->listAtendimento($configLi);
+
+                }
+
+            }
+
+            /*fim salvar valor do negocio (matricula)*/
+
+
+
+            //if(isset($_GET['bt_press']) && $_GET['bt_press']=='finalizar'){
+
+                if(isset($config['token_atendimento'])&&isset($config['inic_atendimento']))
+
+                $ret2 = regDuracaoAtendimento($config['token_atendimento'],$config['inic_atendimento']);
+
+                //if($ret2['exec']){
+
+                    if(isset($ret['salvar']['mess'])&&$ret['salvar']['mess']=='enc'){
+
+                        $curso = buscaValorDb($GLOBALS['tab10'],'id',$ret['dataSalv']['id_curso'],'nome');
+
+                        $ret['mensa'] = formatMensagem('Uma proposta para <b>'.$ret['dataSalv']['aluno'].'</b> do curso <b>'.$curso.'</b> já foi encontrada!','warning',450000);
+
+                    }
+
+                    $ret['regDuracaoAtendimento'] = @$ret2['exec'];
+
+                    if(isset($config['cliente'])){
+
+                        $formulario = new formularios;
+
+                        $ret['salvarCliente'] = json_decode($formulario->salvar($config['cliente']));
+
+                        //unset($config['cliente']);
+
+                    }
+
+                    $ret = json_encode($ret);
+
+                //}
+
+            //}
+
+        }
+
+        return $ret;
+
+    }
 	/**
 	 * Metodo para veridicar a forma de pagamento de comustivel escolhido
 	 * uso $ret = (new Orcamentos)->pagamento_combustivel($token,$org);

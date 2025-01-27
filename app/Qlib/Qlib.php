@@ -2293,4 +2293,65 @@ class Qlib
         }
         return $ret;
     }
+    /**
+     * Metodo padrão para gravar e atualizar qualquer tabela
+     * @param string $tab nome da tabela para ser cadastrado os dados
+     * @param $array $dados array contendo os nomes de campos com seus respectivos valores..
+     */
+    static function update_tab($tab='',$dados=[],$where=''){
+        // $dados = [
+        //     'Nome' => 'Maria',
+        //     'Email' => 'maria@example.com',
+        //     'token' => uniqid(),
+        //     'senha' => bcrypt('senha_secreta')
+        // ];
+        //veriricar se ja existe
+        $ret['exec'] = false;
+        $ret['mens'] = 'Erro ao salvar';
+        try {
+            if(is_array($dados)){
+                if(!empty($where)){
+                    $d = DB::select("SELECT id FROM $tab $where");
+                    $id = isset($d[0]->id) ? $d[0]->id : null;
+                    if($id){
+                        $salva = DB::table($tab)->where('id', $id)->update($dados);
+                        if($salva){
+                            $ret['exec'] = true;
+                            $ret['idCad'] = $id;
+                            $ret['dados'] = $dados;
+                            $ret['mens'] = 'Registro atualizado com sucesso!';
+                        }
+                    }else{
+                        $id = DB::table($tab)->insertGetId($dados);
+                        if($id){
+                            $ret['exec'] = true;
+                            $ret['idCad'] = $id;
+                            $ret['dados'] = $dados;
+                            $ret['mens'] = 'Registro criado com sucesso!';
+                        }
+                    }
+                }else{
+                    $id = DB::table($tab)->insertGetId($dados);
+                    if($id){
+                        $ret['exec'] = true;
+                        $ret['idCad'] = $id;
+                        $ret['dados'] = $dados;
+                        $ret['mens'] = 'Registro criado com sucesso!';
+                    }
+                }
+            }else{
+                $ret['exec'] = true;
+                // $ret['idCad'] = $id;
+                $ret['dados'] = $dados;
+                $ret['mens'] = 'A variavel de dados não é array válido!';
+            }
+        } catch (\Throwable $th) {
+            $ret['exec'] = false;
+            // $ret['idCad'] = $id;
+            $ret['error'] = $th->getMessage();
+            $ret['mens'] = 'Erro ao cadastrar registro!';
+            //throw $th;
+        }
+        return $ret;
+    }
 }

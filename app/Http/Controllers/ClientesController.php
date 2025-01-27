@@ -1,16 +1,35 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\MatriculasController;
+use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 
-class OrcamentoController extends Controller
+class ClientesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    public $tab;
+    public function __construct()
+    {
+        $this->tab = 'clientes';
+    }
+    /**
+     * adicion ou atualiza um cliente
+     * @param array $dados array com os campos e valores que serão gravados no bando dedados
+     * @param string $where com as string SQL de condição para atualização do registro no banco de dados
+     */
+    public function add_update($dados=[],$where=''){
+        $tab = $this->tab;
+        //tornar unico pelo email por padrão
+        $where = $where ? $where : false;
+        if(empty($where) && isset($dados['Email']) && !empty($dados['Email'])){
+            $where = "WHERE Email='".$dados['Email']."'";
+        }
+        $ret = Qlib::update_tab($tab,$dados,$where);
+        return $ret;
+    }
     public function index()
     {
         //
@@ -29,7 +48,9 @@ class OrcamentoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $ret['exec'] = false;
+
+        return $ret;
     }
 
     /**
@@ -37,12 +58,7 @@ class OrcamentoController extends Controller
      */
     public function show(string $id)
     {
-        $d = request()->all();
-        $token = $id;
-        $exibe_parcelamento = isset($d['ep']) ? $d['ep'] : null;
-        $ret = (new MatriculasController)->gerar_orcamento($token, $exibe_parcelamento);
-
-        return response()->json($ret);
+        //
     }
 
     /**
@@ -66,12 +82,6 @@ class OrcamentoController extends Controller
      */
     public function destroy(string $id)
     {
-        //
-    }
-
-    public function add_update($config=[]){
-        //indentificar o curso
-        //selecionar a primeira turma disponivel
         //
     }
 }
