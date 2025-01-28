@@ -126,13 +126,12 @@ class RdstationController extends Controller
             if($event=='crm_deal_created'){
                 $id = $this->get_id_by_webhook($d);
                 $dados_contato = $this->show($id,'/deals/{id}/contacts');
-
-                $data = isset($dados_contato['data']['contacts']) ? $dados_contato['data']['contacts'] : [];
-                if(!empty($data)){
+                $data = isset($dados_contato['data']['contacts']) ? $dados_contato['data']['contacts'] : false;
+                if(is_array($data)){
                     $ret = $this->salvar_orcamento($data,$d);
                 }
             }
-            $ret = Qlib::saveEditJson($d,'webhook_rd.json');
+            $save = Qlib::saveEditJson($d,'webhook_rd.json');
             Log::info('Webhook '.$event.':', $d);
         }
         // $ret['exec'] = false;
@@ -151,6 +150,10 @@ class RdstationController extends Controller
         $email = isset($config['emails'][0]['email']) ? $config['emails'][0]['email'] : '';
         $telefonezap = isset($config['phones'][0]['phone']) ? $config['phones'][0]['phone'] : '';
         $telefonezap = str_replace('+', '', $telefonezap);
+        $telefonezap = str_replace(' ', '', $telefonezap);
+        $telefonezap = str_replace('(', '', $telefonezap);
+        $telefonezap = str_replace(')', '', $telefonezap);
+        $telefonezap = str_replace('-', '', $telefonezap);
         // return $config;
         $data = [
             'Nome' => $nome,
@@ -158,6 +161,7 @@ class RdstationController extends Controller
             'telefonezap' => $telefonezap,
             'rdstation' => $config['id'],
             'token' => uniqid(),
+            'EscolhaDoc' => 'CPF',
         ];
         $ret['exec'] = false;
         $sc = (new ClientesController)->add_update($data);
@@ -166,6 +170,8 @@ class RdstationController extends Controller
         //Criar chat zapguru
         $zg = new ZapguruController;
         if(isset($sc['exec']) && $telefonezap){
+            $ret['exec'] = true;
+            // return $ret;
             //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
             $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true));
         }
