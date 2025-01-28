@@ -132,7 +132,7 @@ class RdstationController extends Controller
                     $ret = $this->salvar_orcamento($data,$d);
                 }
             }
-            // $ret = Qlib::saveEditJson($d,'webhook_rd.json');
+            $ret = Qlib::saveEditJson($d,'webhook_rd.json');
             Log::info('Webhook '.$event.':', $d);
         }
         // $ret['exec'] = false;

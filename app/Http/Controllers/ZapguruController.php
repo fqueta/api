@@ -426,9 +426,13 @@ class ZapguruController extends Controller
                 $name = 'Senhor(a)';
                 $chat_number 	= $cel;
             }
-            $text  = str_replace('{nome}',$name,$text);
+            $nome_=$nome;
+            $nom = explode('+',$nome_);
+            if(isset($nom[0]) && !empty($nom[0])){
+                $nome_=$nome;
+            }
+            $text  = str_replace('{nome}',$nome_,$text);
             $text  = urlencode($text);
-
 
 			$phone_id 		= isset($config['phone_id'])?$config['phone_id']:$this->phone_id();
 			//Executar um dialogo opcional
