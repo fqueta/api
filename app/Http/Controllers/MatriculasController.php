@@ -162,6 +162,12 @@ class MatriculasController extends Controller
         }
         return $ret;
     }
+    public function link_orcamento($token){
+        return Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$token;
+    }
+    public function link_assinatura($token){
+        return Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$token.'/f/1';
+    }
     /**
      * Dados de um orçamento ou dados da matricula
      * @param string $token
@@ -178,6 +184,11 @@ class MatriculasController extends Controller
         if($dm->count() > 0){
             $dm = $dm->toArray();
             $dm = $dm[0];
+            $link_orcamento = $this->link_orcamento($dm['token']);
+            $link_assinatura = $this->link_assinatura($dm['token']);
+			$dm['link_orcamento'] = $link_orcamento;
+			$dm['link_assinatura'] = $link_assinatura;
+
         }else{
             return false;
         }

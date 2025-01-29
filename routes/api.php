@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
 use App\Http\Controllers\RdstationController;
+use App\Http\Controllers\ZapguruController;
 use App\Http\Controllers\ZenviaController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ Route::resource('cursos','\App\Http\Controllers\CursosController',['parameters' 
 Route::prefix('webhook')->group(function(){
     Route::post('/zenvia',[ZenviaController::class,'salvar_eventos']);
     Route::post('/rd',[RdstationController::class,'webhook']);
+    Route::post('/zapguru',[ZapguruController::class,'webhook']);
 });
 Route::prefix('v1')->group(function(){
     Route::post('/login',[AuthController::class,'login']);

@@ -2296,9 +2296,10 @@ class Qlib
     /**
      * Metodo padrão para gravar e atualizar qualquer tabela
      * @param string $tab nome da tabela para ser cadastrado os dados
-     * @param $array $dados array contendo os nomes de campos com seus respectivos valores..
+     * @param array $dados array contendo os nomes de campos com seus respectivos valores..
+     * @param bool $edit opções false| true controla a Edição ou não edição de um registro encontrado, caso     encontre um registro similar a opão false somente informa que o registro foi encontrado true pode alterar
      */
-    static function update_tab($tab='',$dados=[],$where=''){
+    static function update_tab($tab='',$dados=[],$where='',$edit=true){
         // $dados = [
         //     'Nome' => 'Maria',
         //     'Email' => 'maria@example.com',
@@ -2308,18 +2309,28 @@ class Qlib
         //veriricar se ja existe
         $ret['exec'] = false;
         $ret['mens'] = 'Erro ao salvar';
+        $ret['color'] = 'danger';
         try {
             if(is_array($dados)){
                 if(!empty($where)){
                     $d = DB::select("SELECT id FROM $tab $where");
                     $id = isset($d[0]->id) ? $d[0]->id : null;
                     if($id){
-                        $salva = DB::table($tab)->where('id', $id)->update($dados);
-                        if($salva){
-                            $ret['exec'] = true;
+                        if($edit){
+                            $salva = DB::table($tab)->where('id', $id)->update($dados);
+                            if($salva){
+                                $ret['exec'] = true;
+                                $ret['idCad'] = $id;
+                                $ret['dados'] = $dados;
+                                $ret['color'] = 'success';
+                                $ret['mens'] = 'Registro atualizado com sucesso!';
+                            }
+                        }else{
+                            $ret['exec'] = false;
                             $ret['idCad'] = $id;
                             $ret['dados'] = $dados;
-                            $ret['mens'] = 'Registro atualizado com sucesso!';
+                            $ret['color'] = 'warning';
+                            $ret['mens'] = 'Registro encotrado!';
                         }
                     }else{
                         $id = DB::table($tab)->insertGetId($dados);
@@ -2327,6 +2338,7 @@ class Qlib
                             $ret['exec'] = true;
                             $ret['idCad'] = $id;
                             $ret['dados'] = $dados;
+                            $ret['color'] = 'success';
                             $ret['mens'] = 'Registro criado com sucesso!';
                         }
                     }
@@ -2336,13 +2348,15 @@ class Qlib
                         $ret['exec'] = true;
                         $ret['idCad'] = $id;
                         $ret['dados'] = $dados;
+                        $ret['color'] = 'success';
                         $ret['mens'] = 'Registro criado com sucesso!';
                     }
                 }
             }else{
-                $ret['exec'] = true;
+                $ret['exec'] = false;
                 // $ret['idCad'] = $id;
                 $ret['dados'] = $dados;
+                $ret['color'] = 'danger';
                 $ret['mens'] = 'A variavel de dados não é array válido!';
             }
         } catch (\Throwable $th) {
@@ -2350,8 +2364,125 @@ class Qlib
             // $ret['idCad'] = $id;
             $ret['error'] = $th->getMessage();
             $ret['mens'] = 'Erro ao cadastrar registro!';
+            $ret['color'] = 'danger';
             //throw $th;
         }
         return $ret;
+    }
+    /**
+     * Metodo para excluir um registro
+     * @param array $config [
+    						*	'tab'=>$tab_l,
+    						*	'campo_id'=>'id',
+    						*	'id'=>$id,
+    						*	'nomePost'=>'Lead promovido a cliente',
+    						*	'campo_bus'=>'id',
+    						*];
+     */
+    static function excluirUm($config=[]){
+        $tab = isset($config['tab']) ? $config['tab'] : '';
+        $campo_id = isset($config['campo_id']) ? $config['campo_id'] : '';
+        $id = isset($config['id']) ? $config['id'] : '';
+        $nomePost = isset($config['nomePost']) ? $config['nomePost'] : '';
+        $campo_bus = isset($config['campo_bus']) ? $config['campo_bus'] : '';
+        if($config){
+            global $suf_in;
+            $suf_in = '_cs_aero';
+
+            $config['campo_bus'] = isset($config['campo_bus'])?$config['campo_bus']:'nome';
+            $reg_excluido = array(
+                'excluidopor'=>	@$_SESSION[$suf_in]['id'.$suf_in],
+                'excluido_data'=>date('d/m/Y H:m:i'),
+                'tab'=>$config['tab'],
+                'nome'=>urldecode($config['nomePost']).'|'.Qlib::buscaValorDb0($config['tab'],$config['campo_id'],$config['id'],$config['campo_bus']),
+            );
+
+            /*
+
+            $config = array(
+
+                'tab'=>'',
+
+                'campo_id'=>'id',
+
+                'id'=>12,
+
+                'nomePost'=>'Cliente',
+
+                'campo_bus'=>'Placa',
+
+            );
+
+            */
+            // lib_print($config);
+            $sql3 = false;
+            if(Qlib::qoption ('lixeira') && Qlib::qoption('lixeira') == 's'){
+
+                if(isset($config['sec']) && $config['sec'] =='ganhos'){
+                    //Presisamos excluir os envtos tbm
+                    $sql3 = "UPDATE IGNORE `".$GLOBALS['tab40']."` SET excluido = 's',reg_excluido = '".json_encode($reg_excluido)."' WHERE `id_matricula` = '".$config['id'] ."'";
+                    $config['tab'] = $GLOBALS['tab12'];
+                    $sql3 = self::update_tab($GLOBALS['tab12'],[
+                        'excluido' => 's',
+                        'reg_excluido' => json_encode($reg_excluido),
+                    ]," WHERE `id_matricula` = '".$config['id'] ."'");
+
+                }else{
+                    $sql3 = self::update_tab($config['tab'],[
+                        'excluido' => 's',
+                        'reg_excluido' => json_encode($reg_excluido),
+                    ]," WHERE `".$config['campo_id']."` = '".$config['id'] ."'");
+
+                }
+                // $sql = "UPDATE `".$config['tab']."` SET excluido = 's',reg_excluido = '".json_encode($reg_excluido)."' WHERE `".$config['campo_id']."` = '".$config['id'] ."'";
+
+            }else{
+                $sql3 = DB::table($config['tab'])->where($config['campo_id'],'=',$config['id'])->delete();
+                // $sql = "DELETE FROM ".$config['tab']." WHERE `".$config['campo_id']."` = '".$config['id']."'";
+
+            }
+
+            // $deletar = salvarAlterar($sql);
+
+            $mess = false;
+
+            if($sql3){
+                $mess .= Qlib::formatMensagem0('<strong>Sucesso: </strong>'.$config['nomePost'].' deletado com sucesso!!','success',10000);
+
+                $ret['exec'] = true;
+                // if(isset($config['sec']) && $config['sec'] == 'ganhos'){
+                // 	$urldeleteEv = "UPDATE `".$GLOBALS['tab40']."` SET excluido = 's',reg_excluido = '".json_encode($reg_excluido)."' WHERE `id_matricula` ='".$config['id']."' AND situacao='g' ";
+                // 	$deletar = salvarAlterar($urldeleteEv);
+                // }
+                // if(isset($config['local'])){
+
+                //     if($config['local']=='cupom_produtos' && isset($config['id_produto'])){
+
+                //         $prod = new produtos;
+
+                //         $ret['list'] = $prod->listaPromocao($config['id_produto']);
+
+
+
+                //     }
+
+                // }
+
+            }else{
+
+                $mess = Qlib::formatMensagem0('<strong>Erro: </strong>Ao deletar '.$config['nomePost'].'!!','danger',10000);	$ret['exec'] = false;
+
+            }
+
+            $ret['mess'] = $mess;
+
+            // if(Qlib::isAdmin(1)){
+
+            //     $ret['sql'] = $sql;
+            //     $ret['sql3'] = @$sql3;
+            // }
+
+
+        }
     }
 }

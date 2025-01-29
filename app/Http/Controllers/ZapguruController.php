@@ -6,6 +6,7 @@ use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ZapguruController extends Controller
 {
@@ -13,9 +14,10 @@ class ZapguruController extends Controller
     public $url;
 
 	function __construct(){
-        global $tab15;
+        global $tab15,$tab88;
 		$this->credenciais();
         $tab15 = 'clientes';
+        $tab88 = 'capta_lead';
 	}
     /**
      * Display a listing of the resource.
@@ -92,14 +94,14 @@ class ZapguruController extends Controller
 		$json = file_get_contents('php://input');
 
 		//$json = '{"campanha_id": "", "campanha_nome": "", "origem": "disparo_crm", "email": "553291648202@c.us", "nome": "Fernando Queta", "tags": ["Regi\u00e3o Sudeste"], "texto_mensagem": "", "campos_personalizados": {}, "bot_context": {}, "responsavel_nome": "Marcony", "responsavel_email": "marcony@aeroclubejf.com.br", "link_chat": "https://s4.chatguru.app/chats#5fbbc17d99409b35ace1b884", "celular": "553291648202", "phone_id": "5fb9305b5e3b368d9f99020c", "chat_id": "5fbbc17d99409b35ace1b884", "chat_created": "2020-11-23 14:04:45.593000", "datetime_post": "2021-03-20 14:20:52.352941"}';
-
-
+        //https://api.aeroclubejf.com.br/api/webhook/zapguru
 
 		$arr_json = Qlib::lib_json_array($json);
-
+        $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
         //lib_print($arr_json);
-
-		if(isset($arr_json['origem'])){
+        $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
+        Log::info('Webhook zapduru '.$event.':', $arr_json);
+        if(isset($arr_json['origem'])){
 
 			if($arr_json['origem']=='envia_campos' || $arr_json['origem']=='disparo_crm'){
 
@@ -117,7 +119,8 @@ class ZapguruController extends Controller
 
 			}elseif($arr_json['origem']=='respondeu_nome' || $arr_json['origem']=='respondeu_email'  || $arr_json['origem']=='add_lead'){
 
-				$ret['atendimento'] = $this->salvarCaptaLead($arr_json);
+                $ret['atendimento'] = $this->salvarCaptaLead($arr_json);
+                dd( $ret);
 
 				$arquivo = fopen(dirname(__FILE__).'/atendimento.txt','a');
 
@@ -145,7 +148,7 @@ class ZapguruController extends Controller
 
 				fclose($arquivo);*/
 
-				lib_print($ret);
+				dump($ret);
 
 		return $ret;
 
@@ -157,15 +160,15 @@ class ZapguruController extends Controller
 
 		$ret = false;
 
-		if(isset($config['responsavel_email']) && !empty($config['responsavel_email'])){
+		// if(isset($config['responsavel_email']) && !empty($config['responsavel_email'])){
 
-			$dadosCon = buscaValoresDb_SERVER("SELECT * FROM usuarios_sistemas WHERE trim(email)='".trim($config['responsavel_email'])."' AND ".compleDelete());
+		// 	$dadosCon = buscaValoresDb_SERVER("SELECT * FROM usuarios_sistemas WHERE trim(email)='".trim($config['responsavel_email'])."' AND ".compleDelete());
 
-		}else{
+		// }else{
 
 			$dadosCon = false;
 
-		}
+		// }
 		if(isset($config['origem']) && isset($config['celular']) && isset($config['texto_mensagem']) && !empty($config['texto_mensagem']) &&($config['origem']=='respondeu_nome' || $config['origem']=='respondeu_email')){
 
 			$arr_or = explode('_',$config['origem']);
@@ -182,7 +185,7 @@ class ZapguruController extends Controller
 
 				'token'=>uniqid(),
 
-				'zapguru'=>lib_array_json($config),
+				'zapguru'=>Qlib::lib_array_json($config),
 
 				$arr_or[1]=>$config['texto_mensagem'],
 
@@ -204,7 +207,7 @@ class ZapguruController extends Controller
 
 			}
 
-			$comple = " AND ".compleDelete();
+			$comple = " AND ".Qlib::compleDelete();
 
 			$cond_valid = "WHERE celular = '".$config['celular']."' $comple";
 
@@ -212,23 +215,23 @@ class ZapguruController extends Controller
 
 			$tabUser = $GLOBALS['tab88'];
 
-			$config2 = array(
+			// $config2 = array(
 
-						'tab'=>$tabUser,
+			// 			'tab'=>$tabUser,
 
-						'valida'=>true,
+			// 			'valida'=>true,
 
-						'condicao_validar'=>$cond_valid,
+			// 			'condicao_validar'=>$cond_valid,
 
-						'sqlAux'=>false,
+			// 			'sqlAux'=>false,
 
-						'ac'=>'cad',
+			// 			'ac'=>'cad',
 
-						'type_alt'=>$type_alt,
+			// 			'type_alt'=>$type_alt,
 
-						'dadosForm' => $dadosForm
+			// 			'dadosForm' => $dadosForm
 
-			);
+			// );
 
 			//if(isAdmin(1)){
 
@@ -236,11 +239,11 @@ class ZapguruController extends Controller
 
 			//}
 
-			$ret = lib_salvarFormulario($config2);//Declado em Lib/Qlibrary.php
+			$ret = Qlib::update_tab($GLOBALS['tab88'],$dadosForm,$cond_valid);//Declado em Lib/Qlibrary.php
 
-			lib_print($ret);exit;
+			// lib_print($ret);exit;
 
-			$ret = json_decode($ret,true);
+			// $ret = json_decode($ret,true);
 
 		}
 
@@ -260,7 +263,7 @@ class ZapguruController extends Controller
 
 				'token'=>uniqid(),
 
-				'zapguru'=>lib_array_json($config),
+				'zapguru'=>Qlib::lib_array_json($config),
 
 				$arr_or[1]=>@$config['texto_mensagem'],
 
@@ -296,7 +299,7 @@ class ZapguruController extends Controller
 
 			}
 
-			$comple = " AND ".compleDelete();
+			$comple = " AND ".Qlib::compleDelete();
 
 			$cond_valid = "WHERE celular = '".$config['celular']."' $comple";
 
@@ -329,16 +332,16 @@ class ZapguruController extends Controller
 				//  lib_print($config2);exit;
 
 			//}
-			$ret = lib_salvarFormulario($config2);//Declado em Lib/Qlibrary.php
+			$ret = Qlib::update_tab($tabUser,$dadosForm,$cond_valid);//Declado em Lib/Qlibrary.php
 			$telefonezap = $config2['dadosForm']['celular'];
-			$verifica_cadCliente = dados_tab($GLOBALS['tab15'],'*',"WHERE telefonezap='".$telefonezap."'");
+			$verifica_cadCliente = Qlib::dados_tab($GLOBALS['tab15'],[ 'campos'=> '*', 'where' => "WHERE telefonezap='".$telefonezap."'"]);
 			//lib_print($verifica_cadCliente);
-			if(@$verifica_cadCliente[0]['telefonezap']){
+			if(@$verifica_cadCliente['telefonezap']){
 				$ret['verifica_cadCliente'] = $verifica_cadCliente;
-				$ret['salvarCadCli'] = clientes::convert_LeadCliente(['id'=>$telefonezap,'campo_bus'=>'celular','type'=>'lc','cond_valid'=>"WHERE telefonezap='".$verifica_cadCliente[0]['telefonezap']."'"]);
-                                lib_print($ret);
+				$ret['salvarCadCli'] = (new ClientesController)->convert_LeadCliente(['id'=>$telefonezap,'campo_bus'=>'celular','type'=>'lc','cond_valid'=>"WHERE telefonezap='".$verifica_cadCliente['telefonezap']."'"]);
+                dump($ret);
 			}
-			$ret = lib_array_json($ret);
+			$ret = Qlib::lib_array_json($ret);
 
 
 		}
@@ -346,6 +349,32 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
+    /**
+     * metodo para disparar postagem para API do zapguru
+     * @param string $chat_number = o numero do chat
+     * @param string $action = a acão que será realizada
+     * @param string $comple_url = continuação da url
+     * @return array $ret o resulo da requesição
+     * @uso (new ZapguruController)->post($chat_number,$action,$comple_url='');
+     */
+    public function post($chat_number,$action,$comple_url=''){
+        $phone_id 		= $this->phone_id();
+		// $dialog_id 		= isset($config['dialog_id'])?$config['dialog_id']:'';
+        $url = $this->url.'action='.$action.'&chat_number='.$chat_number.'&phone_id='.$phone_id.$comple_url;
+		$ret['url'] = $url;
+        $response = Http::accept('application/json')->post($url);
+		$ret['response'] = Qlib::lib_json_array($response,true);
+        return $ret;
+    }
+    /**
+     * Verifica se um chat existe e retorna um disparo webhook com o acionamento de um dialo de id
+     */
+    public function verifica_chat($telefone_zap){
+        $note = 'Verificação a existencia do chat';
+        $comple_sql = '&dialog_id='.$note;
+        $ret = $this->post('dialog_execute',$comple_sql);
+        return $ret;
+    }
     /**
      * Metodo para criar um chat zapguru
      * @param array estrutura do array $config=['telefonezap'=>'553299999999','dialog_id'=>'opcional'];
@@ -365,7 +394,8 @@ class ZapguruController extends Controller
 		$ret['exec'] = false;
         $cel = isset($config['telefonezap']) ? $config['telefonezap'] : false;
         $cadastrado = isset($config['cadastrados']) ? $config['cadastrados'] : false; // permite criar chat de clientes cadastrados ou não
-        $text 		 	= isset($config['text'])?$config['text'] 	:'Olá *{nome}* como podemos ajudá-lo';
+        // $text 		 	= isset($config['text'])?$config['text'] 	:'Olá *{nome}* como podemos ajudá-lo';
+        $text 		 	= isset($config['text'])?$config['text'] 	:' ';
         if(!$cel){
             $cel = isset($config['Celular']) ? $config['Celular'] : false;
         }
@@ -906,10 +936,10 @@ class ZapguruController extends Controller
 		$ret['exec'] = false;
 		$link_orcamento = isset($config['link_orcamento']) ? $config['link_orcamento'] : false;
 		if(!$link_orcamento && isset($config['tk_matricula']) && ($tk_matricula=$config['tk_matricula'])){
-			$dm = cursos::dadosMatricula($tk_matricula);
+			$dm = (new MatriculasController)->dm($tk_matricula);
 			// dd(isset($dm[0]['Celular']));
-			if(isset($dm[0]['link_orcamento'])){
-				$link_orcamento = $dm[0]['link_orcamento'];
+			if(isset($dm['link_orcamento'])){
+				$link_orcamento = $dm['link_orcamento'];
 			}
 		}
 		if(isset($config['celular_completo']) || isset($config['telefonezap'])){
@@ -919,20 +949,20 @@ class ZapguruController extends Controller
 				$csqlCli = " AND Celular='".$config['celular_completo']."'";
 			}
 
-			$dadosCli = dados_tab($GLOBALS['tab15'],'*',"WHERE ".compleDelete()."$csqlCli",false);
+			$dadosCli = Qlib::dados_tab($GLOBALS['tab15'],['campos'=> '*', 'where'=> "WHERE ".Qlib::compleDelete()."$csqlCli"]);
 
 			if(!$dadosCli){
 
-				$ret['mens'] = formatMensagem('Cliente não encontrado!','danger');
+				$ret['mens'] = Qlib::formatMensagem0('Cliente não encontrado!','danger');
 
 				return $ret;
 
 			}
 
 
-			if(isJson($dadosCli[0]['zapguru'])){
+			if(Qlib::isJson($dadosCli[0]['zapguru'])){
 
-				$arr_zap = lib_json_array($dadosCli[0]['zapguru']);
+				$arr_zap = Qlib::lib_json_array($dadosCli[0]['zapguru']);
 				// dd($arr_zap);
 
 				if(isset($arr_zap['celular'])){
@@ -1014,7 +1044,7 @@ class ZapguruController extends Controller
 			curl_close($curl);
 			$ret['urlReq'] = $urlReq;
 			$ret['response_json'] = $response;
-			$ret['response'] = lib_json_array($response,true);
+			$ret['response'] = Qlib::lib_json_array($response,true);
 
 			if(isset($ret['response']['code'])&&$ret['response']['code']==200){
 
@@ -1032,7 +1062,7 @@ class ZapguruController extends Controller
 
 				}
 
-				$ret['mens'] = formatMensagem($ret['response']['description'],$css);
+				$ret['mens'] = Qlib::formatMensagem($ret['response']['description'],$css);
 
 			}
 
@@ -1225,9 +1255,9 @@ class ZapguruController extends Controller
 
 		$ret['exec'] = false;
 
-		if(isJson($config)){
+		if(Qlib::isJson($config)){
 
-			$arr_conf = lib_json_array($config);
+			$arr_conf = Qlib::lib_json_array($config);
 			if(isset($arr_conf['celular'])){
 
 				$celular = $this->maskTelefone($arr_conf['celular']);
@@ -1238,19 +1268,19 @@ class ZapguruController extends Controller
 
 
 
-				$where = "WHERE Celular='".$celular."' AND ".compleDelete();
+				$where = "WHERE Celular='".$celular."' AND ".Qlib::compleDelete();
 
-				$dadosCli = dados_tab($GLOBALS['tab15'],'*',$where);
+				$dadosCli = Qlib::dados_tab($GLOBALS['tab15'],['campos'=>'*','where'=>$where]);
 
 				if(!$dadosCli){
 					$celular = $arr_conf['celular'];
 
-					$where = "WHERE telefonezap='".$celular."' AND ".compleDelete();
+					$where = "WHERE telefonezap='".$celular."' AND ".Qlib::compleDelete();
 				}
 
-				$ret['exec'] = salvarAlterar("UPDATE ".$GLOBALS['tab15']." SET zapguru='".addslashes($config)."' $where");
+				$ret['exec'] = Qlib::update_tab('clientes',['zapguru'=>addslashes($config)],$where);
 				// echo $where;
-				// dd($ret);
+				dd($ret);
 				if(isset($arr_conf['origem']) && $arr_conf['origem']=='envia_campos'&&is_array($arr_conf['campos_personalizados'])){
 
 					$post['conf'] = 's';
@@ -1313,7 +1343,8 @@ class ZapguruController extends Controller
 
 					);
 
-					$ret['atualizarCampos'] = lib_json_array(lib_salvarFormulario($config2));//Declado em Lib/Qlibrary.php
+					// $ret['atualizarCampos'] = lib_json_array(lib_salvarFormulario($config2));//Declado em Lib/Qlibrary.php
+					$ret['atualizarCampos'] = Qlib::update_tab('clientes',$post,$cond_valid);
 
 				}else{
 
