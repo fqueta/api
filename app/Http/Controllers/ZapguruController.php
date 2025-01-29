@@ -98,6 +98,7 @@ class ZapguruController extends Controller
 
 		$arr_json = Qlib::lib_json_array($json);
         $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
+        $telefonezap = isset($arr_json['celular']) ? $arr_json['celular'] : null;
         //lib_print($arr_json);
         $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
         Log::info('Webhook zapduru '.$event.':', $arr_json);
@@ -120,7 +121,7 @@ class ZapguruController extends Controller
 			}elseif($arr_json['origem']=='respondeu_nome' || $arr_json['origem']=='respondeu_email'  || $arr_json['origem']=='add_lead'){
 
                 $ret['atendimento'] = $this->salvarCaptaLead($arr_json);
-                dd( $ret);
+                // dd( $ret);
 
 				$arquivo = fopen(dirname(__FILE__).'/atendimento.txt','a');
 
@@ -130,6 +131,14 @@ class ZapguruController extends Controller
 
 				fclose($arquivo);
 
+			}elseif($event == 'update_lead' && $telefonezap){
+                //Atualiza o cliente e lead de acornto com o retorno
+                $ret['clientes'] = Qlib::update_tab('clientes',[
+                    'zapguru' => $json,
+                ],"WHERE telefonezap='$telefonezap'");
+                $ret['capt_lead'] = Qlib::update_tab('capta_lead',[
+                    'zapguru' => $json,
+                ],"WHERE celular='$telefonezap'");
 			}else{
 
                 $ret['req_json'] = $arr_json;
@@ -148,7 +157,7 @@ class ZapguruController extends Controller
 
 				fclose($arquivo);*/
 
-				dump($ret);
+				// dump($ret);
 
 		return $ret;
 
@@ -509,7 +518,20 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
-
+    /**
+     * retorna o link de um chat aparti de uma respota webhook zapguru valida
+     * @param array $config
+     */
+    public function get_list_chat($config){
+        if(Qlib::isJson($config)){
+            $arr_post = Qlib::lib_json_array($config);
+        }elseif(is_array($config)){
+            $arr_post = $config;
+        }else{
+            $arr_post = array();
+        }
+        return $arr_post['list_chat'];
+    }
 
 	function enviar_mensagem($config=false){
 

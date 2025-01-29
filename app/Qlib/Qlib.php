@@ -2324,6 +2324,12 @@ class Qlib
                                 $ret['dados'] = $dados;
                                 $ret['color'] = 'success';
                                 $ret['mens'] = 'Registro atualizado com sucesso!';
+                            }else{
+                                $ret['exec'] = true;
+                                $ret['idCad'] = $id;
+                                $ret['dados'] = $dados;
+                                $ret['color'] = 'success';
+                                $ret['mens'] = 'Registro sem necessidade de atualização!';
                             }
                         }else{
                             $ret['exec'] = false;
