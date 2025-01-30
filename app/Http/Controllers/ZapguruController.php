@@ -92,8 +92,10 @@ class ZapguruController extends Controller
      * returna o link do chat na query string
      */
     public function link_chat($zp){
-        if(Qlib::isJson($zp)){
-            $zp = Qlib::lib_json_array($zp);
+        if(is_string($zp)){
+            if(json_validate($zp)){
+                $zp = Qlib::lib_json_array($zp);
+            }
         }
         $link = isset($zp['link_chat']) ? $zp['link_chat'] : false;
         return $link;
@@ -109,9 +111,10 @@ class ZapguruController extends Controller
 		$arr_json = Qlib::lib_json_array($json);
         $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
         $telefonezap = isset($arr_json['celular']) ? $arr_json['celular'] : null;
-        //lib_print($arr_json);
+        $id_cliente = $this->get_client_id($arr_json);
         $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
         Log::info('Webhook zapduru '.$event.':', $arr_json);
+
         if(isset($arr_json['origem'])){
 
 			if($arr_json['origem']=='envia_campos' || $arr_json['origem']=='disparo_crm'){
@@ -143,10 +146,15 @@ class ZapguruController extends Controller
 
 			}elseif($event == 'update_lead' && $telefonezap){
                 //Atualiza o cliente e lead de acornto com o retorno
-
-                $cl = Qlib::update_tab('clientes',[
+                $dadd = [
                     'zapguru' => $json,
-                ],"WHERE telefonezap='$telefonezap'");
+                ];
+                if($id_cliente && !empty($id_cliente)){
+                    $where = "WHERE id='$id_cliente'";
+                }else{
+                    $where = "WHERE telefonezap='$telefonezap'";
+                }
+                $cl = Qlib::update_tab('clientes',$dadd,$where);
                 $ret['clientes'] = $cl;
                 $ret['capt_lead'] = Qlib::update_tab('capta_lead',[
                     'zapguru' => $json,
@@ -373,6 +381,20 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
+    /**
+     * returna o id do chat na query string
+     * usando um campo persolanizado
+     */
+
+    public function get_client_id($zp){
+        if(is_string($zp)){
+            if(json_validate($zp)){
+                $zp = Qlib::lib_json_array($zp);
+            }
+        }
+        $link = isset($zp['campos_personalizados']['ID_do_cliente']) ? $zp['campos_personalizados']['ID_do_cliente'] : null;
+        return $link;
+    }
     /**
      * metodo para disparar postagem para API do zapguru
      * @param string $chat_number = o numero do chat
