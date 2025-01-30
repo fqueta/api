@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\api\OrcamentoController;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -83,6 +84,27 @@ class RdstationController extends Controller
         //
     }
     /**
+     * para postagem de conteudo na api rd
+     * @param string $endpoint
+     * @param string $data é o body
+     */
+    public function post($endpoint=null,$data=[])
+    {
+        $url = $this->url_padrao.'/'.$endpoint.'?token='.$this->token_api;
+        // $url = str_replace('{id}',$id,$url);
+        $response = Http::withHeaders([
+            'accept' => 'application/json',
+            'content-type' => 'application/json',
+        ])->post($url,$data);
+        $ret['exec'] = false;
+        if($response){
+            $ret['exec'] = true;
+            $ret['json'] = $response;
+            $ret['data'] = Qlib::lib_json_array($response);
+        }
+        return $ret;
+    }
+    /**
      * Atualiza o cliente com a requisição do contato do RD station
      * @param array $config Array da consulta da API do Rd
      */
@@ -111,6 +133,22 @@ class RdstationController extends Controller
     public function get_event_by_webhook($config=[]){
         $event = isset($config['event_name']) ? $config['event_name'] : false;
         return $event;
+    }
+    /**
+     * Extrai o id de post webhook
+     * @param array $config  essa é a carga de dados de uma webhook
+     */
+    public function get_deal_id($config=[]){
+        $id = isset($config['document']['id']) ? $config['document']['id'] : null;
+        return $id;
+    }
+    /**
+     * Extrai o id de post webhook
+     * @param array $config  essa é a carga de dados de uma webhook
+     */
+    public function get_user_id($config=[]){
+        $id = isset($config['document']['user']['id']) ? $config['document']['user']['id'] : null;
+        return $id;
     }
     /**
      * Metodo para executar o webhook
@@ -160,6 +198,7 @@ class RdstationController extends Controller
             'Email' => $email,
             'telefonezap' => $telefonezap,
             'rdstation' => $config['id'],
+            'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
             'token' => uniqid(),
             'EscolhaDoc' => 'CPF',
         ];
@@ -184,5 +223,44 @@ class RdstationController extends Controller
         //     $ret = (new OrcamentoController)->add_update($config_orc);
         // }
         return $sc;
+    }
+    /**
+     * Metodo para Criar uma anotação apartir de um cadastro de cliente
+     * @param string $id_cliente
+     * @param string $text texto da anotação
+     */
+
+    public function anota_por_cliente($id_cliente,$text){
+        $dc = Qlib::dados_tab('clientes',['where'=>"WHERE id='$id_cliente'"]);
+        $ret['exec'] = false;
+        if(isset($dc[0]['rd_ultimo_negocio']) && ($rd=$dc[0]['rd_ultimo_negocio'])){
+            $ret = $this->criar_anotacao([
+                'text' => $text,
+                'deal_id' => $this->get_deal_id($rd),
+                'user_id' => $this->get_user_id($rd),
+            ]);
+        }
+        return $ret;
+    }
+    /**
+     * Criar uma anotação
+     * @param string $id_cliente
+     */
+    public function criar_anotacao($config=[]){
+        $user_id = isset($config['user_id']) ? $config['user_id'] : null;
+        $deal_id = isset($config['deal_id']) ? $config['deal_id'] : null;
+        $text = isset($config['text']) ? $config['text'] : null;
+        $endpoint = 'activities';
+        $ret['exec'] = false;
+        if($user_id && $deal_id && $text){
+            $ret = $this->post($endpoint,[
+                'activity'=>[
+                    'user_id' => $user_id,
+                    'deal_id' => $deal_id,
+                    'text' => $text,
+                ]
+            ]);
+        }
+        return $ret;
     }
 }

@@ -88,8 +88,18 @@ class ZapguruController extends Controller
 		$ret = '628d294cc5ef6cb21b445e47';
 		return $ret;
 	}
+    /**
+     * returna o link do chat na query string
+     */
+    public function link_chat($zp){
+        if(Qlib::isJson($zp)){
+            $zp = Qlib::lib_json_array($zp);
+        }
+        $link = isset($zp['link_chat']) ? $zp['link_chat'] : false;
+        return $link;
+    }
 
-	function webhook($config=false){
+	public function webhook($config=false){
 		$ret = false;
 		$json = file_get_contents('php://input');
 
@@ -133,20 +143,26 @@ class ZapguruController extends Controller
 
 			}elseif($event == 'update_lead' && $telefonezap){
                 //Atualiza o cliente e lead de acornto com o retorno
-                $ret['clientes'] = Qlib::update_tab('clientes',[
+
+                $cl = Qlib::update_tab('clientes',[
                     'zapguru' => $json,
                 ],"WHERE telefonezap='$telefonezap'");
+                $ret['clientes'] = $cl;
                 $ret['capt_lead'] = Qlib::update_tab('capta_lead',[
                     'zapguru' => $json,
                 ],"WHERE celular='$telefonezap'");
+                //criar uma anotação o o link do chatguru
+                if(isset($cl['idCad'])){
+                    $link_chat = $this->link_chat($json);
+                    if($link_chat){
+                        $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
+                        $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($cl['idCad'],$text);
+                    }
+                }
 			}else{
-
                 $ret['req_json'] = $arr_json;
-
             }
-
 		}
-
 
 
 		/*$arquivo = fopen(dirname(__FILE__).'/atendimento.txt','a');
@@ -162,7 +178,6 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
-
 	public function salvarCaptaLead($config=false){
 
 		//Salvar o cliente recebido da webhook
