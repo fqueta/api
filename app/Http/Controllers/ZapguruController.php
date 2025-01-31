@@ -111,6 +111,7 @@ class ZapguruController extends Controller
 		$arr_json = Qlib::lib_json_array($json);
         $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
         $telefonezap = isset($arr_json['celular']) ? $arr_json['celular'] : null;
+        $nome = isset($arr_json['nome']) ? $arr_json['nome'] : null;
         $id_cliente = $this->get_client_id($arr_json);
         $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
         Log::info('Webhook zapduru '.$event.':', $arr_json);
@@ -153,6 +154,10 @@ class ZapguruController extends Controller
                     $where = "WHERE id='$id_cliente'";
                 }else{
                     $where = "WHERE telefonezap='$telefonezap'";
+                    //checar para ver se o cadastro está com o esse telefone caso não encontrar use a consulta pelo nome
+                    if(Qlib::totalReg('clientes',$where)==0){
+                        $where = "WHERE Nome='$nome'";
+                    }
                 }
                 $cl = Qlib::update_tab('clientes',$dadd,$where);
                 $ret['clientes'] = $cl;
