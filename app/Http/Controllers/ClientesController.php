@@ -30,6 +30,21 @@ class ClientesController extends Controller
         $ret = Qlib::update_tab($tab,$dados,$where);
         return $ret;
     }
+    /**
+     * adicion ou atualiza um lead
+     * @param array $dados array com os campos e valores que serão gravados no bando dedados
+     * @param string $where com as string SQL de condição para atualização do registro no banco de dados
+     */
+    public function add_lead_update($dados=[],$where=''){
+        $tab = 'capta_lead';
+        //tornar unico pelo email por padrão
+        $where = $where ? $where : false;
+        if(empty($where) && isset($dados['email']) && !empty($dados['email'])){
+            $where = "WHERE email='".$dados['email']."'";
+        }
+        $ret = Qlib::update_tab($tab,$dados,$where);
+        return $ret;
+    }
     /**Para cover um lead em cliente e vice versa
      * @param array $config = ['id'=>285,'type'=>'lc']    type = lc é leads em cliente $type = cl é cliente em lead
      */

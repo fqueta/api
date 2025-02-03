@@ -166,6 +166,14 @@ class RdstationController extends Controller
                 $dados_contato = $this->show($id,'/deals/{id}/contacts');
                 $data = isset($dados_contato['data']['contacts']) ? $dados_contato['data']['contacts'] : false;
                 if(is_array($data)){
+                    $nomeCompleto = isset($data[0]['name']) ? $data[0]['name'] : '';
+                    if (str_word_count($nomeCompleto) >= 2) {
+                        // echo "Tem nome e sobrenome.";
+                        $data[0]['name'] = $nomeCompleto;
+                    } else {
+                        // echo "Nome incompleto.";
+                        $data[0]['name'] = isset($d['document']['name']) ? $d['document']['name'] : '';
+                    }
                     $ret = $this->salvar_orcamento($data,$d);
                 }
             }
@@ -193,17 +201,31 @@ class RdstationController extends Controller
         $telefonezap = str_replace(')', '', $telefonezap);
         $telefonezap = str_replace('-', '', $telefonezap);
         // return $config;
+        // $data = [
+        //     'Nome' => $nome,
+        //     'Email' => $email,
+        //     'telefonezap' => $telefonezap,
+        //     'rdstation' => $config['id'],
+        //     'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
+        //     'token' => uniqid(),
+        //     'EscolhaDoc' => 'CPF',
+        // ];
         $data = [
-            'Nome' => $nome,
-            'Email' => $email,
-            'telefonezap' => $telefonezap,
+            'nome' => $nome,
+            'email' => $email,
+            'celular' => $telefonezap,
             'rdstation' => $config['id'],
             'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
             'token' => uniqid(),
-            'EscolhaDoc' => 'CPF',
+            'excluido' => 'n',
+            'deletado' => 'n',
+            'atualizado' => Qlib::dataLocalDb(),
+            // 'EscolhaDoc' => 'CPF',
         ];
         $ret['exec'] = false;
-        $sc = (new ClientesController)->add_update($data);
+        // $sc = (new ClientesController)->add_update($data);
+        $sc = (new ClientesController)->add_lead_update($data);
+        // return $sc;
         $ret['cad_cliente'] = $sc;
         $id_cliente = isset($sc['idCad']) ? $sc['idCad'] : null;
         //Criar chat zapguru
@@ -212,7 +234,7 @@ class RdstationController extends Controller
             $ret['exec'] = true;
             // return $ret;
             //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
-            $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true));
+            $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead'));
         }
 
         //criar orçamento...
@@ -222,7 +244,7 @@ class RdstationController extends Controller
         //     ];
         //     $ret = (new OrcamentoController)->add_update($config_orc);
         // }
-        return $sc;
+        return $ret;
     }
     /**
      * Metodo para Criar uma anotação apartir de um cadastro de cliente
@@ -230,8 +252,9 @@ class RdstationController extends Controller
      * @param string $text texto da anotação
      */
 
-    public function anota_por_cliente($id_cliente,$text){
-        $dc = Qlib::dados_tab('clientes',['where'=>"WHERE id='$id_cliente'"]);
+    public function anota_por_cliente($id_cliente,$text,$tab='clientes'){
+        $dc = Qlib::dados_tab($tab,['where'=>"WHERE id='$id_cliente'"]);
+        // return $dc;
         $ret['exec'] = false;
         if(isset($dc[0]['rd_ultimo_negocio']) && ($rd=$dc[0]['rd_ultimo_negocio'])){
             $ret = $this->criar_anotacao([

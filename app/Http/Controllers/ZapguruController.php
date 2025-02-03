@@ -161,15 +161,22 @@ class ZapguruController extends Controller
                 }
                 $cl = Qlib::update_tab('clientes',$dadd,$where);
                 $ret['clientes'] = $cl;
-                $ret['capt_lead'] = Qlib::update_tab('capta_lead',[
+                $lead = Qlib::update_tab('capta_lead',[
                     'zapguru' => $json,
-                ],"WHERE celular='$telefonezap'");
+                ],"WHERE nome='$nome'");
+                if(isset($lead['exec']) && !$lead['exec'] && $telefonezap){
+                    $lead = Qlib::update_tab('capta_lead',[
+                        'zapguru' => $json,
+                    ],"WHERE celular='$telefonezap'");
+                }
+                $ret['capt_lead'] = $lead;
                 //criar uma anotação o o link do chatguru
-                if(isset($cl['idCad'])){
+                if(isset($lead['idCad'])){
+                    $tab = 'capta_lead';
                     $link_chat = $this->link_chat($json);
                     if($link_chat){
                         $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
-                        $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($cl['idCad'],$text);
+                        $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tab);
                     }
                 }
 			}else{
@@ -444,6 +451,7 @@ class ZapguruController extends Controller
 
 		$ret['exec'] = false;
         $cel = isset($config['telefonezap']) ? $config['telefonezap'] : false;
+        $tab = isset($config['tab']) ? $config['tab'] : $GLOBALS['tab15'];
         $cadastrado = isset($config['cadastrados']) ? $config['cadastrados'] : false; // permite criar chat de clientes cadastrados ou não
         // $text 		 	= isset($config['text'])?$config['text'] 	:'Olá *{nome}* como podemos ajudá-lo';
         $text 		 	= isset($config['text'])?$config['text'] 	:' ';
@@ -451,14 +459,18 @@ class ZapguruController extends Controller
             $cel = isset($config['Celular']) ? $config['Celular'] : false;
         }
 		if(isset($config['telefonezap'])){
-			$comSc = " AND telefonezap='".$cel."'";
+            if($tab=='capta_lead'){
+                $comSc = " AND celular='".$cel."'";
+            }else{
+                $comSc = " AND telefonezap='".$cel."'";
+            }
 		}else{
 			$comSc = " AND Celular='".$cel."'";
 		}
-       if($comSc){
+        if($comSc){
             //dados_tab('lcf_planos',['comple_sql'=>"WHERE token_matricula='".$config['token_matricula']."' $compleSql"])
-			$dadosCli = Qlib::dados_tab($GLOBALS['tab15'],['campos'=>'*','where'=>"WHERE ".Qlib::compleDelete()."$comSc"]);
-
+			$dadosCli = Qlib::dados_tab($tab,['campos'=>'*','where'=>"WHERE ".Qlib::compleDelete()."$comSc"]);
+            // return $dadosCli;
 			if(!$dadosCli && $cadastrado){
 
 				$ret['mens'] = Qlib::formatMensagemInfo('Cliente com telefone '.$cel.' não encontrado!','danger');
@@ -469,39 +481,40 @@ class ZapguruController extends Controller
             $id_cliente = isset($dadosCli[0]['id']) ? $dadosCli[0]['id'] : false;
             // dump($dadosCli);
             if($cadastrado){
+                if($tab=='capta_lead'){
+                    $Celular 	 	= str_replace('(','',$dadosCli[0]['celular']);
+                    $nome 		 	= isset($dadosCli[0]['nome'])?$dadosCli[0]['nome'] 	:false;
+                    $sobrenome = '';
+                    $chat_number 	= $dadosCli[0]['celular'];
+                }else{
+                    $nome 		 	= isset($dadosCli[0]['Nome'])?$dadosCli[0]['Nome'] 	:false;
+                    $pais = !empty($dadosCli[0]['pais'])?$dadosCli[0]['pais']:'Brasil';
 
-                $pais = !empty($dadosCli[0]['pais'])?$dadosCli[0]['pais']:'Brasil';
+                    $codi_pais = false;
 
-                $codi_pais = false;
+                    if($pais=='Brasil' && !isset($config['telefonezap'])){
 
-                if($pais=='Brasil' && !isset($config['telefonezap'])){
+                        $codi_pais = '55';
 
-                    $codi_pais = '55';
+                    }
+                    $Celular 	 	= str_replace('(','',$dadosCli[0]['Celular']);
+                    $sobrenome 		= isset($dadosCli[0]['sobrenome']) ? $dadosCli[0]['sobrenome'] 	:false;
+                    if(!empty($dadosCli[0]['telefonezap'])){
 
+                        $chat_number 	= $dadosCli[0]['telefonezap'];
+
+                    }else{
+
+                        $chat_number 	= $codi_pais.$Celular;
+                    }
                 }
-
+                $name  = urlencode($nome.' '.$sobrenome);
+                $Celular 		= str_replace(')','',$Celular);
+                $Celular 		= str_replace('-','',$Celular);
                 $ret['dadosCli'] = $dadosCli;
 
-                $Celular 	 	= str_replace('(','',$dadosCli[0]['Celular']);
 
-                $Celular 		= str_replace(')','',$Celular);
 
-                $Celular 		= str_replace('-','',$Celular);
-
-                $nome 		 	= isset($dadosCli[0]['Nome'])?$dadosCli[0]['Nome'] 	:false;
-
-                $sobrenome 		= isset($dadosCli[0]['sobrenome']) ? $dadosCli[0]['sobrenome'] 	:false;
-
-                $name  = urlencode($nome.' '.$sobrenome);
-
-                if(!empty($dadosCli[0]['telefonezap'])){
-
-                    $chat_number 	= $dadosCli[0]['telefonezap'];
-
-                }else{
-
-                    $chat_number 	= $codi_pais.$Celular;
-                }
 
 			}else{
                 $name = 'Senhor(a)';

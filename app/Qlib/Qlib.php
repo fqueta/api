@@ -572,7 +572,7 @@ class Qlib
             return false;
         }
     }
-    static public function dados_tab($tab = null,$config=[])
+    static public function dados_tab($tab = null,$config=[],$debug=false)
     {
         $ret = false;
         $sql = isset($config['sql']) ? $config['sql']:false;
@@ -588,6 +588,13 @@ class Qlib
             $sql = "SELECT $campos FROM " . $tab.' '.$comple_sql;
         }
         if($sql){
+            if($debug){
+                if($debug=='dd'){
+                    return $sql;
+                }else{
+                    dump($sql);
+                }
+            }
             $d = DB::select($sql);
             $arr_list = $d;
             $list = false;
