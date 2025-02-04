@@ -217,6 +217,7 @@ class RdstationController extends Controller
             'rdstation' => $config['id'],
             'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
             'token' => uniqid(),
+            'tag_origem' => 'rdstation',
             'excluido' => 'n',
             'deletado' => 'n',
             'atualizado' => Qlib::dataLocalDb(),
