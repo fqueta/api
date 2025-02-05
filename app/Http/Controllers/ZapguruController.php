@@ -110,8 +110,9 @@ class ZapguruController extends Controller
 
 		$arr_json = Qlib::lib_json_array($json);
         $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
-        $telefonezap = isset($arr_json['celular']) ? $arr_json['celular'] : null;
-        $nome = isset($arr_json['nome']) ? $arr_json['nome'] : null;
+        $telefonezap = $this->get_telefone($arr_json);
+        $nome = $this->get_nome($arr_json);
+        $email = $this->get_email($arr_json);
         $id_cliente = $this->get_client_id($arr_json);
         $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
         Log::info('Webhook zapduru '.$event.':', $arr_json);
@@ -150,33 +151,61 @@ class ZapguruController extends Controller
                 $dadd = [
                     'zapguru' => $json,
                 ];
+                $add_cliente = false; //para adicionar um clientes na tabela de clientes
                 if($id_cliente && !empty($id_cliente)){
                     $where = "WHERE id='$id_cliente'";
                 }else{
                     $where = "WHERE telefonezap='$telefonezap'";
                     //checar para ver se o cadastro está com o esse telefone caso não encontrar use a consulta pelo nome
-                    if(Qlib::totalReg('clientes',$where)==0){
-                        $where = "WHERE Nome='$nome'";
+                    if($add_cliente){
+                        if(Qlib::totalReg('clientes',$where)==0){
+                            $where = "WHERE Nome='$nome'";
+                        }
                     }
                 }
-                $cl = Qlib::update_tab('clientes',$dadd,$where);
-                $ret['clientes'] = $cl;
-                $lead = Qlib::update_tab('capta_lead',[
-                    'zapguru' => $json,
-                ],"WHERE nome='$nome'");
-                if(isset($lead['exec']) && !$lead['exec'] && $telefonezap){
-                    $lead = Qlib::update_tab('capta_lead',[
+                if($add_cliente){
+                    //adiciona o cliente na tabela de clientes
+                    $cl = Qlib::update_tab('clientes',$dadd,$where);
+                    $ret['clientes'] = $cl;
+                }
+                $whereLead = "WHERE nome='$nome'";
+                $tabLead = 'capta_lead';
+                if(Qlib::totalReg($tabLead,$whereLead)>0){
+                    $ddlead = [
                         'zapguru' => $json,
-                    ],"WHERE celular='$telefonezap'");
+                    ];
+                }else{
+                    $ddlead = [
+                        'nome' => $nome,
+                        'email' => $email,
+                        'celular' => $telefonezap,
+                        'zapguru' => $json,
+                        'token' => uniqid(),
+                        'tag_origem' => 'zapguru',
+                        'excluido' => 'n',
+                        'deletado' => 'n',
+                        'atualizado' => Qlib::dataLocalDb(),
+                        // 'EscolhaDoc' => 'CPF',
+                    ];
+
+                }
+                $lead = Qlib::update_tab($tabLead,$ddlead,$whereLead);
+                if(isset($lead['exec']) && !$lead['exec'] && $telefonezap){
+                    $whereLead = "WHERE celular='$telefonezap'";
+                    $lead = Qlib::update_tab($tabLead,$ddlead,$whereLead);
                 }
                 $ret['capt_lead'] = $lead;
                 //criar uma anotação o o link do chatguru
                 if(isset($lead['idCad'])){
-                    $tab = 'capta_lead';
                     $link_chat = $this->link_chat($json);
                     if($link_chat){
                         $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
-                        $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tab);
+                        //verificar se pode enviar uma anotação
+                        // $dlead = Qlib::dados_tab($tabLead,['where' => "WHERE id = '".$lead['idCad']."'"]);
+                        // return $dlead;
+                        $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
+                        // $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
+
                     }
                 }
 			}else{
@@ -198,6 +227,38 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
+    public function add_rd_negociacao($_zapguru,$id_lead,$link_chat){
+        $nome = $this->get_nome($_zapguru);
+        $email = $this->get_email($_zapguru);
+        $telefone = $this->get_telefone($_zapguru);
+        $query_rd = [
+            "deal" => [
+                "deal_stage_id" => "67976140c4eb85001b3d3ec8",
+                "user_id" => "678947e873759800146e7e00",
+                "name" => $nome,
+            ],
+            "contacts" => [
+                [
+                "emails" => [
+                    [
+                        "email" => $email
+                    ]
+                ],
+                "name" => $nome,
+                "phones" => [
+                        [
+                        "phone" => $telefone,
+                        "type" => "cellphone"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        //enviar post para o rd
+        $ret = (new RdstationController)->post('deals',$query_rd);
+        return $ret;
+    }
 	public function salvarCaptaLead($config=false){
 
 		//Salvar o cliente recebido da webhook
@@ -406,6 +467,52 @@ class ZapguruController extends Controller
         }
         $link = isset($zp['campos_personalizados']['ID_do_cliente']) ? $zp['campos_personalizados']['ID_do_cliente'] : null;
         return $link;
+    }
+    /**
+     * returna o Email do chat na query string
+     * usando um campo persolanizado
+     */
+
+    public function get_email($zp){
+        if(is_string($zp)){
+            if(json_validate($zp)){
+                $zp = Qlib::lib_json_array($zp);
+            }
+        }
+        $email = isset($zp['campos_personalizados']['Email']) ? $zp['campos_personalizados']['Email'] : null;
+        return $email;
+    }
+    /**
+     * returna o nome do chat na query string
+     * usando um campo persolanizado
+     */
+
+    public function get_telefone($zp){
+        if(is_string($zp)){
+            if(json_validate($zp)){
+                $zp = Qlib::lib_json_array($zp);
+            }
+        }
+        $celular = isset($zp['celular']) ? $zp['celular'] : '';
+        return $celular;
+    }
+    /**
+     * returna o nome do chat na query string
+     * usando um campo persolanizado
+     */
+
+    public function get_nome($zp){
+        if(is_string($zp)){
+            if(json_validate($zp)){
+                $zp = Qlib::lib_json_array($zp);
+            }
+        }
+        $nome = isset($zp['campos_personalizados']['Nome']) ? $zp['campos_personalizados']['Nome'] : '';
+        if(empty($nome)){
+            $nome = isset($zp['nome']) ? $zp['nome'] : null;
+        }
+        $nome = trim($nome);
+        return $nome;
     }
     /**
      * metodo para disparar postagem para API do zapguru

@@ -55,6 +55,7 @@ class RdstationController extends Controller
         if($response){
             $ret['exec'] = true;
             $ret['json'] = $response;
+            $ret['url'] = $url;
             $ret['data'] = Qlib::lib_json_array($response);
         }
         return $ret;
@@ -174,7 +175,10 @@ class RdstationController extends Controller
                         // echo "Nome incompleto.";
                         $data[0]['name'] = isset($d['document']['name']) ? $d['document']['name'] : '';
                     }
-                    $ret = $this->salvar_orcamento($data,$d);
+                    $ret = $this->salvar_orcamento($data,$d,true);
+                }else{
+                    $ret['mens'] = 'Cliente não encontrado na base do RD';
+                    $ret['dados_contato_RD'] = $dados_contato;
                 }
             }
             $save = Qlib::saveEditJson($d,'webhook_rd.json');
@@ -189,7 +193,7 @@ class RdstationController extends Controller
      * @param array $conf_neg array com a postatem da webhook contendo os dados da neçãociaão do Rd station
      * @return array $ret
      */
-    public function salvar_orcamento($conf_contato=[],$conf_neg=[]){
+    public function salvar_orcamento($conf_contato=[],$conf_neg=[],$chat_inic=true){
         //salvar o cliente
         $config = isset($conf_contato[0])? $conf_contato[0] : [];
         $nome = isset($config['name']) ? $config['name'] : '';
@@ -234,8 +238,10 @@ class RdstationController extends Controller
         if(isset($sc['exec']) && $telefonezap){
             $ret['exec'] = true;
             // return $ret;
-            //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
-            $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead'));
+            if($chat_inic){
+                //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
+                $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead'));
+            }
         }
 
         //criar orçamento...
@@ -255,14 +261,20 @@ class RdstationController extends Controller
 
     public function anota_por_cliente($id_cliente,$text,$tab='clientes'){
         $dc = Qlib::dados_tab($tab,['where'=>"WHERE id='$id_cliente'"]);
-        // return $dc;
         $ret['exec'] = false;
-        if(isset($dc[0]['rd_ultimo_negocio']) && ($rd=$dc[0]['rd_ultimo_negocio'])){
+        $rd = isset($dc[0]['rd_ultimo_negocio']) ? $dc[0]['rd_ultimo_negocio'] : false;
+        if(!is_array($rd)){
+            $rd = isset($dc['rd_ultimo_negocio']) ? $dc['rd_ultimo_negocio'] : false;
+        }
+        if(is_array($rd)){
+            // return $this->get_deal_id($rd);
             $ret = $this->criar_anotacao([
                 'text' => $text,
                 'deal_id' => $this->get_deal_id($rd),
                 'user_id' => $this->get_user_id($rd),
             ]);
+        }else{
+            $ret['mens'] = 'Negociação não encontrada na base de dados';
         }
         return $ret;
     }
