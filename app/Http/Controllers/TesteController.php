@@ -29,7 +29,9 @@ class TesteController extends Controller
 
 		// $ret = $zg->criar_chat(array('telefonezap'=>'5532984748644','cadastrados'=>true));
         // dd(Qlib::qoption('dominio'));
-        $ret = (new ZapguruController)->post('553291648202','dialog_execute',$comple_url='&dialog_id=679a438a9d7c8affe47e29b5');
+        // $ret = (new ZapguruController)->post('553291648202','dialog_execute',$comple_url='&dialog_id=679a438a9d7c8affe47e29b5');
+        $rdc = new RdstationController;
+        $ret = $rdc->get_contact('67a4f69c968ad00014a6773f');
         return $ret;
     }
 }

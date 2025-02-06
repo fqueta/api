@@ -268,7 +268,21 @@ class ZapguruController extends Controller
         ];
         // return $query_rd;
         //enviar post para o rd
-        $ret = (new RdstationController)->post('deals',$query_rd);
+        $rdc = new RdstationController;
+        $ret = $rdc->post('deals',$query_rd);
+        $id_negocio = isset($ret['data']['id']) ? $ret['data']['id'] : null;
+        if($id_negocio!==null && $id_lead){
+            //adquirir os dados do cliente da negociacao
+            $dados_contato = $rdc->get_contact($id_negocio);
+            $id_contato = isset($dados_contato['data']['contacts'][0]['id']) ? $dados_contato['data']['contacts'][0]['id'] : null;
+            $ret['updata'] = Qlib::update_tab('capta_lead',[
+                'rdstation' => $id_contato,
+                'rd_ultimo_negocio' => Qlib::lib_array_json([
+                    'document'=>$ret['data'],
+                ]),
+                'atualizado' => Qlib::dataLocalDb(),
+            ],"WHERE celular = '$telefone'");
+        }
         return $ret;
     }
 	public function salvarCaptaLead($config=false){

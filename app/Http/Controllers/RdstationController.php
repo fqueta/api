@@ -293,6 +293,14 @@ class RdstationController extends Controller
         return $ret;
     }
     /**
+     * Retorna o array com dos dados de contato de uma negociação valida
+     * @param string $deal_id id da negociação
+     */
+    public function get_contact($deal_id){
+        $dados_contato = $this->show($deal_id,'/deals/{id}/contacts');
+        return $dados_contato;
+    }
+    /**
      * Metodo para Criar uma anotação apartir de um cadastro de cliente
      * @param string $id_cliente
      * @param string $text texto da anotação
