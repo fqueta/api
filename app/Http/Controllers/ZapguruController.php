@@ -18,7 +18,7 @@ class ZapguruController extends Controller
 		$this->credenciais();
         $tab15 = 'clientes';
         $tab88 = 'capta_lead';
-        $origem_padrao = (new RdstationController)->origem_padrao;
+        $this->origem_padrao = (new RdstationController)->origem_padrao;
 	}
     /**
      * Display a listing of the resource.
@@ -243,8 +243,10 @@ class ZapguruController extends Controller
                 "user_id" => $id_campo_user_id,
                 "name" => $nome,
                 "deal_custom_fields" => [
-                    "custom_field_id"=> $id_campo_origem,
-                    "value"=> $tag_origem,
+                    [
+                        "custom_field_id"=> $id_campo_origem,
+                        "value"=> $tag_origem,
+                    ],
                 ]
             ],
             "contacts" => [
@@ -264,7 +266,7 @@ class ZapguruController extends Controller
                 ]
             ]
         ];
-
+        // return $query_rd;
         //enviar post para o rd
         $ret = (new RdstationController)->post('deals',$query_rd);
         return $ret;
