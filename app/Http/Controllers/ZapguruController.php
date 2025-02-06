@@ -206,7 +206,70 @@ class ZapguruController extends Controller
                         // return $dlead;
                         $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
                         //veririca se ja tem uma negociação para esse cliente
-                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
+                        // $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
+
+                    }
+                }
+			}elseif($event == 'deal_create_rd' && $telefonezap){
+                //Atualiza o cliente e lead de acornto com o retorno
+                $dadd = [
+                    'zapguru' => $json,
+                ];
+                $add_cliente = false; //para adicionar um clientes na tabela de clientes
+                if($id_cliente && !empty($id_cliente)){
+                    $where = "WHERE id='$id_cliente'";
+                }else{
+                    $where = "WHERE telefonezap='$telefonezap'";
+                    //checar para ver se o cadastro está com o esse telefone caso não encontrar use a consulta pelo nome
+                    if($add_cliente){
+                        if(Qlib::totalReg('clientes',$where)==0){
+                            $where = "WHERE Nome='$nome'";
+                        }
+                    }
+                }
+                if($add_cliente){
+                    //adiciona o cliente na tabela de clientes
+                    $cl = Qlib::update_tab('clientes',$dadd,$where);
+                    $ret['clientes'] = $cl;
+                }
+                $whereLead = "WHERE nome='$nome'";
+                $tabLead = 'capta_lead';
+                if(Qlib::totalReg($tabLead,$whereLead)>0){
+                    $ddlead = [
+                        'zapguru' => $json,
+                    ];
+                }else{
+                    $ddlead = [
+                        'nome' => $nome,
+                        'email' => $email,
+                        'celular' => $telefonezap,
+                        'zapguru' => $json,
+                        'token' => uniqid(),
+                        'tag_origem' => 'zapguru',
+                        'excluido' => 'n',
+                        'deletado' => 'n',
+                        'atualizado' => Qlib::dataLocalDb(),
+                        // 'EscolhaDoc' => 'CPF',
+                    ];
+
+                }
+                $lead = Qlib::update_tab($tabLead,$ddlead,$whereLead);
+                if(isset($lead['exec']) && !$lead['exec'] && $telefonezap){
+                    $whereLead = "WHERE celular='$telefonezap'";
+                    $lead = Qlib::update_tab($tabLead,$ddlead,$whereLead);
+                }
+                $ret['capt_lead'] = $lead;
+                //criar uma anotação o o link do chatguru
+                if(isset($lead['idCad'])){
+                    $link_chat = $this->link_chat($json);
+                    if($link_chat){
+                        $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
+                        //verificar se pode enviar uma anotação
+                        // $dlead = Qlib::dados_tab($tabLead,['where' => "WHERE id = '".$lead['idCad']."'"]);
+                        // return $dlead;
+                        // $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
+                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat='');
+                        //veririca se ja tem uma negociação para esse cliente
 
                     }
                 }
