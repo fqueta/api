@@ -12,12 +12,13 @@ class ZapguruController extends Controller
 {
 
     public $url;
-
+    public $origem_padrao;
 	function __construct(){
         global $tab15,$tab88;
 		$this->credenciais();
         $tab15 = 'clientes';
         $tab88 = 'capta_lead';
+        $origem_padrao = (new RdstationController)->origem_padrao;
 	}
     /**
      * Display a listing of the resource.
@@ -204,7 +205,8 @@ class ZapguruController extends Controller
                         // $dlead = Qlib::dados_tab($tabLead,['where' => "WHERE id = '".$lead['idCad']."'"]);
                         // return $dlead;
                         $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
-                        // $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
+                        //veririca se ja tem uma negociação para esse cliente
+                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
 
                     }
                 }
@@ -231,11 +233,19 @@ class ZapguruController extends Controller
         $nome = $this->get_nome($_zapguru);
         $email = $this->get_email($_zapguru);
         $telefone = $this->get_telefone($_zapguru);
+        $id_campo_origem = '67a4b19e1688c9002139e3c5';
+        $id_campo_user_id = '678947e873759800146e7e00';
+        $id_campo_funil = '67976140c4eb85001b3d3ec8';
+        $tag_origem = $this->origem_padrao;
         $query_rd = [
             "deal" => [
-                "deal_stage_id" => "67976140c4eb85001b3d3ec8",
-                "user_id" => "678947e873759800146e7e00",
+                "deal_stage_id" =>$id_campo_funil,
+                "user_id" => $id_campo_user_id,
                 "name" => $nome,
+                "deal_custom_fields" => [
+                    "custom_field_id"=> $id_campo_origem,
+                    "value"=> $tag_origem,
+                ]
             ],
             "contacts" => [
                 [
@@ -1642,9 +1652,9 @@ class ZapguruController extends Controller
 	 */
 	public function get_tags($string_zapguru){
 		$ret = false;
-		if(isJson($string_zapguru)){
+		if(Qlib::isJson($string_zapguru)){
 			$tm = '<span class="badge">{tag}</span><br>';
-			$arr = lib_json_array($string_zapguru);
+			$arr = Qlib::lib_json_array($string_zapguru);
 			if(isset($arr['tags']) && is_array($arr['tags'])){
 				foreach ($arr['tags'] as $v) {
 					$ret .= str_replace('{tag}',$v,$tm);

@@ -14,10 +14,33 @@ class RdstationController extends Controller
     public $url_padrao;
     public $token_api;
     public $version;
+    public $origem_padrao;
     public function __construct(){
         $this->version = 'v1';
         $this->url_padrao = 'https://crm.rdstation.com/api/'.$this->version;
         $this->token_api = Qlib::qoption('token_usuario_rd');
+        $this->origem_padrao = 'crm_zapguru';
+    }
+    /**
+     * Verifica se o campos origem da negociação e a origem padrão da API ou seja igual a propriedade $this->origem_padrao.
+     * @param array $rd um array contento a querystring da webhook do rdstation
+     * @param bool $ret verdadeiro ou falso
+     */
+    public function is_defeult_origin($rd){
+        $ret = false;
+        if(is_string($rd)){
+            $rd = Qlib::lib_json_array($rd);
+        }
+        if(isset($rd['deal_custom_fields']) && ($campos = $rd['deal_custom_fields'])){
+            foreach ($campos as $k => $v) {
+                if($v['label'] == 'Origem'){
+                    if($v['value'] == $this->origem_padrao){
+                        $ret = true;
+                    }
+                }
+            }
+        }
+        return $ret;
     }
     /**
      * Display a listing of the resource.
@@ -176,6 +199,7 @@ class RdstationController extends Controller
                         $data[0]['name'] = isset($d['document']['name']) ? $d['document']['name'] : '';
                     }
                     $ret = $this->salvar_orcamento($data,$d,true);
+
                 }else{
                     $ret['mens'] = 'Cliente não encontrado na base do RD';
                     $ret['dados_contato_RD'] = $dados_contato;
@@ -214,33 +238,48 @@ class RdstationController extends Controller
         //     'token' => uniqid(),
         //     'EscolhaDoc' => 'CPF',
         // ];
-        $data = [
-            'nome' => $nome,
-            'email' => $email,
-            'celular' => $telefonezap,
-            'rdstation' => $config['id'],
-            'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
-            'token' => uniqid(),
-            'tag_origem' => 'rdstation',
-            'excluido' => 'n',
-            'deletado' => 'n',
-            'atualizado' => Qlib::dataLocalDb(),
-            // 'EscolhaDoc' => 'CPF',
-        ];
+        //antes de salver verifica se o campo personalizao está marcado como proveniente dessa integração
         $ret['exec'] = false;
-        // $sc = (new ClientesController)->add_update($data);
-        $sc = (new ClientesController)->add_lead_update($data);
-        // return $sc;
-        $ret['cad_cliente'] = $sc;
-        $id_cliente = isset($sc['idCad']) ? $sc['idCad'] : null;
-        //Criar chat zapguru
-        $zg = new ZapguruController;
-        if(isset($sc['exec']) && $telefonezap){
-            $ret['exec'] = true;
-            // return $ret;
-            if($chat_inic){
-                //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
-                $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead'));
+        if($this->is_defeult_origin($conf_neg)){
+            //se for igual atualiza
+            $data = [
+                'rdstation' => $config['id'],
+                'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
+                'atualizado' => Qlib::dataLocalDb(),
+            ];
+            //dps ver a possibilidade a atualizar a tabela clientes tambem
+            //Atualizar o campos rdstation e rd_ultimo_negocio com os valores equivalentes..
+            $sc = (new ClientesController)->add_lead_update($data,"WHERE email = '$email'");
+
+            $ret['update_lead'] = $sc;;
+        }else{
+            $data = [
+                'nome' => $nome,
+                'email' => $email,
+                'celular' => $telefonezap,
+                'rdstation' => $config['id'],
+                'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
+                'token' => uniqid(),
+                'tag_origem' => 'rdstation',
+                'excluido' => 'n',
+                'deletado' => 'n',
+                'atualizado' => Qlib::dataLocalDb(),
+                // 'EscolhaDoc' => 'CPF',
+            ];
+            // $sc = (new ClientesController)->add_update($data);
+            $sc = (new ClientesController)->add_lead_update($data);
+            // return $sc;
+            $ret['cad_cliente'] = $sc;
+            $id_cliente = isset($sc['idCad']) ? $sc['idCad'] : null;
+            //Criar chat zapguru
+            $zg = new ZapguruController;
+            if(isset($sc['exec']) && $telefonezap){
+                $ret['exec'] = true;
+                // return $ret;
+                if($chat_inic){
+                    //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
+                    $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead'));
+                }
             }
         }
 
