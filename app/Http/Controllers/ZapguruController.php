@@ -270,7 +270,6 @@ class ZapguruController extends Controller
                         // $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
                         $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat='');
                         //veririca se ja tem uma negociação para esse cliente
-
                     }
                 }
 			}else{
@@ -338,13 +337,21 @@ class ZapguruController extends Controller
             //adquirir os dados do cliente da negociacao
             $dados_contato = $rdc->get_contact($id_negocio);
             $id_contato = isset($dados_contato['data']['contacts'][0]['id']) ? $dados_contato['data']['contacts'][0]['id'] : null;
+            $rd = [
+                'document'=>$ret['data'],
+            ];
             $ret['updata'] = Qlib::update_tab('capta_lead',[
                 'rdstation' => $id_contato,
-                'rd_ultimo_negocio' => Qlib::lib_array_json([
-                    'document'=>$ret['data'],
-                ]),
+                'rd_ultimo_negocio' => Qlib::lib_array_json($rd),
                 'atualizado' => Qlib::dataLocalDb(),
             ],"WHERE celular = '$telefone'");
+            $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
+                      
+            $ret['anota_link'] = $rdc->criar_anotacao([
+                'text' => $text,
+                'deal_id' => $rdc->get_deal_id($rd),
+                'user_id' => $rdc->get_user_id($rd),
+            ]);
         }
         return $ret;
     }
