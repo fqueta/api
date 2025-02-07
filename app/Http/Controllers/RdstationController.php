@@ -278,7 +278,8 @@ class RdstationController extends Controller
                 // return $ret;
                 if($chat_inic){
                     //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
-                    $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead'));
+                    $dialog_id = '679a438a9d7c8affe47e29b5'; //id do dialogo do chatguru para disparar uma webhook apos a inclusão do chat
+                    $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead','dialog_id'=>$dialog_id));
                 }
             }
         }
