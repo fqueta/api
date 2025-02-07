@@ -268,7 +268,7 @@ class ZapguruController extends Controller
                         // $dlead = Qlib::dados_tab($tabLead,['where' => "WHERE id = '".$lead['idCad']."'"]);
                         // return $dlead;
                         // $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
-                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat='');
+                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
                         //veririca se ja tem uma negociação para esse cliente
                     }
                 }
@@ -346,7 +346,7 @@ class ZapguruController extends Controller
                 'atualizado' => Qlib::dataLocalDb(),
             ],"WHERE celular = '$telefone'");
             $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
-                      
+
             $ret['anota_link'] = $rdc->criar_anotacao([
                 'text' => $text,
                 'deal_id' => $rdc->get_deal_id($rd),
