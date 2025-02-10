@@ -190,8 +190,11 @@ class FinanceiroController extends Controller
 		*/
 
 		$valorCjuros = $this->calcPorcentagem($config['valor'],$config['porcentagem'],$config['parcelas'],$opc='nodb');
-
-		$reto = ($valorCjuros) / $config['parcelas'];
+        if($valorCjuros>0){
+            $reto = ($valorCjuros) / $config['parcelas'];
+        }else{
+            $reto = $valorCjuros;
+        }
 
 		$config['reto'] = $reto;
 
