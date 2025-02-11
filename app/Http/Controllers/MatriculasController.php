@@ -270,9 +270,10 @@ class MatriculasController extends Controller
         $dadosD = explode(' ',$dados['atualizado']);
         $dias = isset($dias)?$dias: 7;
         $validade = Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
+        $nome_completo = isset($dados['nome_completo']) ? $dados['nome_completo'] : $dados['Nome'].' '.$dados['sobrenome'];
         $ret = '
                 <p align="center" style="font-size:15pt;">
-                    <b>Cliente:</b> '.$dados['Nome'].' '.$dados['sobrenome'].'  <b>N°: </b> '.$dados['id'].'
+                    <b>Cliente:</b> '.$nome_completo.'  <b>N°: </b> '.$dados['id'].'
                     <br>
                     <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
                     <b>Email:</b> '.$dados['Email'].'  <br>
