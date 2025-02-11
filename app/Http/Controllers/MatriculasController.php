@@ -188,6 +188,14 @@ class MatriculasController extends Controller
             $link_assinatura = $this->link_assinatura($dm['token']);
 			$dm['link_orcamento'] = $link_orcamento;
 			$dm['link_assinatura'] = $link_assinatura;
+            $dm['nome_completo'] = str_replace($dm['sobrenome'],'',$dm['nome']) .' '.trim($dm['sobrenome']);
+			// $dm['consultor'] = $dm['seguido_por'];
+			$link_guru = isset($dm['zapguru']) ? $dm['zapguru'] : false;
+			if(is_string($link_guru)){
+				$arr_link = Qlib::lib_json_array($link_guru);
+				$link_guru = isset($arr_link['link_chat']) ? $arr_link['link_chat'] : '';
+			}
+			$dm['link_guru'] = $link_guru;
 
         }else{
             return false;
