@@ -188,7 +188,7 @@ class MatriculasController extends Controller
             $link_assinatura = $this->link_assinatura($dm['token']);
 			$dm['link_orcamento'] = $link_orcamento;
 			$dm['link_assinatura'] = $link_assinatura;
-            $dm['nome_completo'] = str_replace($dm['sobrenome'],'',$dm['nome']) .' '.trim($dm['sobrenome']);
+            $dm['nome_completo'] = str_replace($dm['sobrenome'],'',$dm['Nome']) .' '.trim($dm['sobrenome']);
 			// $dm['consultor'] = $dm['seguido_por'];
 			$link_guru = isset($dm['zapguru']) ? $dm['zapguru'] : false;
 			if(is_string($link_guru)){
