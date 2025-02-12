@@ -148,6 +148,7 @@ class ZapguruController extends Controller
 				fclose($arquivo);
 
 			}elseif($event == 'update_lead' && $telefonezap){
+                $nome = $this->get_nome($arr_json,2);
                 //Atualiza o cliente e lead de acornto com o retorno
                 $dadd = [
                     'zapguru' => $json,
@@ -215,6 +216,7 @@ class ZapguruController extends Controller
                 $dadd = [
                     'zapguru' => $json,
                 ];
+                // dd($id_cliente);
                 $add_cliente = false; //para adicionar um clientes na tabela de clientes
                 if($id_cliente && !empty($id_cliente)){
                     $where = "WHERE id='$id_cliente'";
@@ -340,11 +342,12 @@ class ZapguruController extends Controller
             $rd = [
                 'document'=>$ret['data'],
             ];
-            $ret['updata'] = Qlib::update_tab('capta_lead',[
+            $ret['update'] = Qlib::update_tab('capta_lead',[
                 'rdstation' => $id_contato,
                 'rd_ultimo_negocio' => Qlib::lib_array_json($rd),
                 'atualizado' => Qlib::dataLocalDb(),
-            ],"WHERE celular = '$telefone'");
+            ],"WHERE id = '$id_lead'");
+            // ],"WHERE celular = '$telefone'");
             $text = 'Link do <a target="_BLANK" href="'.$link_chat.'">Whatsapp</a>';
 
             $ret['anota_link'] = $rdc->criar_anotacao([
@@ -597,17 +600,26 @@ class ZapguruController extends Controller
      * usando um campo persolanizado
      */
 
-    public function get_nome($zp){
+    public function get_nome($zp,$type=1){
         if(is_string($zp)){
             if(json_validate($zp)){
                 $zp = Qlib::lib_json_array($zp);
             }
         }
-        $nome = isset($zp['campos_personalizados']['Nome']) ? $zp['campos_personalizados']['Nome'] : '';
-        if(empty($nome)){
+        if($type==1){
+            //nesse tipo a preferencia é buscar o nome pelo valor no campos personalizado
+            $nome = isset($zp['campos_personalizados']['Nome']) ? $zp['campos_personalizados']['Nome'] : '';
+            if(empty($nome)){
+                $nome = isset($zp['nome']) ? $zp['nome'] : null;
+            }
+            $nome = trim($nome);
+        }elseif($type==2){
             $nome = isset($zp['nome']) ? $zp['nome'] : null;
+            if(empty($nome)){
+                $nome = isset($zp['campos_personalizados']['Nome']) ? $zp['campos_personalizados']['Nome'] : '';
+            }
+            $nome = trim($nome);
         }
-        $nome = trim($nome);
         return $nome;
     }
     /**
