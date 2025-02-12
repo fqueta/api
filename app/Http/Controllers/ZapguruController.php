@@ -117,7 +117,7 @@ class ZapguruController extends Controller
         $id_cliente = $this->get_client_id($arr_json);
         $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
         Log::info('Webhook zapduru '.$event.':', $arr_json);
-
+        // dd($arr_json);
         if(isset($arr_json['origem'])){
 
 			if($arr_json['origem']=='envia_campos' || $arr_json['origem']=='disparo_crm'){
