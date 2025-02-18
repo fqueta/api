@@ -22,10 +22,11 @@ class Qlib
 {
     static $RAIZ;
     public function __construct(){
-        global $tab11,$tab12,$tab50;
+        global $tab11,$tab12,$tab50,$tab55;
         $tab11 = 'turmas';
         $tab12 = 'matriculas';
         $tab50 = 'tabela_nomes';
+        $tab55 = 'parcelamento';
         self::$RAIZ = self::qoption('dominio').'/admin';
     }
     static public function lib_print($data){
