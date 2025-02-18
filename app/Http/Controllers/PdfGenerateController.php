@@ -117,8 +117,9 @@ class PdfGenerateController extends Controller
      */
 
      public function gerarPdfComImagemDeFundo($config=[])
-     {
+    {
         $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : true;
+        $arquivo_tipo = isset($config['arquivo_tipo']) ? $config['arquivo_tipo'] : 'orcamentos';
         $token = isset($config['token']) ? $config['token'] : uniqid();
         $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'navegador'; // navegador ou download
 
@@ -171,7 +172,7 @@ class PdfGenerateController extends Controller
             //faz download
             return $pdf->download($nome_arquivo.'.pdf');
         }elseif($f_exibe=='server'){
-            $fileName = 'orcamentos/'.$token.'/proposta.pdf';
+            $fileName = $arquivo_tipo.'/'.$token.'/proposta.pdf';
             //grava statico no servidor
             $pdfbin = $pdf->output();
             Storage::put($fileName, $pdfbin);
@@ -183,5 +184,13 @@ class PdfGenerateController extends Controller
             return $pdf->inline($nome_arquivo.'.pdf');
         }
         // return $pdf->output('pdf_com_imagem_n.pdf');
+    }
+    public function convert_html($html,$nome_aquivo_savo='arquivo',$titulo='Arquivo'){
+        $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>$html])->render();
+        return SnappyPdf::loadHTML($html)
+                ->setPaper('a4')
+                ->setOption('margin-top', '10mm')
+                ->setOption('margin-bottom', '10mm')
+                ->stream($nome_aquivo_savo.'.pdf');
     }
 }

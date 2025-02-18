@@ -507,6 +507,129 @@ class CursosController extends Controller
 		return $ret;
 
 	}
+    public function short_codes_Plano($token_matricula=false,$tema=false){
+		$ret = false;
+		if($token_matricula && $tema){
+			$ret = $tema;
+			$p = $this->verificaPlano(['token_matricula' => $token_matricula]);
+			if(isset($p['exec'])){
+				$m = isset($p['dadosMatricula'][0])?$p['dadosMatricula'][0]:[]; //dados do orçamento
+				$t = isset($p['dadosTabela'])?$p['dadosTabela']:[]; //dados da tabela de financiamento
+				$pe = isset($p['dadosPlano'][0])?$p['dadosPlano'][0]:[]; //dados da Pano de financiamento escolhido
+				$json_contrato = isset($m['contrato'])?$m['contrato']:[]; //dados do contrato
+				$arr_contrato = Qlib::lib_json_array($json_contrato);
+				$taxa_juros = false;
+				$taxa_iof = isset($t['iof']) ? $t['iof'] :0;
+				$parcelas = @$pe['parcelas'];
+				if(isset($t['parcelas']) && !empty($t['parcelas'])){
+					$arr_parcel = Qlib::lib_json_array($t['parcelas']);
+					if(is_array($arr_parcel)){
+						foreach ($arr_parcel as $kpar => $vpar) {
+							if($vpar['parcela']==$parcelas){
+								$taxa_juros = @$vpar['juros']; //parei aqui
+							}
+						}
+					}
+				}
+				if($taxa_juros){
+					$taxa_juros = str_replace('%','',$taxa_juros);
+				}
+				$valor_total_credito = $m['total'];
+				// if($valor_total_credito){
+				// 	$valor_total_credito = ;
+				// }
+				$valor_financiado = $valor_total_credito;
+				$custo_efetivo_mes = (double)$taxa_iof+(double)str_replace(',','.',$taxa_juros);
+				$custo_efetivo_ano = $custo_efetivo_mes * 12;
+				$valor_tarifas = 0;
+				$vencimento_primeira_parcela = @$pe['data_pri_cob'];
+                if(is_null($vencimento_primeira_parcela)){
+                    $vencimento_ultima_parcela = null;
+                }else{
+                    $vencimento_ultima_parcela = Qlib::CalcularVencimentoMes(Qlib::dataExibe($vencimento_primeira_parcela),$parcelas,'d/m/Y',false);
+                }
+				$tem_fiador = 'Não';
+				if(isset($m['fiador']) && !empty($m['fiador'])){
+					$tem_fiador = 'Sim';
+				}
+				// dd($pe);
+				if(isset($m['orc']) && isset($m['token']) && !empty($m['orc'])){
+					// $orc = gerarOrcamento($m['token']);
+					$arr_orc = Qlib::lib_json_array($m['orc']);
+					if(isset($arr_orc['taxas2']) && is_array($arr_orc['taxas2'])){
+						foreach ($arr_orc['taxas2'] as $ktx => $vtx) {
+							if(isset($vtx['name_valor']) && !empty($vtx['name_valor'])){
+								$valor_tarifas += (double)str_replace(',','.',$vtx['name_valor']);
+							}
+						}
+					}
+				}
+				// dd($arr_contrato);
+				// dd($p);
+				$arr = [
+					'data_contrato_aceito'=>Qlib::dataExibe(@$arr_contrato['data_aceito_contrato']),
+					'valor_total_credito'=>number_format($valor_total_credito,2,',','.'),
+					'parcelas'=>$parcelas,
+					'valor_parcelas'=>@$pe['valor'],
+					'taxa_juros'=>$taxa_juros.'%',
+					'taxa_iof'=>$taxa_iof.'%',
+					'custo_efetivo_mes'=>$custo_efetivo_mes.'%',
+					'custo_efetivo_ano'=>$custo_efetivo_ano.'%',
+					'total_tarifas'=>number_format($valor_tarifas,2,',','.'),
+					'valor_tarifas'=>number_format($valor_tarifas,2,',','.'),
+					'valor_financiado'=>number_format($valor_financiado,2,',','.'),
+					'vencimento_primeira_parcela'=>Qlib::dataExibe($vencimento_primeira_parcela),
+					'vencimento_ultima_parcela'=>$vencimento_ultima_parcela,
+					'tem_fiador'=>$tem_fiador,
+				];
+				foreach ($arr as $k => $v) {
+					if(!empty($v)) {
+						$ret = str_replace('{'.$k.'}', $v,$ret);
+					}
+				}
+			}
+		}
+		return $ret;
+	}
+	public function verificaPlano($config=false){
+
+		$ret['exec'] = false;
+
+		if(isset($config['token_matricula'])){
+
+			$compleSql = isset($config['compleSql']) ? $config['compleSql'] : false;
+
+			// $dadosPlano = dados_tab('lcf_planos As p','p.*,m.id_curso',"
+			// JOIN ".$GLOBALS['tab12']." As m ON m.token=p.token_matricula
+			// WHERE token_matricula='".$config['token_matricula']."' $compleSql");
+			$dadosPlano = Qlib::dados_tab('lcf_planos',['campos'=>'*','where'=>"WHERE token_matricula='".$config['token_matricula']."' $compleSql"]);
+
+			if($dadosPlano){
+				$ret['exec'] = true;
+				if(isset($dadosPlano[0]['config'])){
+					$dadosPlano[0]['config'] = Qlib::lib_json_array($dadosPlano[0]['config']);
+					if(isset($dadosPlano[0]['config']['id'])){
+						$dt = Qlib::dados_tab($GLOBALS['tab55'],['campos'=>'*','where'=>"WHERE id='".$dadosPlano[0]['config']['id']."'"]);
+						if($dt){
+							$ret['dadosTabela'] = $dt[0];
+						}
+					}
+				}
+				$ret['dadosPlano'] = $dadosPlano;
+			}
+			$ret['dadosMatricula'] = false;
+			$dadosMatricula = (new MatriculasController)->dm($config['token_matricula']);
+			if($dadosMatricula){
+				$ret['dadosMatricula'][0] = $dadosMatricula;
+			}
+
+
+
+		}
+
+		return $ret;
+
+	}
     /**
      * Show the form for creating a new resource.
      *

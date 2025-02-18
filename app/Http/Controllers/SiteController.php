@@ -27,10 +27,12 @@ class SiteController extends Controller
         $ret = false;
         $link_site = url('/');
         if($code){
-            $comple = isset($conf['comple']) ? $conf['comple'] : '';
+            $comple = isset($conf['comple']) ? $conf['comple'] : ' AND '.Qlib::compleDelete();
             $sql = "SELECT * FROM ".$this->tab." WHERE ativo='s' AND short_code = '".$code."' $comple";
+            if(isset($_GET['fp'])){
+                echo $sql;
+            }
             $ds = DB::select($sql);
-            //print_r($dados);
 
             if(count($ds)){
                 //pega o primeiro registro encontrado

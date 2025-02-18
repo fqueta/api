@@ -20,11 +20,13 @@ use Illuminate\Support\Facades\Storage;
 
 class Qlib
 {
+    static $RAIZ;
     public function __construct(){
         global $tab11,$tab12,$tab50;
         $tab11 = 'turmas';
         $tab12 = 'matriculas';
         $tab50 = 'tabela_nomes';
+        self::$RAIZ = self::qoption('dominio').'/admin';
     }
     static public function lib_print($data){
       if(is_array($data) || is_object($data)){
@@ -60,6 +62,33 @@ class Qlib
         }else{
             return false;
         }
+    }
+    /**
+     * Calcula a idade de alguem se for infromado uma data
+     */
+    static function lib_calcIdade($data){
+        // Declara a data! :P
+        //  $data = '29/08/2008';
+        // Separa em dia, mês e ano
+        $idade = false;
+        if(!empty($data)){
+                    $pos = strpos($data,'/');
+                    if($pos)
+                        list($dia, $mes, $ano) = explode('/', $data);
+                    $pos = strpos($data,'-');
+                    if($pos)
+                        list($ano, $mes,$dia) = explode('-', $data);
+
+                    if($ano != '0000'){
+                        // Descobre que dia é hoje e retorna a unix timestamp
+                        $hoje = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
+                        // Descobre a unix timestamp da data de nascimento do fulano
+                        $nascimento = mktime( 0, 0, 0, $mes, $dia, $ano);
+                            // Depois apenas fazemos o cálculo já citado :)
+                        $idade = floor((((($hoje - $nascimento) / 60) / 60) / 24) / 365.25);
+                    }
+        }
+        return $idade;
     }
     static public function qoption($valor = false, $type = false){
         //type é o tipo de respsta
@@ -572,6 +601,23 @@ class Qlib
             return false;
         }
     }
+    /**
+     * Consultar registro em outro banco de dados
+     */
+    static function buscaValoresDb_SERVER($sql='',$debug=false,$conx='mysql2'){
+        if($debug){
+            dump($sql);
+        }
+        if($sql){
+            $dados = DB::connection($conx)->select($sql);
+            $arrayResults = array_map(function ($item) {
+                return (array) $item;
+            }, $dados);
+            return $arrayResults;
+        }else{
+            return false;
+        }
+    }
     static public function dados_tab($tab = null,$config=[],$debug=false)
     {
         $ret = false;
@@ -625,6 +671,10 @@ class Qlib
                 $ret = $list;
         }
         return $ret;
+    }
+    static function dados_tab_SERVER($tab=false,$campos='nome,id',$comple=false){
+        $sql = "SELECT $campos FROM $tab $comple";
+        return Qlib::buscaValoresDb_SERVER($sql);
     }
     static public function buscaValorDb0($tab,$campo_bus,$valor,$select,$compleSql=false,$debug=false)
     {
