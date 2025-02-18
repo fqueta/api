@@ -1566,6 +1566,7 @@ class Qlib
                     'updated_at'=>self::dataBanco(),
                 ]);
             }else{
+
                 $ret=DB::table($tab)->insert([
                     'matricula_id'=>$matricula_id,
                     'meta_value'=>$meta_value,

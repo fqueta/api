@@ -185,12 +185,47 @@ class PdfGenerateController extends Controller
         }
         // return $pdf->output('pdf_com_imagem_n.pdf');
     }
-    public function convert_html($html,$nome_aquivo_savo='arquivo',$titulo='Arquivo'){
+    public function convert_html($config=[]){
+        $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'pdf';
+        $html = isset($config['html']) ? $config['html'] : '';
+        $nome_aquivo_savo = isset($config['nome_aquivo_savo']) ? $config['nome_aquivo_savo'] : '';
+        $titulo = isset($config['titulo']) ? $config['titulo'] : '';
+        $token = isset($config['token']) ? $config['token'] : '';
+        $pasta = isset($config['pasta']) ? $config['pasta'] : '';
+        $id_matricula = isset($config['id_matricula']) ? $config['id_matricula'] : null;
+        $short_code = isset($config['short_code']) ? $config['short_code'] : false;
+        // $nome_aquivo_savo='arquivo',$titulo='Arquivo'
+        $ret['exec'] = '';
         $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>$html])->render();
-        return SnappyPdf::loadHTML($html)
+        $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
                 ->setOption('margin-top', '10mm')
-                ->setOption('margin-bottom', '10mm')
-                ->stream($nome_aquivo_savo.'.pdf');
+                ->setOption('margin-bottom', '10mm');
+        if($f_exibe=='pdf'){
+            return $pdf->stream($nome_aquivo_savo.'.pdf');
+        }elseif($f_exibe=='server' && $token){
+            try {
+                $fileName = $pasta.'/'.$token.'/'.$nome_aquivo_savo.'.pdf';
+                //grava statico no servidor
+                $pdfbin = $pdf->output();
+                $ret['ger_arquivo'] = Storage::put($fileName, $pdfbin);
+                if (Storage::exists($fileName) && $short_code && $id_matricula) {
+                    $url = Storage::url($fileName);
+                    $ret['salvo'] = Qlib::update_matriculameta($id_matricula,$short_code.'_pdf',$url);
+                    $ret['url'] = $url;
+                    if($ret['salvo']){
+                        $ret['exec'] = true;
+                    }
+                }else{
+
+                }
+            } catch (\Throwable $th) {
+                $ret['error'] = $th->getMessage();
+            }
+        }
+        if(!$token){
+            $ret['mens'] = 'Token de contrato inválido';
+        }
+        return $ret;
     }
 }

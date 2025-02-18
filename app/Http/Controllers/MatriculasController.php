@@ -2714,16 +2714,28 @@ class MatriculasController extends Controller
         $opc = request()->get('opc');
         $dm = $this->dm($token);
         $ret = '';
+        $nome_arquivo = '';
         $contrato = '';
         if($opc && $dm){
             $ger_cont = $this->contratoAero(['token'=>$token],$dm,$opc);
+            $nome_arquivo = isset($ger_cont['nome_arquivo']) ? $ger_cont['nome_arquivo'] : '';
             if(isset($ger_cont['contrato']) && !empty($ger_cont['contrato'])){
                 $contrato = $ger_cont['contrato'];
             }else{
                 $contrato = isset($ger_cont['mens']) ? $ger_cont['mens'] : 'Erro ao gerar contrato';
             }
-            if($type=='pdf' && $contrato){
-               return (new PdfGenerateController )->convert_html($contrato,'Contrato do cliente','Titulo do contrato');
+            $dados = [
+                'html'=>$contrato,
+                'nome_aquivo_savo'=>$nome_arquivo,
+                'titulo'=>$nome_arquivo,
+                'id_matricula'=>$dm['id'],
+                'token'=>$dm['token'],
+                'short_code'=>$opc,
+                'pasta'=>'contratos',
+            ];
+            $dados['f_exibe'] = $type;
+            if(($type=='pdf' || $type=='server') && $contrato){
+               return (new PdfGenerateController )->convert_html($dados);
             }
             $ret = $contrato;
         }
@@ -2892,6 +2904,7 @@ class MatriculasController extends Controller
 
         $ret['exec'] = false;
         $ret['contrato'] = false;
+        $ret['nome_arquivo'] = '';
         if(!$dm && isset($config['token']) && !empty($config['token'])){
             $dm = $this->dm($config['token']);
         }
@@ -2927,6 +2940,8 @@ class MatriculasController extends Controller
             $nome 						= false;
             $nome_empresa		= 'Aeroclubejf';//@$_SESSION[SUF_SYS]['dadosConta'.SUF_SYS]['nome'];
             $arr_status_mat = Qlib::sql_array("SELECT * FROM status_matricula WHERE `ativo`='s' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','id');
+            // $ret['nome_arquivo'] = $aluno;
+            $ret['nome_arquivo'] = ucwords(str_replace('_',' ',$short_code)). ' '.$dm['Nome'].' '.$dm['nome_curso'].' '.$dm['id'];
             $tema0 = '
 
             <div class="col-md-12 div-salvar hidden-print" style="padding-top:0px">
@@ -3176,7 +3191,8 @@ class MatriculasController extends Controller
 
                                 $responsavel 			= ($dm['id_responsavel'] > 0 ) ? $dm['id_responsavel'] : false;
 
-                                $aluno						= ucwords($dadosCliente[0]['Nome']) .' '.ucwords($dadosCliente[0]['sobrenome']);
+                                // $aluno	= ucwords($dadosCliente[0]['Nome']) .' '.ucwords($dadosCliente[0]['sobrenome']);
+                                $aluno	= $dm['nome_completo'];
 
                                 $cpf_aluno 				= $dadosCliente[0]['Cpf'];
 
