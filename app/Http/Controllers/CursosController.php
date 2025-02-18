@@ -609,7 +609,7 @@ class CursosController extends Controller
 				if(isset($dadosPlano[0]['config'])){
 					$dadosPlano[0]['config'] = Qlib::lib_json_array($dadosPlano[0]['config']);
 					if(isset($dadosPlano[0]['config']['id'])){
-						$dt = Qlib::dados_tab($GLOBALS['tab55'],['campos'=>'*','where'=>"WHERE id='".$dadosPlano[0]['config']['id']."'"]);
+						$dt = Qlib::dados_tab('parcelamento',['campos'=>'*','where'=>"WHERE id='".$dadosPlano[0]['config']['id']."'"]);
 						if($dt){
 							$ret['dadosTabela'] = $dt[0];
 						}
