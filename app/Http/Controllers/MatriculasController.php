@@ -4172,6 +4172,7 @@ class MatriculasController extends Controller
 				$ret['exec'] = Qlib::update_tab($GLOBALS['tab12'],[
                     'contrato'=> Qlib::lib_array_json($config['contrato']),
                     'etapa_atual'=> 11,
+                    'status'=> 2,
                 ],"WHERE token='".$config['token_matricula']."'"); //salvarAlterar($sql);
             	if($ret['exec']){
 					// $id_matricula = cursos::get_id_by_token($config['token_matricula']);

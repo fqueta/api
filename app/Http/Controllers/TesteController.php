@@ -75,24 +75,24 @@ class TesteController extends Controller
         //     "campo_bus": "id",
         //     "campo_id": "id"
         // }';
-        // $json2 = '{
-        //     "token": "679d1019169b2",
-        //     "pagina": "2",
-        //     "token_matricula": "679d10356bccd",
-        //     "contrato": {
-        //         "declaracao": "on",
-        //         "aceito_contrato": "on",
-        //         "aceito_contrato_combustivel": "on",
-        //         "aceito_termo_concordancia": "on",
-        //         "aceito_termo_concordancia_escola_voo": "on",
-        //         "aceito_termo_antecipacao_combustivel": "on",
-        //         "data_aceito_contrato": "2025-02-21 13:23:33",
-        //         "id_matricula": "7119",
-        //         "ip": "172.70.140.46"
-        //     },
-        //     "campo_bus": "id",
-        //     "campo_id": "id"
-        // }';
+        $json2 = '{
+            "token": "679d1019169b2",
+            "pagina": "2",
+            "token_matricula": "679d10356bccd",
+            "contrato": {
+                "declaracao": "on",
+                "aceito_contrato": "on",
+                "aceito_contrato_combustivel": "on",
+                "aceito_termo_concordancia": "on",
+                "aceito_termo_concordancia_escola_voo": "on",
+                "aceito_termo_antecipacao_combustivel": "on",
+                "data_aceito_contrato": "2025-02-21 13:23:33",
+                "id_matricula": "7119",
+                "ip": "172.70.140.46"
+            },
+            "campo_bus": "id",
+            "campo_id": "id"
+        }';
 
         // // $config = Qlib::lib_json_array($json);
         // $config = Qlib::lib_json_array($json2);
