@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Matricula;
 use App\Qlib\Qlib;
+use App\Http\Controllers\api\ZapsingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -13,10 +14,12 @@ class MatriculasController extends Controller
     public function __construct()
     {
         $this->table = 'matriculas';
-        global $tab10,$tab11,$tab15;
+        global $tab10,$tab11,$tab12,$tab15,$tab54;
         $tab10 = 'cursos';
         $tab11 = 'turmas';
+        $tab12 = 'matriculas';
         $tab15 = 'clientes';
+        $tab54 = 'aeronaves';
     }
     public function index(Request $request)
     {
@@ -179,7 +182,7 @@ class MatriculasController extends Controller
      */
     public function dm($token){
         $dm = Matricula::select('matriculas.*',
-        'clientes.Nome','clientes.sobrenome','clientes.telefonezap','clientes.Tel','clientes.Email',
+        'clientes.Nome','clientes.sobrenome','clientes.telefonezap','clientes.Tel','clientes.Email','clientes.Cpf',
         'cursos.tipo as tipo_curso','cursos.config','cursos.modulos as modulos_curso','cursos.parcelas as parcelas_curso','cursos.valor_parcela as valor_parcela_curso','cursos.nome as nome_curso','cursos.titulo as titulo_curso','cursos.inscricao as inscricao_curso','cursos.valor as valor_curso','cursos.token as token_curso')
         ->join('clientes','matriculas.id_cliente','=','clientes.id')
         ->join('cursos','matriculas.id_curso','=','cursos.id')
@@ -1816,7 +1819,7 @@ class MatriculasController extends Controller
 
                 $valor = str_replace('R$','',$valor);
 
-                //$valor = precoDbdase($valor); //teste
+                //$valor = Qlib::precoDbdase($valor); //teste
 
                 $valor = ($config['limite']) * (Qlib::precoDbdase($valor));
 
@@ -1878,7 +1881,7 @@ class MatriculasController extends Controller
             if($custo){
                 $custo = str_replace('R$','',$custo);
                 $custo = ($config['horas']) * (precoDbdase($custo));
-                $ret['custo'] = precoDbdase($custo);
+                $ret['custo'] = Qlib::precoDbdase($custo);
             }
         }else{
 
@@ -2176,7 +2179,7 @@ class MatriculasController extends Controller
 
             }
             if(isset($config['total'])){
-                $config['total'] = precoDbdase($config['total']);
+                $config['total'] = Qlib::precoDbdase($config['total']);
             }
             $config2 = array(
 
@@ -2379,14 +2382,14 @@ class MatriculasController extends Controller
                             }
                             $valor_comissao = ((double)$subtotal)*((double)$porcentagem_comissao/100);
 
-                            $valor_comissao = precoDbdase(round($valor_comissao,2));
+                            $valor_comissao = Qlib::precoDbdase(round($valor_comissao,2));
                             $compleSalv = false;
                             if(isset($gerarOrcamento['salvaTotais']) && is_array($gerarOrcamento['salvaTotais'])){
-                                $compleSalv = ",totais='".lib_array_json($gerarOrcamento['salvaTotais'])."'";
+                                $compleSalv = ",totais='".Qlib::lib_array_json($gerarOrcamento['salvaTotais'])."'";
                                 // lib_print($gerarOrcamento['salvaTotais']);
                             }
                             if(!$is_signed){
-                                $sqlAt = "UPDATE IGNORE ".$GLOBALS['tab12']." SET total = '". precoDbdase($total)."',subtotal = '".precoDbdase($subtotal)."',porcentagem_comissao = '".$porcentagem_comissao."',valor_comissao = '".$valor_comissao."'$compleSalv WHERE token = '".$config['token']."'";
+                                $sqlAt = "UPDATE IGNORE ".$GLOBALS['tab12']." SET total = '". Qlib::precoDbdase($total)."',subtotal = '".precoDbdase($subtotal)."',porcentagem_comissao = '".$porcentagem_comissao."',valor_comissao = '".$valor_comissao."'$compleSalv WHERE token = '".$config['token']."'";
                                 $ret['atualizaTotalOrcamento'] = salvarAlterar($sqlAt);
                             }
 
@@ -2508,7 +2511,7 @@ class MatriculasController extends Controller
 
                                 $total = (double)$total;
                                 if($desconto){
-                                    $total = ($total - precoDbdase($desconto));
+                                    $total = ($total - Qlib::precoDbdase($desconto));
                                     // echo $total;
                                     // dd($gerarOrcamento);
                                 }
@@ -2717,13 +2720,19 @@ class MatriculasController extends Controller
         $nome_arquivo = '';
         $contrato = '';
         if($opc && $dm){
-            $ger_cont = $this->contratoAero(['token'=>$token],$dm,$opc);
+            if($opc=='termo_concordancia' || $opc=='termo_escola_voo'){
+                $ger_cont = $this->termo_concordancia(['token'=>$token,'type'=>$opc],$dm);
+            }else{
+                $ger_cont = $this->contratoAero(['token'=>$token],$dm,$opc);
+            }
+            // dd($ger_cont);
             $nome_arquivo = isset($ger_cont['nome_arquivo']) ? $ger_cont['nome_arquivo'] : '';
             if(isset($ger_cont['contrato']) && !empty($ger_cont['contrato'])){
                 $contrato = $ger_cont['contrato'];
             }else{
                 $contrato = isset($ger_cont['mens']) ? $ger_cont['mens'] : 'Erro ao gerar contrato';
             }
+
             $dados = [
                 'html'=>$contrato,
                 'nome_aquivo_savo'=>$nome_arquivo,
@@ -2733,9 +2742,19 @@ class MatriculasController extends Controller
                 'short_code'=>$opc,
                 'pasta'=>'contratos',
             ];
+            // dd($dados);
             $dados['f_exibe'] = $type;
             if(($type=='pdf' || $type=='server') && $contrato){
-               return (new PdfGenerateController )->convert_html($dados);
+                if($type=='server'){
+                    $exec = isset($ger_cont['exec']) ? $ger_cont['exec'] : false;
+                    if($exec){
+                        return (new PdfGenerateController )->convert_html($dados);
+                    }else{
+                        return $ger_cont;
+                    }
+                }else{
+                    return (new PdfGenerateController )->convert_html($dados);
+                }
             }
             $ret = $contrato;
         }
@@ -2900,11 +2919,15 @@ class MatriculasController extends Controller
         return $ret;
 
     }
+    /**
+     * renderiza um contrato do aeroclube
+     */
     public function contratoAero($config=false,$dm=false,$short_code='contrato_matricula'){
 
         $ret['exec'] = false;
         $ret['contrato'] = false;
         $ret['nome_arquivo'] = '';
+        $tipo_retorno = isset($config['tipo_retorno']) ? $config['tipo_retorno'] : 1; //retorna false quanto não acha conteudo se estiver na opçao 2 e uma mensgem em html se estiver na opçao 1
         if(!$dm && isset($config['token']) && !empty($config['token'])){
             $dm = $this->dm($config['token']);
         }
@@ -2940,7 +2963,6 @@ class MatriculasController extends Controller
             $nome 						= false;
             $nome_empresa		= 'Aeroclubejf';//@$_SESSION[SUF_SYS]['dadosConta'.SUF_SYS]['nome'];
             $arr_status_mat = Qlib::sql_array("SELECT * FROM status_matricula WHERE `ativo`='s' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','id');
-            // $ret['nome_arquivo'] = $aluno;
             $ret['nome_arquivo'] = ucwords(str_replace('_',' ',$short_code)). ' '.$dm['Nome'].' '.$dm['nome_curso'].' '.$dm['id'];
             $tema0 = '
 
@@ -2956,10 +2978,8 @@ class MatriculasController extends Controller
 
             ';
 
-            //$ret['contrato'] = $contrato;
 
             //if($dadosMatricula && $dadosCliente && $dadosTurma && $dadosCurso){
-
             if($dm && $dadosCliente && $dadosCurso){
                 $config_curso = [];
                 if($short_code=='contrato_combustivel'){
@@ -3149,6 +3169,7 @@ class MatriculasController extends Controller
                                     if($short_code=='contrato_financiamento_horas'){
                                         $short_code = 'contrato2';
                                     }
+
                                     if(Qlib::isAdmin()){
                                         $edit = 'orc';
                                     }else{
@@ -3159,6 +3180,7 @@ class MatriculasController extends Controller
                                         $short_code = 'contrato_combustivel';
                                         $dadoContratoM = $st->short_code($short_code);
                                     }
+                                    // dd($short_code,$dadoContratoM);
                                     // if(Qlib::isAdmin()){
                                     // 	// lib_print($dadosCliente);
                                     // 	// lib_print($dadosTurma);
@@ -3176,7 +3198,12 @@ class MatriculasController extends Controller
                                             $btn_cad = '';
                                         }
                                         $ret['mens'] = Qlib::formatMensagemInfo('O contrato para o curso <b>'.$curso.'</b> não foi encontrado ou modelo não cadastrado '.$btn_cad,'warning');
-                                        $ret['contrato'] = $ret['mens'];
+                                        if($tipo_retorno==2){
+                                            $ret['contrato'] = '';
+                                        }else{
+                                            $ret['contrato'] = $ret['mens'];
+                                        }
+                                        $ret['exec'] = false;
                                         return $ret;
                                         //$dadoContratoM = short_code($short_code)?short_code($short_code):Qlib::qoption($short_code);
                                     }
@@ -3406,7 +3433,6 @@ class MatriculasController extends Controller
                                 if($dm['contrato']){
                                     $clausula_tipo_pagamento = false;
                                     $tipo_contrato_combustivel = false;
-
                                     if(!empty($dm['contrato'])){
                                         $arr_contratoAss = Qlib::lib_json_array($dm['contrato']);
                                         if(isset($dm['orc']) && isset($config['opc']) && $config['opc']=='contratoMatriculaCombustivel'){
@@ -3643,6 +3669,959 @@ class MatriculasController extends Controller
         }
         return $ret;
     }
+    /**
+     * renderiza um termo do aeroclube
+     */
+    public function termo_concordancia($config=false,$dm=false){
+
+        $ret['exec'] = false;
+
+        $ret['contrato'] = false;
+        $token = isset($config['token']) ? $config['token'] : null;
+        $type = isset($config['type'])?$config['type']:'termo_concordancia';
+        if($token && !$dm){
+            $dm = $this->dm($token);
+        }
+        if($dm){
+            // $sql = "SELECT * FROM ".$GLOBALS['tab12']." WHERE `token` = '".base64_decode($config['token'])."'";
+
+            $dadosMatricula[0] 	= $dm;
+            $dadosCliente 	= Qlib::buscaValoresDb("SELECT * FROM ".$GLOBALS['tab15']." WHERE id='".$dadosMatricula[0]['id_cliente']."'");
+            $dadosCurso 		= Qlib::buscaValoresDb("SELECT * FROM ".$GLOBALS['tab10']." WHERE id='".$dadosMatricula[0]['id_curso']."'");
+            $dadosTurma 		= Qlib::buscaValoresDb("SELECT * FROM ".$GLOBALS['tab11']." WHERE id='".$dadosMatricula[0]['id_turma']."'");
+            $st = new SiteController();
+            $tr_responsavel = false;
+            $aluno 						= false;
+            $cpf_aluno 				= false;
+            $cpf_contrato 			= false;
+            $telefone 					= false;
+            $endereco 				= false;
+            $numero_matricula 	= false;
+            $curso 						= false;
+            $inicio 						= false;
+            $fim 							= false;
+            $horario 					= false;
+            $valor_total 				= false;
+            $valor_extensso		= false;
+            $carga_horaria			= false;
+            $data_contrato			= false;
+            $data_nascimento			= false;
+            $dataMatricula			= false;
+            $cep				= false;
+            $assinatura				= false;
+            $dias						= false;
+            $nome 						= false;
+            $nome_empresa		= 'Aeroclubejf';
+            $arr_status_mat = Qlib::sql_array("SELECT * FROM status_matricula WHERE `ativo`='s' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','id');
+            $tema0 = '
+            <div class="col-md-12 div-salvar hidden-print" style="padding-top:0px">
+                    <a href="javaScript:void(0);" onclick="window.close();" style="margin-right:5px" que-bt="voltar" title="voltar" class="btn btn-danger">
+                                <i class="fa fa-chevron-left" aria-hidden="true"></i> Cancelar
+                    </a>
+            </div>
+            ';
+            $ret['nome_arquivo'] = ucwords(str_replace('_',' ',$type)). ' '.$dm['Nome'].' '.$dm['nome_curso'].' '.$dm['id'];
+
+            $periodo = isset($config['periodo']) ? $config['periodo'] : '';
+            if($periodo){
+                $periodo = str_replace('contrato_','',$periodo);
+                $periodo = str_replace('_',' ',$periodo);
+            }
+
+           if($dadosMatricula && $dadosCliente && $dadosCurso){
+                   $config_curso = [];
+               if(isset($dadosCurso[0]['config'])){
+                   $config_curso = Qlib::lib_json_array($dadosCurso[0]['config']);
+               }
+               // if($type == 'termo_escola_voo' || $type == 'termo_concordancia'){
+               // }
+               // if(isset($_GET['fp'])){
+               // 	lib_print($config_curso);
+               // }
+               if(isset($config_curso['adc']['recheck']) && $config_curso['adc']['recheck']=='s'){
+                   $ret['contrato'] = false;
+                   return $ret;
+               }
+            //    dd($type);
+               $dadoContratoM = $st->short_code($type);
+
+
+               if($type=='termo_antecipacao_combustivel'){
+                   $arr_orc = Qlib::lib_json_array($dadosMatricula[0]['orc']);
+                   // if(isAdmin(1))
+                   // dd($arr_orc);
+                   if(isset($arr_orc['sele_pag_combustivel'])){
+                       if($arr_orc['sele_pag_combustivel']!='antecipado'){
+                           $ret['contrato'] = false;
+                           return $ret;
+                       }
+                   }
+                   if(isset($dadosCurso[0]['tipo']) && $dadosCurso[0]['tipo'] == 4){
+                       $ret['contrato'] = false;
+                       return $ret;
+                   }
+
+                }
+
+                $ret['dadosMatricula']=$dadosMatricula;
+                $ret['dadosCurso']=$dadosCurso;
+                $ret['dadosTurma']=$dadosTurma;
+                if(Qlib::isAdmin(3)){
+                    $ret['verificaAlunoMatricula'] = $this->verificaAlunoMatricula($dadosCliente[0]['id'],'contrato',$dadosMatricula[0]['id_responsavel']);
+                    if(!$ret['verificaAlunoMatricula']['liberado']){
+                            $ret['mens'] = $ret['verificaAlunoMatricula']['mens'];
+                        // if(isset($_GET['fq'])){
+                        // 	echo $type;
+                        // 	lib_print($ret);
+                        // 	// lib_print($dadoContratoM);
+                        // 	// lib_print($dadosCliente);
+                        // 	// lib_print($dadosCurso);
+                        // }
+                        return $ret;
+                    }
+                }
+                             //if($dadosMatricula[0]['status']==1){
+                        $ret['mens'] = Qlib::formatMensagem0('Não é possível emitir comtrato para clientes com status de <b>'.$arr_status_mat[$dadosMatricula[0]['status']].'</b>, efetue primeiro a matrícula deste cliente ','danger',10000);
+                    //}else{
+                                $arr_dias = array(1=>array('dia'=>'Segunda','cor'=>'success'),2=>array('dia'=>'Terça','cor'=>'primary'),3=>array('dia'=>'Quarta','cor'=>'info'),
+                                                    4=>array('dia'=>'Quinta','cor'=>'default'),5=>array('dia'=>'sexta','cor'=>'warning'),6=>array('dia'=>'Sábado','cor'=>'danger'));
+                                // $tema0 = '<form id="form-status"  method="post">';
+                                // $tema0 		.= queta_formfield4("hidden",'1',"tab-", $GLOBALS['tab12'],"","");
+                                //     $tema0 		.= queta_formfield4("hidden",'1',"token-", $dadosMatricula[0]['token'],"","");
+                                //     $tema0			.= queta_formfield4("hidden",'1',"evento-", 'Contrato aceito',"","");
+                                //     $tema0 		.= queta_formfield4("hidden",'1',"status-", 3,"","");
+                                // $tema0 .= '</form>';
+                                $tema0 = '';
+                                $tema = '<style>h1,h2,h3{text-align:center;}</style>';
+                                if(Qlib::isAdmin()){
+                                $tema .= '
+                                            <div class="row">
+                                                    <div class="col-sm-12 mens"></div>
+                                                    '.$tema0.'
+                                                    <div class="col-sm-12">
+                                                        {contrato}
+                                                    </div>
+                                                    <div class="col-md-12 div-salvar hidden-print" style="padding-top:0px">
+                                                            <a href="javaScript:void(0);" onclick="window.close();" style="margin-right:5px" que-bt="voltar" title="voltar" class="btn btn-danger">
+                                                                        <i class="fa fa-chevron-left" aria-hidden="true"></i> Cancelar
+                                                            </a>
+                                                            <button type="button" title="imprimir" style="margin-right:5px" class="btn btn-success btn-md" que-btn="imprimir_contrato">
+                                                                        <i class="fa fa-print" aria-hidden="true"></i> Imprimir
+                                                            </button>
+                                                    </div>
+                                            </div>
+                                            ';
+                                }else{
+                                    $tema .= '
+                                            <div class="row">
+                                                    <div class="col-sm-12 mens"></div>
+                                                            <div class="col-sm-12">
+                                                        {contrato}
+                                                    </div>
+                                                    <!--
+                                                    <div class="col-md-12 div-salvar hidden-print" style="padding-top:0px">
+                                                            <a href="javaScript:void(0);" onclick="window.close();" style="margin-right:5px" que-bt="voltar" title="voltar" class="btn btn-danger">
+                                                                        <i class="fa fa-chevron-left" aria-hidden="true"></i> Cancelar
+                                                            </a>
+                                                            <button type="button" title="imprimir" style="margin-right:5px" class="btn btn-success btn-md" que-btn="imprimir_contrato">
+                                                                        <i class="fa fa-print" aria-hidden="true"></i> Imprimir
+                                                            </button>
+                                                    </div>-->
+                                            </div>
+                                    ';
+                                }
+
+                            if(!$dadoContratoM){
+                                $ret['contrato'] = false;
+                                return $ret;
+                            }
+
+                            $contrato				 	= str_replace('{contrato}',$dadoContratoM ,$tema);
+                                $responsavel 			= ($dadosMatricula[0]['id_responsavel'] > 0 ) ? $dadosMatricula[0]['id_responsavel'] : false;
+                            if(is_null($dadosCliente[0]['sobrenome'])){
+                                $aluno = ucwords($dadosCliente[0]['Nome']) ;
+                            }else{
+                                $aluno = ucwords($dadosCliente[0]['Nome']) .' '.ucwords($dadosCliente[0]['sobrenome']);
+                            }
+                            $cpf_aluno 			= $dadosCliente[0]['Cpf'];
+                            $email 				= $dadosCliente[0]['Email'];
+                            $cep 				= $dadosCliente[0]['Cep'];
+                            $identidade 		= $dadosCliente[0]['Ident'];
+                            $data_nascimento 	= Qlib::dataExibe($dadosCliente[0]['DtNasc2']);
+                            $telefone 			= $dadosCliente[0]['Celular'].' '. $dadosCliente[0]['Tel'];
+                            $nacionalidade 		= $dadosCliente[0]['nacionalidade'];
+                            $profissao 			= $dadosCliente[0]['profissao'];
+                            $endereco 			= $dadosCliente[0]['Endereco'].', '. $dadosCliente[0]['Numero'].' '.$dadosCliente[0]['Compl'].' - '. $dadosCliente[0]['Bairro'].' - '.$dadosCliente[0]['Cidade'].' /'.$dadosCliente[0]['Uf'];
+                            if(is_null($dadosCliente[0]['estado_civil'])){
+                                $dadosCliente[0]['estado_civil'] = '';
+                            }
+                            $estado_civil			= ucfirst($dadosCliente[0]['estado_civil']);
+                            $numero_matricula 	= Qlib::zerofill($dadosMatricula[0]['id'],10);
+                            $dadosTurma[0]['id'] = isset($dadosTurma[0]['id'])?$dadosTurma[0]['id']:false;
+                            $dadosTurma[0]['nome'] = isset($dadosTurma[0]['nome'])?$dadosTurma[0]['nome']:false;
+                            $dadosTurma[0]['inicio'] = isset($dadosTurma[0]['inicio'])?$dadosTurma[0]['inicio']:false;
+                            $dadosTurma[0]['fim'] = isset($dadosTurma[0]['fim'])?$dadosTurma[0]['fim']:false;
+                            $dadosTurma[0]['hora_inicio'] = isset($dadosTurma[0]['hora_inicio'])?$dadosTurma[0]['hora_inicio']:false;
+                            $dadosTurma[0]['hora_fim'] = isset($dadosTurma[0]['hora_fim'])?$dadosTurma[0]['hora_fim']:false;
+                            $dadosTurma[0]['duracao'] = isset($dadosTurma[0]['duracao'])?$dadosTurma[0]['duracao']:false;
+                            $dadosTurma[0]['unidade_duracao'] = isset($dadosTurma[0]['unidade_duracao'])?$dadosTurma[0]['unidade_duracao']:false;
+                            $dadosTurma[0]['dia'] = isset($dadosTurma[0]['dia'])?$dadosTurma[0]['dia']:false;
+                                $curso 						= $dadosTurma[0]['id'] .' '. $dadosTurma[0]['nome']  ;
+                                //$curso						= strtoupper($curso);
+                                $inicio 						= Qlib::dataExibe($dadosTurma[0]['inicio']);
+                                $fim 							= Qlib::dataExibe($dadosTurma[0]['fim']);
+                                $horario 					= $dadosTurma[0]['hora_inicio'] .' - '.$dadosTurma[0]['hora_fim'] ;
+                                $arr_valor 				= json_decode($dadosMatricula[0]['reg_pagamento'],true);
+                                $carga_horaria			= $dadosTurma[0]['duracao'] .' '. $dadosTurma[0]['unidade_duracao'];
+                                $data_contrato 			= date('d/m/Y (H:m:i)');
+                                $nome 						= $aluno;
+                                //$endereco			=$dadosClie
+                                if(is_array($arr_dias)){
+                                    foreach($arr_dias As $key=>$dia){
+                                        if(@$dadosTurma[0]['dia'.$key] == 's'){
+                                            $dias .= $dia['dia'].'/';
+                                        }
+                                    }
+                                    $dias = substr($dias,0,-1);
+                                }
+                                        if(is_array($arr_valor) && isset($arr_valor['valor_total'])){
+                                    $pos = strpos($arr_valor['valor_total'],'.');
+                                    if($pos != false){
+                                        $arr_valor['valor_total'] = Qlib::precoDbdase(@$arr_valor['valor_total']);
+                                    }
+                                    $valor_total 				= number_format(@$arr_valor['valor_total'],2,',','.');
+                                    $valor_extensso		= Qlib::lib_valorPorExtenso(@$arr_valor['valor_total']);
+                                }
+                                if($responsavel){
+                                    $dadosResponsavel = Qlib::buscaValoresDb("SELECT *  FROM ".$GLOBALS['tab16']." WHERE id='".$responsavel."'");
+                                    if($dadosResponsavel){
+                                        $ret['exec'] = true;
+                                        $tr_responsavel =
+                                            '<table cellspacing="0" cellpadding="0">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Responsável:</td>
+                                                        <td>&nbsp;</td>
+                                                        <td colspan="3">'.strtoupper($dadosResponsavel[0]['Nome']).'&nbsp;</td>
+                                                        <td>CPF:</td>
+                                                        <td>'.$dadosResponsavel[0]['Cpf'].'</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>';
+                                        $nome 				= strtoupper($dadosResponsavel[0]['Nome']);
+                                        $cpf_contrato 	= $dadosResponsavel[0]['Cpf'];
+                                        $telefone 			= $dadosResponsavel[0]['Celular'].' '. $dadosResponsavel[0]['Tel'];
+                                        $endereco 		= $dadosResponsavel[0]['Endereco'].', '. $dadosResponsavel[0]['Numero'].' '.$dadosResponsavel[0]['Compl'].' - '. $dadosResponsavel[0]['Bairro'].' - '.$dadosResponsavel[0]['Cidade'].'/'.$dadosResponsavel[0]['Uf'];
+                                    }else{
+                                        $ret['mens'] = Qlib::formatMensagem0('Dados do responsável não encontrados','danger',10000);
+                                    }
+                                }else{
+                                    //echo 'não tem responsavel';
+                                }
+                                $assinatura = '<table>
+                                                <tbody><tr><td style="width:500px">&nbsp;</td><td>&nbsp;</td></tr>
+                                                <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+                                                <tr>
+                                                    <td>________________________________________</td>
+                                                    <td>________________________________________</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>CONTRATANTE</td>
+                                                    <td>'.Qlib::qoption('assinatura_contrato').'</td>
+                                                </tr>
+                                                <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+                                                <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+                                                <tr>
+                                                    <td>TESTEMUNHAS</td>
+                                                    <td>&nbsp;</td>
+                                                </tr>
+                                                        <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+                                                        <tr>
+                                                    <td>________________________________________</td>
+                                                    <td>________________________________________</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>NOME: </td>
+                                                    <td>NOME: </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>CPF: </td>
+                                                    <td>CPF: </td>
+                                                </tr>
+                                            </tbody></table>';
+                                $dia_contrato = false;
+                                $mes_contrato = false;
+                                $ano_contrato = false;
+                                if($dadosMatricula[0]['contrato']){
+                                    if(!empty($dadosMatricula[0]['contrato'])){
+                                        $arr_contratoAss = Qlib::lib_json_array($dadosMatricula[0]['contrato']);
+                                    // dd($arr_contratoAss);
+                                    if(isset($arr_contratoAss['declaracao']) && isset($arr_contratoAss['declaracao']) && isset($arr_contratoAss['aceito_termo_concordancia']) && $arr_contratoAss['aceito_termo_concordancia'] =='on'){
+                                            $assinatura = '<span class="text-danger"><b>Termo assinado eletronicamente pelo aluno em '.Qlib::dataExibe(@$arr_contratoAss['aceito_termo_concordancia']).'</b> </span><span style="text-align:right" class="text-danger"><b>Ip:</b> <i>'.@$arr_contratoAss['ip'].'</i></span>';
+                                        }
+                                    }
+                                }
+                                $sc = $this->simuladorCombustivel($dadosMatricula[0]['token'],$dadosMatricula[0]);
+                            $valor_combustivel = isset($sc['valor']) ? $sc['valor']: null;
+                            if($valor_combustivel){
+                                $valor_combustivel = Qlib::valor_moeda($valor_combustivel);
+                            }
+                            $ret['exec'] = true;
+
+                            $ret['contrato'] = str_replace('{responsavel}',$responsavel,$contrato);
+                                $ret['contrato'] = str_replace('{tr_responsavel}',$tr_responsavel,$ret['contrato']);
+                                if(is_null($aluno)){
+                                $aluno = '';
+                            }
+                            $ret['contrato'] = str_replace('{aluno}',$aluno,$ret['contrato']);
+                            if(is_null($cpf_aluno)){
+                                $cpf_aluno = '';
+                            }
+                            $ret['contrato'] = str_replace('{cpf_aluno}',$cpf_aluno,$ret['contrato']);
+
+                            if(is_null($identidade)){
+                                $identidade = '';
+                            }
+                            $ret['contrato'] = str_replace('{identidade}',$identidade,$ret['contrato']);
+                            $ret['contrato'] = str_replace('{valor_combustivel}',$valor_combustivel,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{cpf_contrato}',$cpf_contrato,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{telefone}',$telefone,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{endereco}',$endereco.'&nbsp;',$ret['contrato']);
+                                $ret['contrato'] = str_replace('{numero_matricula}',$numero_matricula,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{curso}',$curso,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{inicio}',$inicio,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{fim}',$fim,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{email}',$email,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{horario}',$horario,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{valor_total}',$valor_total,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{valor_extensso}',$valor_extensso,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{data_nascimento}',$data_nascimento,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{estado_civil}',$estado_civil,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{carga_horaria}',$carga_horaria,$ret['contrato']);
+                            if(is_null($nacionalidade)){
+                                $nacionalidade='';
+                            }
+                            $ret['contrato'] = str_replace('{nacionalidade}',@$nacionalidade,$ret['contrato']);
+                            if(is_null($profissao)){
+                                $profissao='';
+                            }
+
+                            $ret['contrato'] = str_replace('{profissao}',$profissao,$ret['contrato']);
+
+                            $ret['contrato'] = str_replace('{dias}',$dias,$ret['contrato']);
+                            $ret['contrato'] = str_replace('{periodo}',$periodo,$ret['contrato']);
+
+                            if(is_null($assinatura)){
+                                $assinatura='';
+                            }
+                            $ret['contrato'] = str_replace('{assinatura}',$assinatura,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{data_contrato}',$data_contrato,$ret['contrato']);
+                                $ret['contrato'] = str_replace('{nome}',$nome,$ret['contrato']);
+                            if(is_null($cep)){
+                                $cep='';
+                            }
+                            $ret['contrato'] = str_replace('{cep}',$cep,$ret['contrato']);
+                            if(isset($nome_empresa) && !empty($nome_empresa)){
+                                $ret['contrato'] = str_replace('{nome_empresa}',$nome_empresa,$ret['contrato']);
+                            }else{
+                                $ret['contrato'] = str_replace('{nome_empresa}','',$ret['contrato']);
+                            }
+                                    $temaStyle = '<div id="modal-contrato-aluno" class="bloco-texto" style="text-align:justify">{con}</div>';
+                                $ret['contrato'] = str_replace('{con}',$ret['contrato'],$temaStyle);
+                            //}
+               }else{
+                   $ret['mens'] = Qlib::formatMensagem0('Dados insuficientes para montar o contrato','danger',10000);
+               }
+        }
+
+        return $ret;
+
+    }
+    /**
+     * Retorna o id da matricula pelo token
+     */
+    public function get_id_by_token($token){
+		return Qlib::buscaValorDb0($GLOBALS['tab12'],'token',$token,'id'," AND ".Qlib::compleDelete());
+	}
+    /**
+     * Retorna o token da matricula pelo id
+     */
+	public function get_token_by_id($id){
+		return Qlib::buscaValorDb0($GLOBALS['tab12'],'id',$id,'token'," AND ".Qlib::compleDelete());
+	}
+
+    /**
+	 * Valida as resposta fornecidas na assinatura se esta permitido passar para outra tela
+	 * @param int $id_matricula,string $campo= tipo de campo
+	 * @return array $ret
+	 */
+	public function valida_respostas_assinatura($id_matricula=false,$campo='id'){
+		$ret = false;
+		if($id_matricula){
+			if($campo=='id'){
+				$token = $this->get_token_by_id($id_matricula);
+			}elseif($campo=='token'){
+				$token = $id_matricula;
+			}
+			$dm = $this->dm($token);
+			// echo $token;
+			// lib_print($dm);
+			$tipo_curso = isset($dm['tipo_curso']) ? $dm['tipo_curso'] : 0;
+			if(isset($dm['config'])){
+                // $dm = $dm[0];
+				$arr_conf = Qlib::lib_json_array($dm['config']);
+				if((isset($dm['id_curso']) && $dm['id_curso']==132) || @$dm['tipo_curso'] == 4 ){
+                    //id 132 se refere ao Curso de Mecânico de Manutenção Aeronáutica ou se o tipo de curso for um plano de formação
+					return true;
+				}
+				if(isset($arr_conf['adc']['recheck']) && $arr_conf['adc']['recheck'] =='s' ){
+                    //se for recheck retorna verdadeiro para as resposta das assinaturas
+					$ret = true;
+				}else{
+                    $total_reps = 0;
+					$resp = Qlib::get_matriculameta($dm['id'],'ciente');
+                    // dd($resp,$dm);
+					if($resp){
+						$arr = Qlib::lib_json_array($resp);
+						foreach ($arr as $kr => $vr) {
+							$total_reps++;
+							if($vr=='s'){
+								$ret = true;
+							}else{
+								$ret = false;
+							}
+						}
+					}
+					if($total_reps<5){
+						//totol de aceitos tem que ser 4 do contrario retorna falso
+						$ret = false;
+					}
+				}
+			}
+			if($tipo_curso==1){
+				//nesse caso curso é um EAD
+				$ret = true;
+			}
+		}
+		return $ret;
+	}
+	/**
+	 * Valida as resposta fornecidas na assinatura do contrato de periodos se esta permitido passar para este periodo
+	 * @param int $id_matricula,string $campo= tipo de campo,string $campo_meta é o campo de gravado as resposta
+	 * @return array $ret
+	 */
+	public function valida_respostas_assinatura_periodo($id_matricula=false,$campo='id',$campo_meta='ciente',$tr=5){
+		$ret = false;
+		if($id_matricula){
+			if($campo=='id'){
+				$token = $this->get_token_by_id($id_matricula);
+			}elseif($campo=='token'){
+				$token = $id_matricula;
+			}
+			$dm = $this->dm($token);
+			// echo $token;
+			// lib_print($dm);
+			return true;
+			if(isset($dm[0]['config_curso'])){
+				$dm = $dm[0];
+				$arr_conf = Qlib::lib_json_array($dm['config']);
+				if((isset($dm['id_curso']) && $dm['id_curso']==132) || @$dm['tipo_curso'] == 4 ){
+					//id 132 se refere ao Curso de Mecânico de Manutenção Aeronáutica ou se o tipo de curso for um plano de formação
+					return true;
+				}
+				if(isset($arr_conf['adc']['recheck']) && $arr_conf['adc']['recheck'] =='s' ){
+					//se for recheck retorna verdadeiro para as resposta das assinaturas
+					$ret = true;
+				}else{
+					$total_reps = 0;
+					$resp = Qlib::get_matriculameta($id_matricula,$campo_meta);
+					if($resp){
+						$arr = Qlib::lib_json_array($resp);
+						foreach ($arr as $kr => $vr) {
+							$total_reps++;
+							if($vr=='s'){
+								$ret = true;
+							}else{
+								$ret = false;
+							}
+						}
+					}
+					if($total_reps<$tr){
+						//totol de aceitos tem que ser $tr do contrario retorna falso
+						$ret = false;
+					}
+				}
+			}
+		}
+		// dd($total_reps);
+		return $ret;
+	}
+    /**
+	 * Salva todas as etapas de aceitação do contrato
+	 */
+	public function assinar_proposta($config){
+		$ret['exec'] = false;
+		$ret['config'] = $config;
+		$ret['valida']['mens'] = false;
+        if(isset($config['pagina']) && $config['pagina']==2){
+            //salvar conteudo da página 2
+            if(isset($config['token_matricula']) && isset($config['contrato']) && is_array($config['contrato'])){
+                //11 o id da etapa 'Proposta aprovada' do flow de atendimento
+				// $sql = "UPDATE IGNORE ".$GLOBALS['tab12']." SET contrato='".Qlib::lib_array_json($config['contrato'])."',etapa_atual='11' WHERE token='".$config['token_matricula']."'";
+				// $ret['exec'] = salvarAlterar($sql);
+				$ret['exec'] = Qlib::update_tab($GLOBALS['tab12'],[
+                    'contrato'=> Qlib::lib_array_json($config['contrato']),
+                    'etapa_atual'=> 11,
+                ],"WHERE token='".$config['token_matricula']."'"); //salvarAlterar($sql);
+            	if($ret['exec']){
+					// $id_matricula = cursos::get_id_by_token($config['token_matricula']);
+					//gravar contrato estatico...
+					$ret['validar'] = $this->valida_respostas_assinatura($config['token_matricula'],'token');
+					if($ret['validar']){
+						$ret['gravar_copia'] = $this->grava_contrato_statico($config['token_matricula']);
+						$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a';
+					}else{
+						$ret['exec'] = false;
+						$ret['mens'] = 'Erro ao validar as respostas do termo';
+					}
+				}
+			}
+			return $ret;
+		}
+		if(isset($config['Cpf']) && !empty($config['Cpf'])){
+			$validaCpf = Qlib::validaCpf($config['Cpf']);
+			if($validaCpf){
+				$ret['valida']['cpf'] = true;
+			}else{
+				$ret['valida']['mens'] = 'CPF inválido';
+				$ret['valida']['cpf'] = 'error';
+				return $ret;
+			}
+			$tabUser=$GLOBALS['tab15'];
+			if(isset($config['Nome']) && !empty($config['Nome'])){
+				//verificar se esta com o nome completo
+
+				if(str_word_count($config['Nome'])>1){
+
+						$n = explode(' ',$config['Nome']);
+
+					   if(isset($n[1]) && !empty($n[1])){
+
+						   $config['sobrenome'] = trim(str_replace($n[0],'',$config['Nome']));
+						   $config['Nome'] = $n[0];
+					   }
+
+				}else{
+					$ret['valida']['mens'] = 'Informe o nome completo';
+					$ret['valida']['nome'] = 'error';
+					return $ret;
+				}
+
+				$cond_valid = "WHERE token = '".$config['token']."'";
+				$type_alt = 2;
+				// $config['conf'] = 's';//confirmação para salvar
+				$config['id'] = Qlib::buscaValorDb0($GLOBALS['tab15'],'token',$config['token'],'id');
+				// $config2 = array(
+				// 	'tab'=>$tabUser,
+				// 	'valida'=>true,
+				// 	'condicao_validar'=>$cond_valid,
+				// 	'sqlAux'=>false,
+				// 	'ac'=>'alt',
+				// 	'type_alt'=>$type_alt,
+				// 	'dadosForm' => $config
+				// );
+                $dsc = $config;
+                // dump($tabUser);
+                unset(
+                    $dsc['pagina'],
+                    $dsc['token_matricula'],
+                    $dsc['meta'],
+                    $dsc['campo_bus'],
+                    $dsc['campo_id']
+                );
+                // return $dsc;
+                $ret = Qlib::update_tab($tabUser,$dsc,$cond_valid);
+				// $ret = lib_salvarFormulario($config2);//Declado em Lib/Qlibrary.php
+				// $ret = json_decode($ret,true);
+				$ret['valida']['mens'] = false;
+				unset($ret['salvar']['url1']);
+				// dd($ret);
+				//verificar se o campo $config['meta está presente'];
+				if(isset($config['meta']) && isset($config['token_matricula'])){
+					//Gravar dados meta $config['id'] nesse caso é o id da matricula
+					$config['id'] = $this->get_id_by_token($config['token_matricula']);
+                    // dd($config);
+					// lib_print($config);
+					$ret['meta'] = $this->sava_meta_fields($config);
+				}
+				//validar as respostas para passar para proxima tela
+				$ret['nextPage'] = '';
+				$ret['validar'] = false;
+				if(isset($config['token_matricula'])){
+					$ret['validar'] = $this->valida_respostas_assinatura($config['token_matricula'],'token');
+				}
+
+				if($ret['validar']){
+					$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/f/2#ciente';
+				}else{
+					$ret['exec'] = false;
+					$ret['mens'] = 'Erro ao validar as respostas do termo';
+					$ret['color'] = 'danger';
+				}
+				// dd($ret);
+		    }
+
+
+		}
+		// dd($ret);
+		return $ret;
+	}
+    /**
+	 * Salvar um array de meta campos provedientes de um formulario
+	 * @param array $config
+	 * @return array
+	 */
+	public function sava_meta_fields($config){
+		$id_matricula = isset($config['id'])?$config['id']:null;
+		$meta = isset($config['meta'])?$config['meta']:null;
+		$ret['exec'] = false;
+    	if($id_matricula && $meta){
+			if(!isset($meta['instrutores'])){
+				$verf = Qlib::get_matriculameta($id_matricula,'instrutores',true);
+				if($verf) {
+					$ret['sm']['remove_inst'] = Qlib::update_matriculameta($id_matricula,'instrutores',Qlib::lib_array_json([]));
+					if($ret['sm']['remove_inst']){
+						$ret['exec'] = true;
+					}
+				}
+			}
+			foreach ($meta as $km => $vm) {
+				if(is_array($vm)){
+					$ret['sm'][$km] = Qlib::update_matriculameta($id_matricula,$km,Qlib::lib_array_json($vm));
+				}else{
+					$ret['sm'][$km] = Qlib::update_matriculameta($id_matricula,$km,$vm);
+				}
+				if($ret['sm'][$km]){
+					$ret['exec'] = true;
+				}
+			}
+		}
+		return $ret;
+	}
+    /**
+     * Enviar um envelope com 1 documento para o zapsing
+     * @param string $tm token da matricula
+     * @param string $dm dados da matricula para evitar uma nova consulta
+     */
+    public function enviar_envelope($tm,$dm=false,$url_pdf=''){
+        if(!$dm && $tm){
+            $dm = $this->dm($tm);
+        }
+        $zpc = new ZapguruController;
+        $ret['exec'] = false;
+        if($dm && $url_pdf){
+            $nome = isset($dm['nome_completo']) ? $dm['nome_completo'] : '';
+            $email = isset($dm['Email']) ? $dm['Email'] : '';
+            $cpf = isset($dm['Cpf']) ? $dm['Cpf'] : '';
+            $signers = [
+                "name" => $nome,
+                "email" => $email,
+                "cpf" => $cpf,
+                "send_automatic_email" => true,
+                "send_automatic_whatsapp" => false,
+                "auth_mode" => "CPF", //tokenEmail,assinaturaTela-tokenEmail,tokenSms,assinaturaTela-tokenSms,tokenWhatsapp,assinaturaTela-tokenWhatsapp,CPF,assinaturaTela-cpf,assinaturaTela
+                "order_group" => 1,
+            ];
+            $signers = $zpc->signers_matricula($signers);
+            $body = [
+                "name" => 'Assinatura da proposta',
+                "url_pdf" => $url_pdf,
+                "external_id" => $tm,
+                "signers" =>$signers,
+                ];
+            //eviar
+            $ret = (new ZapsingController)->post([
+                "endpoint" => 'docs',
+                "body" => $body,
+            ]);
+        }
+        return $ret;
+
+    }
+    /**
+     * Metodo para enviar o termo para zapsing
+     * @params $tm $token da matricula
+     */
+    public function send_to_zapSing($tm,$dm=false){
+        if(!$dm && $tm){
+            $dm = $this->dm($tm);
+        }
+        $id = isset($dm['id']) ? $dm['id'] : '';
+        if($id){
+            $contratos = $this->contatos_estaticos_pdf($id);
+        }else{
+            $contratos = false;
+        }
+        $ret['exec'] = false;
+        $ret['dm'] = $dm;
+        $ret['mens'] = 'Matricula não encontrada';
+        $ret['color'] = 'danger';
+        //listar contrato
+        if(!$dm){
+            return $ret;
+        }
+        $eviar = false;
+        if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
+            //link od ontrato de prestação ou seja o principal contrato
+            $enviar = $this->enviar_envelope($tm,$dm,$link_c);
+            // if($enviar[''])
+        }
+        $ret['enviar'] = $enviar;
+        // $nome = isset($dm['name']) ? $dm['name'] : '';
+        // $token = isset($dm['token']) ? $dm['token'] : '';
+        // $email = isset($dm['email']) ? $dm['email'] : '';
+        $ret = ['exec' => false, 'mens'=>'Orçamento não encontrado','color'=>'danger', 'status'=>'403'];
+
+        // $cpf = $d['cpf'] ? $d['cpf'] : '';
+        // $conteudo = Qlib::get_post_content(10);// 'Meu teste 06';
+        // if(!$id){
+        //     return $ret;
+        // }
+        // if(!$conteudo){
+        //     $ret = ['exec' => false, 'mens'=>'Conteudo de termo inválido','color'=>'danger', 'status'=>'403'];
+        //     return $ret;
+        // }
+        // // $titulo = 'Termo de solicitação de orçamento '.$id;
+        // $titulo = Qlib::qoption('titulo_termo') ? Qlib::qoption('titulo_termo') : 'Termo para assinatura da aeronave';
+        // $matricula = isset($d['config']['matricula']) ? $d['config']['matricula'] : '';
+        // $titulo = str_replace('{id}',$id,$titulo);
+        // $titulo = str_replace('{matricula}',$matricula,$titulo);
+        // // $matricula  = isset($d['config']['matricula']) ? $d['config']['matricula'] : '';
+        // // $servicos  = isset($d['config']['servicos']) ? $d['config']['servicos'] : '';
+        // $id_assinante_oficina = Qlib::qoption('id_assinante_oficina');
+        // $da = User::find($id_assinante_oficina);
+        // $nome_oficina = isset($da['name']) ? $da['name'] : '';
+        // $email_oficina = isset($da['email']) ? $da['email'] : '';
+        // $cpf_oficina = isset($da['cpf']) ? $da['cpf'] : '';
+        // $body = [
+        //     "name" => $titulo,
+        //     "url_pdf" => "https://oficina.aeroclubejf.com.br/storage/pdfs/termo_pdf",
+        //     "external_id" => $token,
+        //     "signers" => [
+        //         [
+        //             "name" => $nome,
+        //             "email" => $email,
+        //             "cpf" => $cpf,
+        //             "send_automatic_email" => true,
+        //             "send_automatic_whatsapp" => false,
+        //             "auth_mode" => "CPF", //tokenEmail,assinaturaTela-tokenEmail,tokenSms,assinaturaTela-tokenSms,tokenWhatsapp,assinaturaTela-tokenWhatsapp,CPF,assinaturaTela-cpf,assinaturaTela
+        //             "order_group" => 1,
+        //         ],
+        //         [
+        //             "name" => $nome_oficina, //assinatura da oficina
+        //             "email" => $email_oficina,
+        //             "cpf" => $cpf_oficina,
+        //             "send_automatic_email" => true,
+        //             "send_automatic_whatsapp" => false,
+        //             "auth_mode" => "CPF", //tokenEmail,assinaturaTela-tokenEmail,tokenSms,assinaturaTela-tokenSms,tokenWhatsapp,assinaturaTela-tokenWhatsapp,CPF,assinaturaTela-cpf,assinaturaTela
+        //             "order_group" => 2,
+        //         ],
+        //     ],
+        // ];
+        // $body['url_pdf'] = isset($gerar_pdf['caminho']) ? $gerar_pdf['caminho'] : '';
+        // $ret = (new ZapsingController)->post([
+        //     "body" => $body
+        // ]);
+        // //gravar historico do envio do orçamento
+        // if(isset($ret['exec'])){
+        //     $post_id = Qlib::get_id_by_token($token);
+        //     $ret['salv_hist'] = Qlib::update_postmeta($post_id,$this->campos_enviado,Qlib::lib_array_json($ret));
+        // }
+        // Log::info('send_to_zapSing:', $ret);
+        return $ret;
+    }
+    //metodos que retorna o link de todos os contratos estaticos em pdf salvos no servidor de acordo com o id da matricula
+
+    public function contatos_estaticos_pdf($id){
+        $dc = Qlib::dados_tab('matriculameta',['where'=>"WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC"]);
+        return $dc;
+    }
+	/**
+	 * Salva todas as etapas de aceitação do contrato de periodos do plano de formação
+	 */
+	public function assinar_proposta_periodo($config){
+		$ret['exec'] = false;
+		$ret['valida']['mens'] = false;
+		//salvar conteudo da página 2
+		if(isset($config['token_matricula']) && isset($config['meta']) && is_array($config['meta'])){
+			//11 o id da etapa 'Proposta aprovada' do flow de atendimento
+			$config['id'] = $this->get_id_by_token($config['token_matricula']);
+			// $ret['validar'] = $this->valida_respostas_assinatura_periodo($config['token_matricula'],'token');
+			$ret['save'] = $this->sava_meta_fields($config);
+			if($ret['save']['exec']){
+				if(isset($config['arr_periodo'])){
+					$ret['exec'] = true;
+					//variavel que grava uma strig contendo o codigo que array do periodo proveniente do formulario gerando no metodo $this->formAceitoPropostaPeriodo
+					$arr_periodo = Qlib::decodeArray($config['arr_periodo']);
+					$token_periodo = isset($arr_periodo['token']) ? $arr_periodo['token'] : '';
+					//gravar contrato estatico...
+					$ret['gravar_copia'] = $this->grava_contrato_statico_periodo($config['token_matricula'],$token_periodo);
+					$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a/'.$token_periodo;
+					// lib_print($arr_periodo);
+					// lib_print($ret);
+					// dd($config);
+				}
+			}else{
+				$ret['exec'] = false;
+				$ret['mens'] = 'Erro ao validar as respostas do termo';
+			}
+
+		}
+		return $ret;
+	}
+    /**
+	 * Metodo para gravar os contratos estaticos na assinatura inicial da proposta
+	 * @uso $ret = (new MatriculaController)->grava_contrato_statico($token_matricula);
+	 * @param
+	 */
+	public function grava_contrato_statico($token_matricula){
+		$configCn['token'] = $token_matricula;
+		$configCn['tipo_retorno'] = 2;
+		// $shoc1 = 'contrato1';$shoc2 = 'contrato2';
+		$shoc1 = 'contrato_matricula';$shoc2 = 'contrato_financiamento_horas';
+        $dm = $this->dm($token_matricula);
+        $conteudo = $this->contratoAero($configCn,$dm,$shoc1);//app/cursos
+		$contrato_financeiro = $this->contratoAero($configCn,$dm,$shoc2);//app/cursos   //contrato_financiamento_horas
+		$contrato_combustivel = $this->contratoAero($configCn,$dm,'contrato_combustivel');//app/cursos   //contrato_financiamento_horas
+        // $ger_cont = $this->termo_concordancia(['token'=>$token,'type'=>$opc],$dm);
+        $termo_concordancia = $this->termo_concordancia($configCn);//app/cursos   //contrato_financiamento_horas
+		$configCn['type'] = 'termo_escola_voo';
+		$termo_concordancia_escola_voo = $this->termo_concordancia($configCn);//app/cursos
+		$configCn['type'] = 'termo_antecipacao_combustivel';
+		$termo_antecipacao_combustivel = $this->termo_concordancia($configCn);//app/cursos   //contrato_financiamento_horas
+        // dump($termo_concordancia,$termo_concordancia_escola_voo,$termo_antecipacao_combustivel);
+        // dd($conteudo,$contrato_financeiro,$contrato_combustivel);
+		$contrato_prestacao = $conteudo;
+		// $dm = cursos::dadosMatricula($token_matricula);
+		// if($dm){
+		// 	$dm=$dm[0];
+		// }
+		$arr_salv = [
+			'contrato_prestacao'=>$contrato_prestacao,
+			'contrato_combustivel'=>$contrato_combustivel,
+			'contrato_financeiro'=>$contrato_financeiro,
+			'termo_concordancia'=>$termo_concordancia,
+			'termo_concordancia_voo'=>$termo_concordancia_escola_voo,
+		];
+		if(isset($termo_antecipacao_combustivel['contrato']) && $termo_antecipacao_combustivel['contrato'] ){
+            //gravar contrato de antecipação de combustivel apenas para cursos fora do plano de formação
+			if(@$dm['tipo_curso']!=4){
+                $arr_salv['termo_antecipacao_combustivel'] = $termo_antecipacao_combustivel['contrato'];
+			}
+		}
+		// if(isAdmin(1)){
+            // 	dd($arr_salv);
+            // }
+            // dd($dm,$arr_salv);
+		$ret['exec']=false;
+		foreach ($arr_salv as $km => $vm) {
+            $contrato = isset($vm['contrato']) ? $vm['contrato'] : '';
+            if(!empty($vm['contrato'])){
+                $contrato=trim($contrato);
+                $dados = [
+                    'html'=>$contrato,
+                    'nome_aquivo_savo'=>$vm['nome_arquivo'],
+                    'titulo'=>$vm['nome_arquivo'],
+                    'id_matricula'=>$dm['id'],
+                    'token'=>$dm['token'],
+                    'short_code'=>$km,
+                    'pasta'=>'contratos',
+                    'f_exibe'=>'server',
+                ];
+				$ret['grav_pdf'][$km] = (new PdfGenerateController )->convert_html($dados);
+				$salv = Qlib::update_matriculameta($dm['id'],$km,base64_encode($contrato));
+                //converter em pdf
+				$ret['ds'][$km]=$salv;
+				if($salv){
+                    $ret['exec']=true;
+
+				}
+			}else{
+                if(Qlib::delete_matriculameta($dm['id'],$km)){
+                    $ret['exec']=true;
+					$ret['ds'][$km]=$vm;
+				}
+                if(Qlib::delete_matriculameta($dm['id'],$km.'_pdf')){
+                    $ret['exec']=true;
+					$ret['grav_pdf'][$km]=$vm;
+				}
+			}
+		}
+		return $ret;
+	}
+    /**
+	 * Metodo gravar os contratos estaticos do periodo do plano de formação
+	 * @uso $ret = (new Orcamentos)->grava_contrato_statico_periodo($token_matricula,$token_periodo);
+	 * @param string $token_matricula, strim $token_periodo
+	 */
+	public function grava_contrato_statico_periodo($token_matricula,$token_periodo=false){
+		$configCn['token'] = base64_encode($token_matricula);
+		$configCn['periodo'] = $token_periodo;
+		// $token_periodo = isset($arr_periodo['token'])?$arr_periodo['token']:'';
+		$arr_periodo = $this->get_periodo_array($token_matricula,'token',$token_periodo);
+		$ret['exec']=false;
+		if(!isset($arr_periodo['periodo'])){
+			return $ret;
+		}
+		$link_periodo = isset($arr_periodo['periodo']) ? $arr_periodo['periodo'] : '1° periodo';
+		$link_periodo = str_replace(' ','_',$link_periodo);
+		$dm = $this->dm($token_matricula);
+		if($dm){
+			$dm=$dm[0];
+		}else{
+			return $ret;
+		}
+		$cont = 'contrato_' . $token_periodo;
+		$id_matricula = $this->get_id_by_token($token_matricula);
+		$json_contrato = Qlib::get_matriculameta($id_matricula,$cont);
+		$arr_cont = Qlib::lib_json_array($json_contrato);
+		$arr_salv = [];
+		if(isset($arr_cont['aceito'])){
+			$arr_salv = $arr_cont['aceito'];
+		}
+		foreach ($arr_salv as $km => $vm) {
+			$vm=trim($vm);
+			$meta_key = $km.'_'.$token_periodo;
+			if(!empty($vm) && $vm=='on'){
+				//acha a chave do contrato
+				if($km == 'termo_periodo'){
+					$contrato = 'contrato_'.$link_periodo;
+				}else{
+					$contrato = $km;
+				}
+				// echo $contrato.'<br> ';
+				if($km=='contrato_combustivel'){
+					$contr = $this->contratoAero($configCn,$dm,$km);
+				}else{
+					$configCn['type'] = $contrato;
+					$contr = $this->termo_concordancia($configCn,$dm);
+				}
+				// if(is_sandbox()){
+				// 	lib_print(var_dump($vm)) ."<br>";
+				// }
+				// lib_print($contr);
+				if(isset($contr['contrato']) && !empty($contr['contrato']) && ($c=$contr['contrato'])){
+					$salv = Qlib::update_matriculameta($dm['id'],$meta_key,base64_encode($c));
+					$ret['ds'][$km]=$salv;
+					if($salv){
+						$ret['exec']=true;
+
+					}
+				}
+			}
+		}
+		return $ret;
+	}
     /**
 	 * Metodo que informa se contrato tem fiador
 	 * @param string $token_matricula

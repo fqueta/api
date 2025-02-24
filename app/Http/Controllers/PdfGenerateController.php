@@ -196,7 +196,7 @@ class PdfGenerateController extends Controller
         $short_code = isset($config['short_code']) ? $config['short_code'] : false;
         // $nome_aquivo_savo='arquivo',$titulo='Arquivo'
         $ret['exec'] = '';
-        $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>$html])->render();
+        $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>trim($html)])->render();
         $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
                 ->setOption('margin-top', '10mm')

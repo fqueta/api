@@ -68,6 +68,14 @@ class OrcamentoController extends Controller
     {
         //
     }
+    public function assinar_proposta(string $token){
+        $d = request()->all();
+        if(!isset($d['token_matricula'])){
+            $d['token_matricula'] = $token;
+        }
+        $ret = (new MatriculasController)->assinar_proposta($d);
+        return $ret;
+    }
 
     public function add_update($config=[]){
         //indentificar o curso

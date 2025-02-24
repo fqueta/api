@@ -45,6 +45,32 @@ class Qlib
         $dataLocal = date('d/m/Y H:i:s', time());
         return $dataLocal;
     }
+    /**
+     * Metodo para validar um CPF retorna true|false
+     * @param string $cpf
+     * @return boolean true | false
+     */
+    static function validaCpf($cpf){
+        if(empty($cpf))
+           return true;
+        $cpf = preg_replace( '/[^0-9]/is', '', $cpf );
+        if (strlen($cpf) != 11) {
+            return false;
+        }
+        if (preg_match('/(\d)\1{10}/', $cpf)) {
+            return false;
+        }
+        for ($t = 9; $t < 11; $t++) {
+            for ($d = 0, $c = 0; $c < $t; $c++) {
+                $d += $cpf[$c] * (($t + 1) - $c);
+            }
+            $d = ((10 * $d) % 11) % 10;
+            if ($cpf[$c] != $d) {
+                return false;
+            }
+        }
+        return true;
+    }
     static function dataLocalDb(){
         $dtBanco = date('Y-m-d H:i:s', time());
         return $dtBanco;
@@ -1588,6 +1614,7 @@ class Qlib
         if($matricula_id){
             if($meta_key){
                 $d = DB::table($tab)->where('matricula_id',$matricula_id)->where('meta_key',$meta_key)->get();
+                // dump($matricula_id,$meta_key,$d);
                 if($d->count()){
                     if($string){
                         $ret = $d[0]->meta_value;
@@ -2186,9 +2213,10 @@ class Qlib
 
 							];
 
-							$ret['reg_inscricao'] = salvarAlterar("UPDATE IGNORE ".$GLOBALS['tab12']." SET reg_inscricao = '".lib_array_json($arr_reg_inscricao)."' WHERE token='".$config['token']."'");
+							$ret['reg_inscricao'] = Qlib::update_tab($GLOBALS['tab12'],['reg_inscricao'=>Qlib::lib_array_json($arr_reg_inscricao)],"' WHERE token='".$config['token']."'");
+                            //  salvarAlterar("UPDATE IGNORE ".$GLOBALS['tab12']." SET reg_inscricao = '".Qlib::lib_array_json($arr_reg_inscricao)."' WHERE token='".$config['token']."'");
 
-							$dadosPlano = dados_tab('lcf_planos','*',"WHERE token_matricula='".$config['token']."'");
+							$dadosPlano = Qlib::dados_tab('lcf_planos',['campos'=>'*','where'=>"WHERE token_matricula='".$config['token']."'"]);
 
 						}else{
 

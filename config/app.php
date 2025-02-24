@@ -12,8 +12,10 @@ return [
     | any other location as required by the application or its packages.
     |
     */
+    'id_app' => env('ID_APP', 'crm_aeroclubejf'),
+    'name' => env('APP_NAME', 'Aeroclubejf'),
+    'name' => env('APP_NAME', 'CRM ACJF'),
 
-    'name' => env('APP_NAME', 'Laravel'),
 
     /*
     |--------------------------------------------------------------------------
