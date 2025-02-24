@@ -4318,7 +4318,7 @@ class MatriculasController extends Controller
         if(!$dm && $tm){
             $dm = $this->dm($tm);
         }
-        $zpc = new ZapguruController;
+        $zpc = new ZapsingController;;
         $ret['exec'] = false;
         if($dm && $url_pdf){
             $nome = isset($dm['nome_completo']) ? $dm['nome_completo'] : '';
@@ -4382,7 +4382,7 @@ class MatriculasController extends Controller
         // $nome = isset($dm['name']) ? $dm['name'] : '';
         // $token = isset($dm['token']) ? $dm['token'] : '';
         // $email = isset($dm['email']) ? $dm['email'] : '';
-        $ret = ['exec' => false, 'mens'=>'Orçamento não encontrado','color'=>'danger', 'status'=>'403'];
+        // $ret = ['exec' => false, 'mens'=>'Matricula não encontrado','color'=>'danger', 'status'=>'403'];
 
         // $cpf = $d['cpf'] ? $d['cpf'] : '';
         // $conteudo = Qlib::get_post_content(10);// 'Meu teste 06';
