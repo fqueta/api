@@ -4337,7 +4337,7 @@ class MatriculasController extends Controller
             //Criar o nome
             $name = $nome. ' * '.@$dm['nome_curso'].' - '.@$dm['nome_curso'];
             $body = [
-                "name" => $name,// 'Assinatura da proposta',
+                "name" => trim($name),// 'Assinatura da proposta',
                 "url_pdf" => $url_pdf,
                 "external_id" => $tm,
                 "folder_path" => '/CRM',
