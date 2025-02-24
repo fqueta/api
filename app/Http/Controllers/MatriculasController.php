@@ -4336,8 +4336,9 @@ class MatriculasController extends Controller
             $signers = $zpc->signers_matricula($signers);
             $body = [
                 "name" => 'Assinatura da proposta',
-                "url_pdf" => $url_pdf,
+                "url_pdf" => urlencode($url_pdf),
                 "external_id" => $tm,
+                "folder_path" => '/CRM',
                 "signers" =>$signers,
                 ];
             //eviar
