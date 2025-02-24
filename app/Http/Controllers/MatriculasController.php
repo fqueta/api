@@ -4334,8 +4334,10 @@ class MatriculasController extends Controller
                 "order_group" => 1,
             ];
             $signers = $zpc->signers_matricula($signers);
+            //Criar o nome
+            $name = $nome. ' * '.@$dm['nome_curso'].' - '.@$dm['nome_curso'];
             $body = [
-                "name" => 'Assinatura da proposta',
+                "name" => $name,// 'Assinatura da proposta',
                 "url_pdf" => $url_pdf,
                 "external_id" => $tm,
                 "folder_path" => '/CRM',
