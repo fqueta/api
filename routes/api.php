@@ -43,7 +43,7 @@ Route::prefix('v1')->group(function(){
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
     Route::get('/rab',[RabController::class,'index']);
     Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
-    Route::put('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
+    Route::post('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
 });
 // Route::post('/tokens/create', function (Request $request) {
 //     //$token = $request->user()->createToken($request->token_name);
