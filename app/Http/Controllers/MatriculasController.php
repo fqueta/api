@@ -4352,6 +4352,9 @@ class MatriculasController extends Controller
         return $ret;
 
     }
+    public function enviar_anexo($token_envelope,$url_pdf=false){
+
+    }
     /**
      * Metodo para enviar o termo para zapsing
      * @params $tm $token da matricula
