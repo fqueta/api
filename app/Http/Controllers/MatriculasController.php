@@ -4352,6 +4352,7 @@ class MatriculasController extends Controller
     /**
      * Metodo para enviar o termo para zapsing
      * @params $tm $token da matricula
+     * @usu $ret = (new MatriculaController)->send_to_zapSing('token_matricula');
      */
     public function send_to_zapSing($tm,$dm=false){
         if(!$dm && $tm){
