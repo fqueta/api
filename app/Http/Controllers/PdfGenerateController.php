@@ -205,7 +205,7 @@ class PdfGenerateController extends Controller
             return $pdf->stream($nome_aquivo_savo.'.pdf');
         }elseif($f_exibe=='server' && $token){
             try {
-                $fileName = $pasta.'/'.$token.'/'.$nome_aquivo_savo.'.pdf';
+                $fileName = $pasta.'/'.$token.'/'.Qlib::createSlug($nome_aquivo_savo).'.pdf';
                 //grava statico no servidor
                 $pdfbin = $pdf->output();
                 $ret['ger_arquivo'] = Storage::put($fileName, $pdfbin);
