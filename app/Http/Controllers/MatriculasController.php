@@ -4275,8 +4275,6 @@ class MatriculasController extends Controller
 				}
 				// dd($ret);
 		    }
-
-
 		}
 		// dd($ret);
 		return $ret;
@@ -4365,12 +4363,6 @@ class MatriculasController extends Controller
         if(!$dm && $tm){
             $dm = $this->dm($tm);
         }
-        $id = isset($dm['id']) ? $dm['id'] : '';
-        if($id){
-            $contratos = $this->contatos_estaticos_pdf($id);
-        }else{
-            $contratos = false;
-        }
         $ret['exec'] = false;
         $ret['dm'] = $dm;
         $ret['mens'] = 'Matricula de token '.$tm.' não foi encontrada';
@@ -4378,6 +4370,12 @@ class MatriculasController extends Controller
         //listar contrato
         if(!$dm){
             return $ret;
+        }
+        $id = isset($dm['id']) ? $dm['id'] : '';
+        if($id){
+            $contratos = $this->contatos_estaticos_pdf($id,true,$dm);
+        }else{
+            $contratos = false;
         }
         $enviar = false;
         if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
@@ -4413,12 +4411,6 @@ class MatriculasController extends Controller
         if(!$dm && $tm){
             $dm = (new MatriculasController)->dm($tm);
         }
-        $id = isset($dm['id']) ? $dm['id'] : '';
-        if($id && !$contatos_anexos){
-            $contatos_anexos = $this->contatos_estaticos_pdf($id,false);
-        }else{
-            $contatos_anexos = false;
-        }
         $ret['exec'] = false;
         $ret['dm'] = $dm;
         $ret['mens'] = 'Matricula não encontrada';
@@ -4426,6 +4418,12 @@ class MatriculasController extends Controller
         //listar contrato
         if(!$dm){
             return $ret;
+        }
+        $id = isset($dm['id']) ? $dm['id'] : '';
+        if($id && !$contatos_anexos){
+            $contatos_anexos = $this->contatos_estaticos_pdf($id,false,$dm);
+        }else{
+            $contatos_anexos = false;
         }
         if($contatos_anexos){
             //conseguir o token do contrato principal
@@ -4438,10 +4436,17 @@ class MatriculasController extends Controller
                 $token_envelope = isset($arr['response']['token']) ? $arr['response']['token'] : false;
                 if($token_envelope && is_array($contatos_anexos)){
                     $zp = new ZapsingController;
+                    $lastKey = array_key_last($contatos_anexos); // Obtém a última chave
                     foreach($contatos_anexos As $k=>$v){
                         $link = isset($v['meta_value']) ? $v['meta_value'] : false;
-                        $arr_n = explode('/', $link);
-                        $nome_arquivo = str_replace('-',' ',end($arr_n));
+                        if ($k === $lastKey) {
+                            // echo "$value (último elemento)\n";
+                            $nome_arquivo = isset($v['meta_key']) ? $v['meta_key'] : false;
+                        } else {
+                            // echo "$value\n";
+                            $arr_n = explode('/', $link);
+                            $nome_arquivo = str_replace('-',' ',end($arr_n));
+                        }
                         $ret['anexo'][$k] = $zp->enviar_anexo($token_envelope,$link,$nome_arquivo);
                         // dump($link,ucfirst($nome_arquivo));
                         if(isset($ret['anexo'][$k]['exec']))
@@ -4455,11 +4460,31 @@ class MatriculasController extends Controller
 
     }
 
-    //metodos que retorna o link de todos os contratos estaticos em pdf salvos no servidor de acordo com o id da matricula
-    public function contatos_estaticos_pdf($id,$todos=true){
+    /**
+     * metodos que retorna o link de todos os contratos estaticos em pdf salvos no servidor de acordo com o id da matricula
+     * @param string $id o id da matricula
+     * @param bool $todos true para listar todos e false para remover o primeiro item que é o contrato de prestação de serviços que é o principal
+     */
+    public function contatos_estaticos_pdf($id,$todos=true,$dm=false){
         $dc = Qlib::dados_tab('matriculameta',['where'=>"WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC"]);
         if(!$todos && isset($dc[0])){
             unset($dc[0]);
+        }else{
+            //incluir o mgr Manual geral de regara para o curso caso tenha
+            $id_curso = isset($dm['id_curso']) ? $dm['id_curso'] : false;//token matricula
+            $token_curso = Qlib::buscaValorDb0('cursos','id',$id_curso,'token');
+            $dmgr = Qlib::dados_tab('arquivos_pdf',['where'=>"WHERE id_produto='$token_curso' AND ordem='1'"]);
+            if(isset($dmgr[0]['endereco']) && ($link = $dmgr[0]['endereco'])){
+                $link = str_replace('https://aeroclubejf','https://crm.aeroclubejf',$link);
+                // return $dmgr;
+                $title = isset($dmgr[0]['title']) ? $dmgr[0]['title'] : 'Manual de regras';
+                $arr = [
+                    'meta_key'=> $title,
+                    'meta_value'=>$link,
+                ];
+                array_push($dc,$arr);
+                // dump($id_curso,$dmgr);
+            }
         }
         return $dc;
     }
