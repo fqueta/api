@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\api\ZapsingController;
+use App\Jobs\GeraPdfContratoJoub;
+use App\Jobs\SendZapsingJoub;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 
@@ -102,16 +104,25 @@ class TesteController extends Controller
         //zapsing
 
         // enviar anexo.
-        $body = [
-            'name'=>'Termo teste',
-            'url_pdf'=>'https://oficina.aeroclubejf.com.br/storage/pdfs/termo_pdf',
-        ];
+        // $body = [
+        //     'name'=>'Termo teste',
+        //     'url_pdf'=>'https://oficina.aeroclubejf.com.br/storage/pdfs/termo_pdf',
+        // ];
         // $endpoint = 'docs/d460cbeb-aba7-421f-a776-6c34cd60d1ae/upload-extra-doc';
         // $ret = (new ZapsingController)->post([
         //     "endpoint" => $endpoint,
         //     "body" => $body,
         // ]);
-        $ret = (new MatriculasController)->send_to_zapSing($token);
+        // $ret = (new MatriculasController)->send_to_zapSing($token);
+        // $ret = (new MatriculasController)->grava_contrato_statico($token);
+        GeraPdfContratoJoub::dispatch($token);
+        SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));
+        // dump(now()->addSeconds(5));
+        // $token_envelope = '499519d1-165c-46a1-9a8e-92ad08598974';
+        // $url_pdf = 'https://doc.aeroclubejf.com.br/storage/contratos/67bcad6a2228c/termo-concordancia-fernando-programandor-2-piloto-privado-aviao-7202.pdf';
+        // $ret = (new ZapsingController)->enviar_anexo($token_envelope,$url_pdf,$nome_arquivo='Termo concordancia');
+        // $ret = (new MatriculasController)->link_contratos_anexos($token);
+        // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token);
         return $ret;
     }
 }

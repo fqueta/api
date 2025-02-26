@@ -212,5 +212,24 @@ class ZapsingController extends Controller
         // dump($ret);
         // dd($dcont,$dtes1,$dtes2);
     }
+    /**
+     * Envia anexos a um determinado documento
+     * @param  string $token_envelope = '' token do documento inicial
+     * @param  string $url_pdf = '' url do pdf do documento a ser anexado
+     * @param  string $nome_arquivo = '' Nome do arquivo
+     * @param  array $ret = []
+     */
+    public function enviar_anexo($token_envelope,$url_pdf=false,$nome_arquivo='Arquivo anexo'){
+        $body = [
+            'name'=>$nome_arquivo,
+            'url_pdf'=>$url_pdf,
+        ];
+        $endpoint = 'docs/'.$token_envelope.'/upload-extra-doc';
+        $ret = (new ZapsingController)->post([
+            "endpoint" => $endpoint,
+            "body" => $body,
+        ]);
+        return $ret;
+    }
 
 }

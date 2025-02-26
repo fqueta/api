@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Matricula;
 use App\Qlib\Qlib;
 use App\Http\Controllers\api\ZapsingController;
+use App\Jobs\GeraPdfContratoJoub;
+use App\Jobs\SendZapsingJoub;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -4179,8 +4181,10 @@ class MatriculasController extends Controller
 					//gravar contrato estatico...
 					$ret['validar'] = $this->valida_respostas_assinatura($config['token_matricula'],'token');
 					if($ret['validar']){
-						$ret['gravar_copia'] = $this->grava_contrato_statico($config['token_matricula']);
-						$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a';
+						// $ret['gravar_copia'] = $this->grava_contrato_statico($config['token_matricula']);
+                        GeraPdfContratoJoub::dispatch($config['token_matricula']);
+                        SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
+            			$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a';
 					}else{
 						$ret['exec'] = false;
 						$ret['mens'] = 'Erro ao validar as respostas do termo';
@@ -4335,7 +4339,7 @@ class MatriculasController extends Controller
             ];
             $signers = $zpc->signers_matricula($signers);
             //Criar o nome
-            $name = $nome. ' * '.@$dm['nome_curso'].' - '.@$dm['nome_curso'];
+            $name = $nome. ' * '.@$dm['nome_curso'].' - '.@$dm['id'];
             $body = [
                 "name" => trim($name),// 'Assinatura da proposta',
                 "url_pdf" => $url_pdf,
@@ -4350,9 +4354,6 @@ class MatriculasController extends Controller
             ]);
         }
         return $ret;
-
-    }
-    public function enviar_anexo($token_envelope,$url_pdf=false){
 
     }
     /**
@@ -4372,74 +4373,31 @@ class MatriculasController extends Controller
         }
         $ret['exec'] = false;
         $ret['dm'] = $dm;
-        $ret['mens'] = 'Matricula não encontrada';
+        $ret['mens'] = 'Matricula de token '.$tm.' não foi encontrada';
         $ret['color'] = 'danger';
         //listar contrato
         if(!$dm){
             return $ret;
         }
-        $eviar = false;
+        $enviar = false;
         if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
             //link od ontrato de prestação ou seja o principal contrato
             $enviar = $this->enviar_envelope($tm,$dm,$link_c);
+            if($enviar['exec'] == true){
+                $ret['exec'] = true;
+                //gravar o processamento em campo
+                $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope',Qlib::lib_array_json($enviar));
+                //removendo o primiero contrato da lista
+                $n_cont = array_shift($contratos);
+                $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
+                if($token_doc && is_array($n_cont)){
+                    $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm);
+                }
+            }
             // if($enviar[''])
         }
         $ret['enviar'] = $enviar;
-        // $nome = isset($dm['name']) ? $dm['name'] : '';
-        // $token = isset($dm['token']) ? $dm['token'] : '';
-        // $email = isset($dm['email']) ? $dm['email'] : '';
-        // $ret = ['exec' => false, 'mens'=>'Matricula não encontrado','color'=>'danger', 'status'=>'403'];
 
-        // $cpf = $d['cpf'] ? $d['cpf'] : '';
-        // $conteudo = Qlib::get_post_content(10);// 'Meu teste 06';
-        // if(!$id){
-        //     return $ret;
-        // }
-        // if(!$conteudo){
-        //     $ret = ['exec' => false, 'mens'=>'Conteudo de termo inválido','color'=>'danger', 'status'=>'403'];
-        //     return $ret;
-        // }
-        // // $titulo = 'Termo de solicitação de orçamento '.$id;
-        // $titulo = Qlib::qoption('titulo_termo') ? Qlib::qoption('titulo_termo') : 'Termo para assinatura da aeronave';
-        // $matricula = isset($d['config']['matricula']) ? $d['config']['matricula'] : '';
-        // $titulo = str_replace('{id}',$id,$titulo);
-        // $titulo = str_replace('{matricula}',$matricula,$titulo);
-        // // $matricula  = isset($d['config']['matricula']) ? $d['config']['matricula'] : '';
-        // // $servicos  = isset($d['config']['servicos']) ? $d['config']['servicos'] : '';
-        // $id_assinante_oficina = Qlib::qoption('id_assinante_oficina');
-        // $da = User::find($id_assinante_oficina);
-        // $nome_oficina = isset($da['name']) ? $da['name'] : '';
-        // $email_oficina = isset($da['email']) ? $da['email'] : '';
-        // $cpf_oficina = isset($da['cpf']) ? $da['cpf'] : '';
-        // $body = [
-        //     "name" => $titulo,
-        //     "url_pdf" => "https://oficina.aeroclubejf.com.br/storage/pdfs/termo_pdf",
-        //     "external_id" => $token,
-        //     "signers" => [
-        //         [
-        //             "name" => $nome,
-        //             "email" => $email,
-        //             "cpf" => $cpf,
-        //             "send_automatic_email" => true,
-        //             "send_automatic_whatsapp" => false,
-        //             "auth_mode" => "CPF", //tokenEmail,assinaturaTela-tokenEmail,tokenSms,assinaturaTela-tokenSms,tokenWhatsapp,assinaturaTela-tokenWhatsapp,CPF,assinaturaTela-cpf,assinaturaTela
-        //             "order_group" => 1,
-        //         ],
-        //         [
-        //             "name" => $nome_oficina, //assinatura da oficina
-        //             "email" => $email_oficina,
-        //             "cpf" => $cpf_oficina,
-        //             "send_automatic_email" => true,
-        //             "send_automatic_whatsapp" => false,
-        //             "auth_mode" => "CPF", //tokenEmail,assinaturaTela-tokenEmail,tokenSms,assinaturaTela-tokenSms,tokenWhatsapp,assinaturaTela-tokenWhatsapp,CPF,assinaturaTela-cpf,assinaturaTela
-        //             "order_group" => 2,
-        //         ],
-        //     ],
-        // ];
-        // $body['url_pdf'] = isset($gerar_pdf['caminho']) ? $gerar_pdf['caminho'] : '';
-        // $ret = (new ZapsingController)->post([
-        //     "body" => $body
-        // ]);
         // //gravar historico do envio do orçamento
         // if(isset($ret['exec'])){
         //     $post_id = Qlib::get_id_by_token($token);
@@ -4448,10 +4406,61 @@ class MatriculasController extends Controller
         // Log::info('send_to_zapSing:', $ret);
         return $ret;
     }
-    //metodos que retorna o link de todos os contratos estaticos em pdf salvos no servidor de acordo com o id da matricula
+    /**
+     * gera um array com os link dos contratos
+     */
+    public function enviar_contratos_anexos($contatos_anexos=false,$tm=false,$dm=false){
+        if(!$dm && $tm){
+            $dm = (new MatriculasController)->dm($tm);
+        }
+        $id = isset($dm['id']) ? $dm['id'] : '';
+        if($id && !$contatos_anexos){
+            $contatos_anexos = $this->contatos_estaticos_pdf($id,false);
+        }else{
+            $contatos_anexos = false;
+        }
+        $ret['exec'] = false;
+        $ret['dm'] = $dm;
+        $ret['mens'] = 'Matricula não encontrada';
+        $ret['color'] = 'danger';
+        //listar contrato
+        if(!$dm){
+            return $ret;
+        }
+        if($contatos_anexos){
+            //conseguir o token do contrato principal
+            $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');
+            $ret['exec'] = false;
+            $arr = [];
+            if($denv_p){
+                $arr = Qlib::lib_json_array($denv_p);
+                // dd($arr);
+                $token_envelope = isset($arr['response']['token']) ? $arr['response']['token'] : false;
+                if($token_envelope && is_array($contatos_anexos)){
+                    $zp = new ZapsingController;
+                    foreach($contatos_anexos As $k=>$v){
+                        $link = isset($v['meta_value']) ? $v['meta_value'] : false;
+                        $arr_n = explode('/', $link);
+                        $nome_arquivo = str_replace('-',' ',end($arr_n));
+                        $ret['anexo'][$k] = $zp->enviar_anexo($token_envelope,$link,$nome_arquivo);
+                        // dump($link,ucfirst($nome_arquivo));
+                        if(isset($ret['anexo'][$k]['exec']))
+                            $ret['exec'] = true;
+                    }
 
-    public function contatos_estaticos_pdf($id){
+                }
+            }
+            return $ret;
+        }
+
+    }
+
+    //metodos que retorna o link de todos os contratos estaticos em pdf salvos no servidor de acordo com o id da matricula
+    public function contatos_estaticos_pdf($id,$todos=true){
         $dc = Qlib::dados_tab('matriculameta',['where'=>"WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC"]);
+        if(!$todos && isset($dc[0])){
+            unset($dc[0]);
+        }
         return $dc;
     }
 	/**
@@ -4475,7 +4484,8 @@ class MatriculasController extends Controller
 					//gravar contrato estatico...
 					$ret['gravar_copia'] = $this->grava_contrato_statico_periodo($config['token_matricula'],$token_periodo);
 					$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a/'.$token_periodo;
-					// lib_print($arr_periodo);
+					//Enviar para zapsing
+                    // lib_print($arr_periodo);
 					// lib_print($ret);
 					// dd($config);
 				}
