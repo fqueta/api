@@ -113,20 +113,21 @@ class TesteController extends Controller
         //     "endpoint" => $endpoint,
         //     "body" => $body,
         // ]);
-        // $ret = (new MatriculasController)->send_to_zapSing($token);
+        $ret = (new MatriculasController)->send_to_zapSing($token);
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // GeraPdfContratoJoub::dispatch($token);
+        // SendZapsingJoub::dispatch($token);
         // SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));
         // dump(now()->addSeconds(5));
         // $token_envelope = '499519d1-165c-46a1-9a8e-92ad08598974';
         // $url_pdf = 'https://doc.aeroclubejf.com.br/storage/contratos/67bcad6a2228c/termo-concordancia-fernando-programandor-2-piloto-privado-aviao-7202.pdf';
         // $ret = (new ZapsingController)->enviar_anexo($token_envelope,$url_pdf,$nome_arquivo='Termo concordancia');
         // $ret = (new MatriculasController)->link_contratos_anexos($token);
-        // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token);
-        $dm = (new MatriculasController)->dm($token);
-        $id = isset($dm['id']) ? $dm['id'] : 0;
+        // $dm = (new MatriculasController)->dm($token);
+        // $id = isset($dm['id']) ? $dm['id'] : 0;
+        // $ret = (new MatriculasController)->enviar_contratos_anexos(false,false,$dm);
         // dd($token);
-        $ret = (new MatriculasController)->contatos_estaticos_pdf($id,true,$dm);
+        // $ret = (new MatriculasController)->contatos_estaticos_pdf($id,true,$dm);
         // dd(count($ret));
         return $ret;
     }

@@ -9,6 +9,7 @@ use App\Jobs\GeraPdfContratoJoub;
 use App\Jobs\SendZapsingJoub;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MatriculasController extends Controller
 {
@@ -4174,7 +4175,7 @@ class MatriculasController extends Controller
 				$ret['exec'] = Qlib::update_tab($GLOBALS['tab12'],[
                     'contrato'=> Qlib::lib_array_json($config['contrato']),
                     'etapa_atual'=> 11,
-                    'status'=> 2,
+                    'status'=> 1,
                 ],"WHERE token='".$config['token_matricula']."'"); //salvarAlterar($sql);
             	if($ret['exec']){
 					// $id_matricula = cursos::get_id_by_token($config['token_matricula']);
@@ -4425,6 +4426,7 @@ class MatriculasController extends Controller
         }else{
             $contatos_anexos = false;
         }
+        // dd($contatos_anexos);
         if($contatos_anexos){
             //conseguir o token do contrato principal
             $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');
@@ -4447,13 +4449,15 @@ class MatriculasController extends Controller
                             $arr_n = explode('/', $link);
                             $nome_arquivo = str_replace('-',' ',end($arr_n));
                         }
-                        $ret['anexo'][$k] = $zp->enviar_anexo($token_envelope,$link,$nome_arquivo);
-                        // dump($link,ucfirst($nome_arquivo));
+                        $nome = ucwords($nome_arquivo);
+                        // dump($token_envelope,$link,$nome);
+                        $ret['anexo'][$k] = $zp->enviar_anexo($token_envelope,$link,$nome);
                         if(isset($ret['anexo'][$k]['exec']))
                             $ret['exec'] = true;
                     }
 
                 }
+                // dd($ret);
             }
             return $ret;
         }
@@ -4469,23 +4473,23 @@ class MatriculasController extends Controller
         $dc = Qlib::dados_tab('matriculameta',['where'=>"WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC"]);
         if(!$todos && isset($dc[0])){
             unset($dc[0]);
-        }else{
-            //incluir o mgr Manual geral de regara para o curso caso tenha
-            $id_curso = isset($dm['id_curso']) ? $dm['id_curso'] : false;//token matricula
-            $token_curso = Qlib::buscaValorDb0('cursos','id',$id_curso,'token');
-            $dmgr = Qlib::dados_tab('arquivos_pdf',['where'=>"WHERE id_produto='$token_curso' AND ordem='1'"]);
-            if(isset($dmgr[0]['endereco']) && ($link = $dmgr[0]['endereco'])){
-                $link = str_replace('https://aeroclubejf','https://crm.aeroclubejf',$link);
-                // return $dmgr;
-                $title = isset($dmgr[0]['title']) ? $dmgr[0]['title'] : 'Manual de regras';
-                $arr = [
-                    'meta_key'=> $title,
-                    'meta_value'=>$link,
-                ];
-                array_push($dc,$arr);
-                // dump($id_curso,$dmgr);
-            }
         }
+        //incluir o mgr Manual geral de regara para o curso caso tenha
+        $id_curso = isset($dm['id_curso']) ? $dm['id_curso'] : false;//token matricula
+        $token_curso = Qlib::buscaValorDb0('cursos','id',$id_curso,'token');
+        $dmgr = Qlib::dados_tab('arquivos_pdf',['where'=>"WHERE id_produto='$token_curso' AND ordem='1'"]);
+        if(isset($dmgr[0]['endereco']) && ($link = $dmgr[0]['endereco'])){
+            $link = str_replace('https://aeroclubejf','https://crm.aeroclubejf',$link);
+            // return $dmgr;
+            $title = isset($dmgr[0]['title']) ? $dmgr[0]['title'] : 'Manual de regras';
+            $arr = [
+                'meta_key'=> $title,
+                'meta_value'=>$link,
+            ];
+            array_push($dc,$arr);
+            // dump($id_curso,$dmgr);
+        }
+
         return $dc;
     }
 	/**
@@ -4545,10 +4549,6 @@ class MatriculasController extends Controller
         // dump($termo_concordancia,$termo_concordancia_escola_voo,$termo_antecipacao_combustivel);
         // dd($conteudo,$contrato_financeiro,$contrato_combustivel);
 		$contrato_prestacao = $conteudo;
-		// $dm = cursos::dadosMatricula($token_matricula);
-		// if($dm){
-		// 	$dm=$dm[0];
-		// }
 		$arr_salv = [
 			'contrato_prestacao'=>$contrato_prestacao,
 			'contrato_combustivel'=>$contrato_combustivel,
@@ -4562,11 +4562,12 @@ class MatriculasController extends Controller
                 $arr_salv['termo_antecipacao_combustivel'] = $termo_antecipacao_combustivel['contrato'];
 			}
 		}
-		// if(isAdmin(1)){
-            // 	dd($arr_salv);
-            // }
-            // dd($dm,$arr_salv);
 		$ret['exec']=false;
+        if(!$dm){
+            $ret['mens'] = 'Matricula não encontrada!';
+            return $ret;
+        }
+        // dd($arr_salv,$dm);
 		foreach ($arr_salv as $km => $vm) {
             $contrato = isset($vm['contrato']) ? $vm['contrato'] : '';
             if(!empty($vm['contrato'])){
@@ -4590,6 +4591,7 @@ class MatriculasController extends Controller
 
 				}
 			}else{
+                // dump($dm,$km);
                 if(Qlib::delete_matriculameta($dm['id'],$km)){
                     $ret['exec']=true;
 					$ret['ds'][$km]=$vm;
@@ -4684,5 +4686,26 @@ class MatriculasController extends Controller
 		}
 		return $ret;
 	}
+    /**
+     * Metodo para baixar o arquivo assinado de um oraçmento baixar em um diretorio padrão de oraçamento
+     * @param string $token
+     */
+    public function baixar_arquivo($token,$url){
+        // $url = "https://zapsign.s3.amazonaws.com/sandbox/dev/2024/12/pdf/72d30d89-da1f-4e10-9025-3689b03ef3d4/7a773057-05d3-4843-be1d-0fe6bffdb730.pdf?AWSAccessKeyId=AKIASUFZJ7JCTI2ZRGWX&Signature=oRLj2PALoDs1JEkx%2FHm4TV1ZM%2BQ%3D&Expires=1734026017";
+        $num=null;
+        $caminhoSalvar = 'pdfs/termos/'.$token.'/assinado.pdf';
+        if(Storage::exists($caminhoSalvar)){
+            $num=time();
+        }
+        $caminhoSalvar = 'pdfs/termos/'.$token.'/assinado'.$num.'.pdf';
+        $ret = Qlib::download_file($url,$caminhoSalvar);
+        $ret['url'] = $url;
+        $ret['token'] = $token;
+        $post_id = Qlib::get_id_by_token($token);
+        if($ret['exec']){
+            $ret['salv'] = Qlib::update_matriculameta($post_id,'contrato_zapsing_assindo',Qlib::lib_array_json(['link'=>$caminhoSalvar,'data'=>Qlib::dataLocal()]));
+        }
+        return $ret;
+    }
 
 }

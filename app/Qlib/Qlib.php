@@ -2,16 +2,17 @@
 namespace App\Qlib;
 
 use App\Http\Controllers\admin\EventController;
-use App\Http\Controllers\admin\PostController;
-use App\Http\Controllers\LeilaoController;
+// use App\Http\Controllers\admin\PostController;
+// use App\Http\Controllers\LeilaoController;
 use App\Http\Controllers\MatriculasController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
+// use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Qoption;
@@ -2577,5 +2578,26 @@ class Qlib
 
 
         }
+    }
+    /**
+     * Metodo para baixar um arquivo remoto e salvar em disco do servidor
+     */
+    static function download_file($url=false,$caminhoSalvar=false){
+        $ret = ['exec'=>false,'mens'=>false,'color'=>'danger','status'=>false];
+        if($url && $caminhoSalvar){
+            $response = Http::get($url);
+            $delete = false;
+            if (Storage::exists($caminhoSalvar)) {
+                $delete = Storage::delete($caminhoSalvar);
+            }
+            if ($response->successful()) {
+                // Salvar no disco local
+                Storage::put($caminhoSalvar, $response->body());
+                $ret = ['exec'=>true,'mens'=>'Arquivo baixado e salvo com sucesso!','delete'=>$delete,'color'=>'success','status'=>$response->status()];
+            }else{
+                $ret = ['exec'=>false,'mens'=>'Erro ao baixar o arquivo remoto!','color'=>'danger','status'=>$response->status()];
+            }
+        }
+        return $ret;
     }
 }

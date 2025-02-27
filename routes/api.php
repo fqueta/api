@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\api\OrcamentoController;
 use App\Http\Controllers\api\RabController;
+use App\Http\Controllers\api\WebhookController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
@@ -30,11 +31,7 @@ Route::resource('ddi','\App\Http\Controllers\DdisController',['parameters' => [
 Route::resource('cursos','\App\Http\Controllers\CursosController',['parameters' => [
     'cursos' => 'id'
 ]]);
-Route::prefix('webhook')->group(function(){
-    Route::post('/zenvia',[ZenviaController::class,'salvar_eventos']);
-    Route::post('/rd',[RdstationController::class,'webhook']);
-    Route::post('/zapguru',[ZapguruController::class,'webhook']);
-});
+Route::post('/webhook/{slug}',[WebhookController::class,'index']);
 Route::prefix('v1')->group(function(){
     Route::post('/login',[AuthController::class,'login']);
     Route::middleware('auth:sanctum')->get('/user', [AuthController::class,'user']);
