@@ -3841,10 +3841,13 @@ class MatriculasController extends Controller
 
                             $contrato				 	= str_replace('{contrato}',$dadoContratoM ,$tema);
                                 $responsavel 			= ($dadosMatricula[0]['id_responsavel'] > 0 ) ? $dadosMatricula[0]['id_responsavel'] : false;
-                            if(is_null($dadosCliente[0]['sobrenome'])){
-                                $aluno = ucwords($dadosCliente[0]['Nome']) ;
-                            }else{
-                                $aluno = ucwords($dadosCliente[0]['Nome']) .' '.ucwords($dadosCliente[0]['sobrenome']);
+                            $aluno = isset($dm['nome_completo']) ? $dm['nome_completo'] : false;
+                            if(!$aluno){
+                                if(is_null($dadosCliente[0]['sobrenome'])){
+                                    $aluno = ucwords($dadosCliente[0]['Nome']) ;
+                                }else{
+                                    $aluno = ucwords($dadosCliente[0]['Nome']) .' '.ucwords($dadosCliente[0]['sobrenome']);
+                                }
                             }
                             $cpf_aluno 			= $dadosCliente[0]['Cpf'];
                             $email 				= $dadosCliente[0]['Email'];

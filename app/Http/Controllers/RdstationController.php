@@ -175,6 +175,14 @@ class RdstationController extends Controller
         return $id;
     }
     /**
+     * Extrai o id de post webhook
+     * @param array $config  essa é a carga de dados de uma webhook
+     */
+    public function get_user_email($config=[]){
+        $email = isset($config['document']['user']['email']) ? $config['document']['user']['email'] : null;
+        return $email;
+    }
+    /**
      * Metodo para executar o webhook
      */
     public function webhook(){
@@ -230,16 +238,28 @@ class RdstationController extends Controller
         $telefonezap = str_replace('-', '', $telefonezap);
         // return $config;
         // $data = [
-        //     'Nome' => $nome,
-        //     'Email' => $email,
-        //     'telefonezap' => $telefonezap,
-        //     'rdstation' => $config['id'],
-        //     'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
-        //     'token' => uniqid(),
-        //     'EscolhaDoc' => 'CPF',
-        // ];
-        //antes de salver verifica se o campo personalizao está marcado como proveniente dessa integração
+            //     'Nome' => $nome,
+            //     'Email' => $email,
+            //     'telefonezap' => $telefonezap,
+            //     'rdstation' => $config['id'],
+            //     'rd_ultimo_negocio' => Qlib::lib_array_json($conf_neg),
+            //     'token' => uniqid(),
+            //     'EscolhaDoc' => 'CPF',
+            // ];
+            //antes de salver verifica se o campo personalizao está marcado como proveniente dessa integração
         $ret['exec'] = false;
+        $user_idrd = $this->get_user_id($conf_neg);
+        //pega id do usuario do rd gravado no cadastro de usuario.
+        $user_email = $this->get_user_email($conf_neg);
+        $user_idguru = '';
+        if($user_email){
+            $duser = Qlib::get_user_data("WHERE email='$user_email'");
+            if(isset($duser['config']) && !empty($duser['config'])){
+                $arr_con = Qlib::lib_json_array($duser['config']);
+                $user_idguru = isset($arr_con['id_guru']) ? $arr_con['id_guru'] : '';
+            }
+        }
+        $user_idguru = $user_idguru?$user_idguru: $this->user_guru_by_rd($user_idrd);
         if($this->is_defeult_origin($conf_neg)){
             //se for igual atualiza
             $data = [
@@ -279,7 +299,7 @@ class RdstationController extends Controller
                 if($chat_inic){
                     //quanto adicionar o chatguru tem que retornar uma webhook do zapguru
                     $dialog_id = '679a438a9d7c8affe47e29b5'; //id do dialogo do chatguru para disparar uma webhook apos a inclusão do chat
-                    $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead','dialog_id'=>$dialog_id));
+                    $ret['criar_chat'] = $zg->criar_chat(array('telefonezap'=>$telefonezap,'cadastrados'=>true,'tab'=>'capta_lead','dialog_id'=>$dialog_id,'user_id'=>$user_idguru));
                 }
             }
         }
@@ -292,6 +312,32 @@ class RdstationController extends Controller
         //     $ret = (new OrcamentoController)->add_update($config_orc);
         // }
         return $ret;
+    }
+    /**
+     * Retorna o Id do guru quando informamos um ID o RD
+     * @param int $id_rd Id do rdstation
+     * @param bool $array caso não tenha um valor associoado determina se vai retornar um array ou um false;
+     */
+    public function user_guru_by_rd($id_rd=false,$array=false){
+        //RD=>GURU
+        $arr = [
+            '678947e873759800146e7e00'=>'6798eeeae31fa81ff8b36e13', //Gabriela Fernandes gabriela@aero
+            '6772e4b208ac280020350f38'=>'6245a60983df9a08527d0468', //Luiz Sanches luiza@aero
+            '6772e80dce3f06001e7f2800'=>'65aeae656e862e1fbd58d9ff', //Jessica Fabri jessica@aero
+        ];
+        if($id_rd){
+            if(isset($arr[$id_rd])){
+                return $arr[$id_rd];
+            }else{
+                if($array){
+                    return $arr;
+                }else{
+                    return false;
+                }
+            }
+        }else{
+            return $arr;
+        }
     }
     /**
      * Retorna o array com dos dados de contato de uma negociação valida

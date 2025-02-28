@@ -270,7 +270,16 @@ class ZapguruController extends Controller
                         // $dlead = Qlib::dados_tab($tabLead,['where' => "WHERE id = '".$lead['idCad']."'"]);
                         // return $dlead;
                         // $ret['anota_rd'] = (new RdstationController )->anota_por_cliente($lead['idCad'],$text,$tabLead);
-                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat);
+                        $email_res = $this->get_responsavel_email($arr_json);
+                        $user_rd = null;
+                        if($email_res){
+                            $duser = Qlib::get_user_data("WHERE email='$email_res'");
+                            if(isset($duser['config']) && !empty($duser['config'])){
+                                $arr_con = Qlib::lib_json_array($duser['config']);
+                                $user_rd = isset($arr_con['id_rd']) ? $arr_con['id_rd'] : '';
+                            }
+                        }
+                        $ret['adiciona_RD'] = $this->add_rd_negociacao($arr_json,$lead['idCad'],$link_chat,$user_rd);
                         //veririca se ja tem uma negociação para esse cliente
                     }
                 }
@@ -293,12 +302,12 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
-    public function add_rd_negociacao($_zapguru,$id_lead,$link_chat){
+    public function add_rd_negociacao($_zapguru,$id_lead,$link_chat,$user_id=null){
         $nome = $this->get_nome($_zapguru);
         $email = $this->get_email($_zapguru);
         $telefone = $this->get_telefone($_zapguru);
         $id_campo_origem = '67a4b19e1688c9002139e3c5';
-        $id_campo_user_id = '678947e873759800146e7e00';
+        $id_campo_user_id = $user_id?$user_id: '678947e873759800146e7e00';
         $id_campo_funil = '67976140c4eb85001b3d3ec8';
         $tag_origem = $this->origem_padrao;
         $query_rd = [
@@ -543,7 +552,7 @@ class ZapguruController extends Controller
 			if(@$verifica_cadCliente['telefonezap']){
 				$ret['verifica_cadCliente'] = $verifica_cadCliente;
 				$ret['salvarCadCli'] = (new ClientesController)->convert_LeadCliente(['id'=>$telefonezap,'campo_bus'=>'celular','type'=>'lc','cond_valid'=>"WHERE telefonezap='".$verifica_cadCliente['telefonezap']."'"]);
-                dump($ret);
+                // dump($ret);
 			}
 			$ret = Qlib::lib_array_json($ret);
 
@@ -579,6 +588,20 @@ class ZapguruController extends Controller
             }
         }
         $email = isset($zp['campos_personalizados']['Email']) ? $zp['campos_personalizados']['Email'] : null;
+        return $email;
+    }
+    /**
+     * returna o Email do chat na query string
+     * usando um campo persolanizado
+     */
+
+    public function get_responsavel_email($zp){
+        if(is_string($zp)){
+            if(json_validate($zp)){
+                $zp = Qlib::lib_json_array($zp);
+            }
+        }
+        $email = isset($zp['responsavel_email']) ? $zp['responsavel_email'] : '';
         return $email;
     }
     /**
@@ -667,6 +690,7 @@ class ZapguruController extends Controller
 		$ret['exec'] = false;
         $cel = isset($config['telefonezap']) ? $config['telefonezap'] : false;
         $tab = isset($config['tab']) ? $config['tab'] : $GLOBALS['tab15'];
+        $user_id = isset($config['user_id']) ? $config['user_id'] : '';
         $cadastrado = isset($config['cadastrados']) ? $config['cadastrados'] : false; // permite criar chat de clientes cadastrados ou não
         // $text 		 	= isset($config['text'])?$config['text'] 	:'Olá *{nome}* como podemos ajudá-lo';
         $text 		 	= isset($config['text'])?$config['text'] 	:' ';
@@ -754,7 +778,10 @@ class ZapguruController extends Controller
 			if($dialog_id){
 				$url .= '&dialog_id='.$dialog_id.'';
 			}
-
+			if($user_id){
+				$url .= '&user_id='.$user_id.'';
+			}
+            return $url;
 			$ret['url'] = $url;
             $response = Http::accept('application/json')->post($url);
 

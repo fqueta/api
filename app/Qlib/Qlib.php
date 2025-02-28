@@ -2600,4 +2600,17 @@ class Qlib
         }
         return $ret;
     }
+    /**
+     * Metodo para retornar os dados de usuario apartir de uma condição
+     */
+    static function get_user_data($condicao=false){
+        $ret = false;
+        if($condicao){
+            $du = self::buscaValoresDb_SERVER("SELECT * FROM usuarios_sistemas $condicao ORDER BY id DESC LIMIT 1");
+            if(isset($du[0])){
+                $ret = $du[0];
+            }
+        }
+        return $ret;
+    }
 }
