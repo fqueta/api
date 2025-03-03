@@ -213,8 +213,8 @@ class RdstationController extends Controller
                     $ret['dados_contato_RD'] = $dados_contato;
                 }
             }
-            $save = Qlib::saveEditJson($d,'webhook_rd.json');
-            Log::info('Webhook '.$event.':', $d);
+            // $save = Qlib::saveEditJson($d,'webhook_rd.json');
+            Log::info('Webhook rdstation '.$event.':', $d);
         }
         // $ret['exec'] = false;
         return $ret;

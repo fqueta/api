@@ -115,9 +115,11 @@ class ZapguruController extends Controller
         $nome = $this->get_nome($arr_json);
         $email = $this->get_email($arr_json);
         $id_cliente = $this->get_client_id($arr_json);
-        $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
-        Log::info('Webhook zapduru '.$event.':', $arr_json);
+        // $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
+        Log::info('Webhook zapguru '.$event.':', $arr_json);
         // dd($arr_json);
+        // return $arr_json;
+        $ret['exec'] = false;
         if(isset($arr_json['origem'])){
 
 			if($arr_json['origem']=='envia_campos' || $arr_json['origem']=='disparo_crm'){
@@ -170,9 +172,17 @@ class ZapguruController extends Controller
                     $cl = Qlib::update_tab('clientes',$dadd,$where);
                     $ret['clientes'] = $cl;
                 }
-                $whereLead = "WHERE nome='$nome'";
+                //verificar se no nome tem o ID do registro no nesse caso o nome seria: Vinícius Rodrigues |36098
+                $a_nome=explode('|',$nome);
+                $id_cliente = isset($a_nome[1]) ? $a_nome[1] : null;
+                $whereLead = "WHERE id='$id_cliente'";
+                $whereLead2 = "WHERE nome='$nome'";
                 $tabLead = 'capta_lead';
                 if(Qlib::totalReg($tabLead,$whereLead)>0){
+                    $ddlead = [
+                        'zapguru' => $json,
+                    ];
+                }elseif(Qlib::totalReg($tabLead,$whereLead2)>0){
                     $ddlead = [
                         'zapguru' => $json,
                     ];
@@ -287,6 +297,7 @@ class ZapguruController extends Controller
                 $ret['req_json'] = $arr_json;
             }
 		}
+
 
 
 		/*$arquivo = fopen(dirname(__FILE__).'/atendimento.txt','a');
@@ -774,6 +785,11 @@ class ZapguruController extends Controller
 			$action 		= 'chat_add';
 
 			$ret['config'] = $config;
+            //adiciona o id no nome
+            if(isset($dadosCli[0]['id']) && ($id_cliente=$dadosCli[0]['id'])){
+                $name .= '|'.$id_cliente;
+            }
+            // return $nome;
 			$url = $this->url.'action='.$action.'&phone_id='.$phone_id.'&name='.$name.'&text='.$text.'&chat_number='.$chat_number;
 			if($dialog_id){
 				$url .= '&dialog_id='.$dialog_id.'';
@@ -783,6 +799,7 @@ class ZapguruController extends Controller
 			}
             // return $url;
 			$ret['url'] = $url;
+            // return $ret;
             $response = Http::accept('application/json')->post($url);
 
 			$ret['response'] = Qlib::lib_json_array($response,true);
