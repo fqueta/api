@@ -32,7 +32,7 @@ class TesteController extends Controller
         // $ret = Qlib::buscaValoresDb_SERVER('SELECT * FROM usuarios_sistemas');
         // $ret = Qlib::dados_tab('cursos',['where' =>'WHERE '.Qlib::compleDelete()." AND id='69'"]);
         // $token_matricula = '66e99d69953c0';
-        // $ret = (new MatriculasController)->grava_contrato_statico($token_matricula);
+        $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $json = '{
         //     "token": "679d1019169b2",
         //     "pagina": "1",
@@ -113,7 +113,7 @@ class TesteController extends Controller
         //     "endpoint" => $endpoint,
         //     "body" => $body,
         // ]);
-        $ret = (new MatriculasController)->send_to_zapSing($token);
+        // $ret = (new MatriculasController)->send_to_zapSing($token);
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // GeraPdfContratoJoub::dispatch($token);
         // SendZapsingJoub::dispatch($token);
@@ -128,6 +128,8 @@ class TesteController extends Controller
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,false,$dm);
         // dd($token);
         // $ret = (new MatriculasController)->contatos_estaticos_pdf($id,true,$dm);
+        // $signed_file = 'https://zapsign.s3.amazonaws.com/sandbox/dev/2025/2/pdf/f787046f-616b-4d0d-9924-769862f0d13f/63d6a30f-b5ac-4c00-ac5d-f230c95ea0ff.pdf?AWSAccessKeyId=AKIASUFZJ7JCTI2ZRGWX&Signature=RGvYrlWIkuwzB1YwQ49RLNkGhM0%3D&Expires=1741026569';
+        // $ret = (new MatriculasController)->baixar_arquivo($token, $signed_file);
         // dd(count($ret));
         return $ret;
     }

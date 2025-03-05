@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\ZapsingController;
 use App\Http\Controllers\api\OrcamentoController;
 use App\Http\Controllers\api\RabController;
 use App\Http\Controllers\api\WebhookController;
@@ -40,7 +41,9 @@ Route::prefix('v1')->group(function(){
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
     Route::get('/rab',[RabController::class,'index']);
     Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
-    Route::post('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
+    Route::get('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
+    //painel de assinaturas
+    Route::get('/painel/assinaturas/{token}',[ ZapsingController::class,'painel_assinaturas'])->middleware('auth:sanctum');
 });
 // Route::post('/tokens/create', function (Request $request) {
 //     //$token = $request->user()->createToken($request->token_name);

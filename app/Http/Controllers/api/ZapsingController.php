@@ -13,12 +13,16 @@ class ZapsingController extends Controller
 
     public $api_id;
     public $url_api;
+    public $campo_processo;
+    public $campo_links;
     public function __construct()
     {
         $cred = $this->credenciais();
         $this->api_id = isset($cred['id_api']) ? $cred['id_api'] : null;
         $this->url_api = isset($cred['url_api']) ? $cred['url_api'] : null;
         $this->api_id = str_replace('{id}',$this->api_id,'Bearer {id}');
+        $this->campo_processo = 'processo_assinatura';
+        $this->campo_links = 'salvar_links_assinados';
         // if(isset($_GET['te']))
         // dd($this->url_api);
     }
@@ -108,17 +112,48 @@ class ZapsingController extends Controller
         if($json){
             $d = Qlib::lib_json_array($json);
         }
-        Log::info('Webhook recebido:', $d);
+        Log::info('Webhook zapsing:', $d);
         $ret['exec'] = false;
         $token = isset($d['external_id']) ? $d['external_id'] : false;
         $signed_file = isset($d['signed_file']) ? $d['signed_file'] : false;
-        return $signed_file;
-        dd($d);
         if($token && $signed_file){
-            $ret = (new MatriculasController)->baixar_arquivo($token, $signed_file);
-            $post_id = Qlib::get_id_by_token($token);
+            //baixar e salver
+            $ret = $this->baixar_assinados($d);
             //salvar hisorico do webhook
-            $ret['salvar_webhook'] = Qlib::update_postmeta($post_id,'salvar_webhook',$json);
+            $post_id = Qlib::get_matricula_id_by_token($token);
+            $ret['salvar_webhook'] = Qlib::update_matriculameta($post_id, $this->campo_processo,$json);
+        }
+        return $ret;
+    }
+    /**
+     * metodo para baixar todos documentos assinados atravez da webhook
+     */
+    public function baixar_assinados($config=[]){
+        $token = isset($config['external_id']) ? $config['external_id'] : false;
+        $signed_file = isset($config['signed_file']) ? $config['signed_file'] : false;
+        $name = isset($config['name']) ? $config['name'] : false;
+        $extra_docs = isset($config['extra_docs']) ? $config['extra_docs'] : [];
+        $mc = new MatriculasController;
+        $name = str_replace('.pdf', '', $name);
+        $ret = $mc->baixar_arquivo($token, $signed_file,$name);
+        if(isset($ret['link'])){
+            $arr = [
+                'principal' => ['nome'=>$name,'link'=>$ret['link']],
+            ];
+            if(is_array($extra_docs)){
+                foreach ($extra_docs as $k => $v) {
+                    $name = isset($v['name']) ? $v['name'] : false;
+                    $signed_file = isset($v['signed_file']) ? $v['signed_file'] : false;
+                    $ba = $mc->baixar_arquivo($token, $signed_file,$name);
+                    if(isset($ba['link'])){
+                        $open_id = isset($v['open_id']) ? $v['open_id'] : 0;
+                        $arr['extra'][$open_id] = ['nome'=>$name, 'link'=>$ba['link']];
+                    }
+                }
+            }
+            $post_id = Qlib::get_matricula_id_by_token($token);
+            //salvar o array com todos o links dos contratos assinados..
+            $ret['salvar_links_assinados'] = Qlib::update_matriculameta($post_id,$this->campo_links,Qlib::lib_array_json($arr));
         }
         return $ret;
     }
