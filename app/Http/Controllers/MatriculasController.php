@@ -3016,9 +3016,7 @@ class MatriculasController extends Controller
                         $data_contrato_aceito = Qlib::dataExibe(@$d[0]);
 
                     }
-
                 }
-
             }
             $id_contatada = Qlib::qoption('id_contatada') ? Qlib::qoption('id_contatada') : 14;
             $id_testemunha1 = Qlib::qoption('id_testemunha1') ? Qlib::qoption('id_testemunha1') : 137;
@@ -4549,15 +4547,16 @@ class MatriculasController extends Controller
                     $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm);
                 }
             }
-            // if($enviar[''])
         }
         $ret['enviar'] = $enviar;
 
-        // //gravar historico do envio do orçamento
-        // if(isset($ret['exec'])){
-        //     $post_id = Qlib::get_id_by_token($token);
-        //     $ret['salv_hist'] = Qlib::update_postmeta($post_id,$this->campos_enviado,Qlib::lib_array_json($ret));
-        // }
+        //gravar historico do envio do orçamento
+        if(isset($ret['exec'])){
+            $post_id = isset($dm['id']) ? $dm['id'] : null;
+            if($post_id){
+                $ret['salv_hist'] = Qlib::update_postmeta($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
+            }
+        }
         // Log::info('send_to_zapSing:', $ret);
         return $ret;
     }
