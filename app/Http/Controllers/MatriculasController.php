@@ -4632,17 +4632,20 @@ class MatriculasController extends Controller
         //incluir o mgr Manual geral de regara para o curso caso tenha
         $id_curso = isset($dm['id_curso']) ? $dm['id_curso'] : false;//token matricula
         $token_curso = Qlib::buscaValorDb0('cursos','id',$id_curso,'token');
-        $dmgr = Qlib::dados_tab('arquivos_pdf',['where'=>"WHERE id_produto='$token_curso' AND ordem='1'"]);
-        if(isset($dmgr[0]['endereco']) && ($link = $dmgr[0]['endereco'])){
-            $link = str_replace('https://aeroclubejf','https://crm.aeroclubejf',$link);
-            // return $dmgr;
-            $title = isset($dmgr[0]['title']) ? $dmgr[0]['title'] : 'Manual de regras';
-            $arr = [
-                'meta_key'=> $title,
-                'meta_value'=>$link,
-            ];
-            array_push($dc,$arr);
-            // dump($id_curso,$dmgr);
+        $incluir_mgr_assinatura = Qlib::qoption('incluir_mgr_assinatura');
+        if($incluir_mgr_assinatura=='s'){
+            $dmgr = Qlib::dados_tab('arquivos_pdf',['where'=>"WHERE id_produto='$token_curso' AND ordem='1'"]);
+            if(isset($dmgr[0]['endereco']) && ($link = $dmgr[0]['endereco'])){
+                $link = str_replace('https://aeroclubejf','https://crm.aeroclubejf',$link);
+                // return $dmgr;
+                $title = isset($dmgr[0]['title']) ? $dmgr[0]['title'] : 'Manual de regras';
+                $arr = [
+                    'meta_key'=> $title,
+                    'meta_value'=>$link,
+                ];
+                array_push($dc,$arr);
+                // dump($id_curso,$dmgr);
+            }
         }
 
         return $dc;
