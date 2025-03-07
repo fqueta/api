@@ -1,9 +1,24 @@
 {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> --}}
-{{-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> --}}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 @php
 // dd($arr_processo);
 $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false;
-// dump($arr_links);
+if(!$assinantes){
+    $assinantes = isset($envio['signers']) ? $envio['signers'] : false;
+}
+$token_zapsing = isset($envio['token']) ? $envio['token'] : false;
+$status = isset($envio['status']) ? $envio['status'] : false;
+$nome = isset($envio['name']) ? $envio['name'] : false;
+if($token_zapsing){
+    $link_verificador = 'https://app.zapsign.com.br/verificar/autenticidade?doc='.$token_zapsing;
+}else{
+    $link_verificador = '';
+}
+if($status == 'pending'){
+    $status = '<span class="badge badge-danger">Assinatura pendente</span>';
+}
+// dump($envio);
+
 @endphp
 <style>
     .h1-sig{
@@ -20,10 +35,18 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
     <div class="panel panel-default mt-2">
         <div class="panel-heading">
             <h4>
-                {{__('Gerenciamento de assinaturas')}}
+                {{__('Gerenciamento de assinaturas')}} <span class="pull-right">{!!$status!!}</span>
             </h4>
         </div>
         <div class="panel-body px-0">
+            @if ($link_verificador)
+
+            <div class="row mx-0">
+                <div class="col-md-12">
+                    <a href="{{$link_verificador}}" target="_BLANK">Verificar validade e andamento da assinatura no zapsing</a>
+                </div>
+            </div>
+            @endif
             <div class="row mx-0">
                 @foreach ($assinantes as $k=>$v )
                 {{-- {{dd($v)}} --}}
@@ -88,14 +111,14 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
             Footer
         </div> --}}
     </div>
-    <div class="panel panel-default mt-2">
-        <div class="panel-heading">
-            <h4>
-                {{__('Documentos Assinados')}}
-            </h4>
-        </div>
-        <div class="panel-body">
-            @if(isset($arr_links['principal']['nome']) && isset($arr_links['principal']['link']) && ($nome = $arr_links['principal']['nome']))
+    @if(isset($arr_links['principal']['nome']) && isset($arr_links['principal']['link']) && ($nome = $arr_links['principal']['nome']))
+        <div class="panel panel-default mt-2">
+            <div class="panel-heading">
+                <h4>
+                    {{__('Documentos Assinados')}}
+                </h4>
+            </div>
+            <div class="panel-body">
                 @php
                     $link = $arr_links['principal']['link'];
                     $icon = '<i class="fa fa-file-pdf-o fa-2x text-danger" aria-hidden="true"></i>';
@@ -132,9 +155,11 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                     </tbody>
                 </table>
 
-            @endif
+            </div>
         </div>
-    </div>
+    @endif
+
+
 @endif
 {{-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script> --}}

@@ -18,6 +18,7 @@ class ZapsingController extends Controller
             $id_matricula = isset($dm['id']) ? $dm['id'] : null;
             if($id_matricula){
                 $zc = new ApiZapsingController;
+                $campo_meta0 = $zc->campo_envio;
                 $campo_meta1 = $zc->campo_processo;
                 $campo_meta2 = $zc->campo_links;
                 $processo = Qlib::get_matriculameta($id_matricula,$campo_meta1,true);
@@ -29,10 +30,16 @@ class ZapsingController extends Controller
                     $arr_links = Qlib::lib_json_array($links);
                     $ret['arr_processo'] = $arr_processo;
                     $ret['arr_links'] = $arr_links;
-                    return view('crm.painel.assinaturas',$ret);
                 }else{
-                    return '<p><i class="text-danger">Processo de assinatura incompleto!!</i></p>';
+                    $envio = Qlib::get_matriculameta($id_matricula,$campo_meta0,true);
+                    if($envio){
+                        $arr_envio = Qlib::lib_json_array($envio);
+                        $ret['envio'] = isset($arr_envio['response']) ? $arr_envio['response'] : false;
+                    }
+                    //colocar um botão para enviar para o zapsing
+                    // return '<p><i class="text-danger">Processo de assinatura incompleto!!</i></p>';
                 }
+                return view('crm.painel.assinaturas',$ret);
                 // return $processo;
             }else{
                 return '<p><i class="text-danger">Matricula não encontrada!!</i></p>';

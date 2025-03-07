@@ -14,6 +14,7 @@ class ZapsingController extends Controller
     public $api_id;
     public $url_api;
     public $campo_processo;
+    public $campo_envio;
     public $campo_links;
     public function __construct()
     {
@@ -23,6 +24,7 @@ class ZapsingController extends Controller
         $this->api_id = str_replace('{id}',$this->api_id,'Bearer {id}');
         $this->campo_processo = 'processo_assinatura';
         $this->campo_links = 'salvar_links_assinados';
+        $this->campo_envio = 'enviar_envelope';
         // if(isset($_GET['te']))
         // dd($this->url_api);
     }
