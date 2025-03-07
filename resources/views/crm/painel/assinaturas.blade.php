@@ -1,9 +1,9 @@
 {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> --}}
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+{{-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> --}}
 @php
 // dd($arr_processo);
 $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false;
-dump($arr_links);
+// dump($arr_links);
 @endphp
 <style>
     .h1-sig{
@@ -98,7 +98,7 @@ dump($arr_links);
             @if(isset($arr_links['principal']['nome']) && isset($arr_links['principal']['link']) && ($nome = $arr_links['principal']['nome']))
                 @php
                     $link = $arr_links['principal']['link'];
-                    $icon = '<i class="fa fa-file-pdf-o fa-2x text-danger" aria-hidden="true">:</i>';
+                    $icon = '<i class="fa fa-file-pdf-o fa-2x text-danger" aria-hidden="true"></i>';
                 @endphp
 
                 <h5>{{ $nome }}</h5>
