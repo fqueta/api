@@ -33,10 +33,10 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                             $status_sign = 'Aguardando Assinatura';
                         }
                     @endphp
-                    <div class="panel w-100">
-                        <div class="panel-body px-0">
+                    <div class="col-md-12">
+                        <div class="row">
                             <div class="col-md-12">
-                                <div class="row mx-0">
+                                <div class="row">
                                     <div class="col-md-6">
                                         <b>Nome: </b> {{@$v['name']}}
                                     </div>
