@@ -8,6 +8,9 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
         font-size: 16px;
         font-weight: bold;
     }
+    .card{
+        font-size: 13px;
+    }
 </style>
 @if (is_array($assinantes))
     <div class="card card-secondary card-outline">
@@ -51,7 +54,7 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                                     <input type="text" class="form-control" disabled value="{{$v['sign_url']}}" aria-label="Text input with dropdown button">
                                     <div class="input-group-append">
                                     <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ação</button>
-                                    <div class="dropdown-menu">
+                                    <div class="dropdown-menu pull-right">
                                         <a class="dropdown-item" href="javascript:void(0)" onclick="copyTextToClipboard('{{$v['sign_url']}}')">Copiar</a>
                                         <a class="dropdown-item" target="_blank" href="{{$v['sign_url']}}">Acessar</a>
                                         {{-- <a class="dropdown-item" href="#">Something else here</a>
