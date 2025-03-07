@@ -32,7 +32,7 @@ class TesteController extends Controller
         // $ret = Qlib::buscaValoresDb_SERVER('SELECT * FROM usuarios_sistemas');
         // $ret = Qlib::dados_tab('cursos',['where' =>'WHERE '.Qlib::compleDelete()." AND id='69'"]);
         // $token_matricula = '66e99d69953c0';
-        $ret = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $json = '{
         //     "token": "679d1019169b2",
         //     "pagina": "1",
@@ -131,6 +131,20 @@ class TesteController extends Controller
         // $signed_file = 'https://zapsign.s3.amazonaws.com/sandbox/dev/2025/2/pdf/f787046f-616b-4d0d-9924-769862f0d13f/63d6a30f-b5ac-4c00-ac5d-f230c95ea0ff.pdf?AWSAccessKeyId=AKIASUFZJ7JCTI2ZRGWX&Signature=RGvYrlWIkuwzB1YwQ49RLNkGhM0%3D&Expires=1741026569';
         // $ret = (new MatriculasController)->baixar_arquivo($token, $signed_file);
         // dd(count($ret));
+        // $data = '07/02/2025-12:08:30';
+        // $ip = '172.71.6.71';
+        // $assinatura = '<span class="text-danger"><b>Contrato assinado eletronicamente pelo contratante em '.$data.'</b> </span><span style="text-align:right" class="text-danger"><b>Ip:</b> <i>'.$ip.'</i></span>';
+        // $d = Qlib::buscaValorDb0('matriculameta','id',4068,'meta_value');
+        // // dd($d);
+        // $aluno = 'Elias Vicente Nunes Dias';
+        // $cpf = '004.268.021-28';
+        // $ret = base64_decode($d);
+        // $ret = str_replace('<strong>CONTRATANTE&nbsp;</strong>','<strong>CONTRATANTE&nbsp;</strong><br><br>'.$assinatura,$ret);
+        // $ret = str_replace('Aluno (a):','Aluno (a): '.$aluno,$ret);
+        // $ds = base64_encode($ret);
+        // $ret = Qlib::update_matriculameta(7145,'contrato_prestacao_n',$ds);
+        // dd($ret);
+
         return $ret;
     }
 }

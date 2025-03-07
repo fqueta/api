@@ -1,8 +1,9 @@
 {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> --}}
-{{-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> --}}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 @php
 // dd($arr_processo);
 $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false;
+dump($arr_links);
 @endphp
 <style>
     .h1-sig{
@@ -14,10 +15,13 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
     }
 
 </style>
+
 @if (is_array($assinantes))
     <div class="panel panel-default mt-2">
         <div class="panel-heading">
-            {{__('Gerenciamento de assinaturas')}}
+            <h4>
+                {{__('Gerenciamento de assinaturas')}}
+            </h4>
         </div>
         <div class="panel-body px-0">
             <div class="row mx-0">
@@ -83,6 +87,47 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
         {{-- <div class="panel-footer text-muted">
             Footer
         </div> --}}
+    </div>
+    <div class="panel panel-default mt-2">
+        <div class="panel-heading">
+            <h4>
+                {{__('Documentos Assinados')}}
+            </h4>
+        </div>
+        <div class="panel-body">
+            @if(isset($arr_links['principal']['nome']) && isset($arr_links['principal']['link']) && ($nome = $arr_links['principal']['nome']))
+                @php
+                    $link = $arr_links['principal']['link'];
+                    $icon = '<i class="fa fa-file-pdf-o fa-2x text-danger" aria-hidden="true">:</i>';
+                @endphp
+
+                <h5>{{ $nome }}</h5>
+                <table class="table table-hover table-striped">
+                    <tbody>
+                        <tr>
+                            <td>{{__('Contrato principal')}}</td>
+                            <td class="text-right">
+                                <a href="{{$link}}" target="_blank" title="Visualizar: o Contrato principal">{!! $icon !!}</a>
+                            </td>
+                        </tr>
+                        @if (isset($arr_links['extra']) && is_array($arr_links['extra']) && ($extra = $arr_links['extra']))
+                            <tr>
+                                <td colspan="2" class="text-center">Documentos Anexos</td>
+                            </tr>
+                            @foreach ($extra as $k=>$v )
+                                <tr>
+                                    <td>{{$v['nome']}}</td>
+                                    <td class="text-right">
+                                        <a href="{{$v['link']}}" title="Visualizar: {{$v['nome']}}" target="_blank">{!! $icon !!}</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+                    </tbody>
+                </table>
+
+            @endif
+        </div>
     </div>
 @endif
 {{-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

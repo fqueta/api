@@ -21,16 +21,22 @@ class ZapsingController extends Controller
                 $campo_meta1 = $zc->campo_processo;
                 $campo_meta2 = $zc->campo_links;
                 $processo = Qlib::get_matriculameta($id_matricula,$campo_meta1,true);
+                $ret['arr_processo'] = [];
+                $ret['arr_link'] = [];
                 if($processo){
                     $links = Qlib::get_matriculameta($id_matricula,$campo_meta2,true);
                     $arr_processo = Qlib::lib_json_array($processo);
                     $arr_links = Qlib::lib_json_array($links);
                     $ret['arr_processo'] = $arr_processo;
                     $ret['arr_links'] = $arr_links;
+                    return view('crm.painel.assinaturas',$ret);
+                }else{
+                    return '<i class="text-danger">Processo de assinatura incompleto!!</i>';
                 }
                 // return $processo;
+            }else{
+                return '<i class="text-danger">Matricula não encontrada!!</i>';
             }
-            return view('crm.painel.assinaturas',$ret);
         }
     }
 }
