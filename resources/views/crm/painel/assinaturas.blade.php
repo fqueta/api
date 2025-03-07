@@ -1,5 +1,5 @@
 {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> --}}
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+{{-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> --}}
 @php
 // dd($arr_processo);
 $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false;
@@ -25,7 +25,7 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                 {{-- {{dd($v)}} --}}
                     @php
                         $status_sign = $v['status'];
-                        $bdg = 'badge-danger';
+                        $bdg = 'badge-danger badge-error';
                         if($status_sign=='signed'){
                             $bdg = 'badge-success';
                             $status_sign = 'Assinado';
@@ -49,19 +49,17 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                                 </div>
                             </div>
                             <div class="col-md-12">
-                                <div class="input-group input-group-lg">
+                                <div class="input-group">
                                     <span class="input-group-addon">{{__('Link de assinatura:')}}</span>
-                                    <input type="text" class="form-control imp-link" disabled value="{{$v['sign_url']}}" aria-label="Amount (to the nearest dollar)">
-                                    <span class="input-group-addon">
-                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ação</button>
-                                        <div class="dropdown-menu pull-right">
-                                            <a class="dropdown-item" href="javascript:void(0)" onclick="copyTextToClipboard('{{$v['sign_url']}}')">Copiar</a>
-                                            <a class="dropdown-item" target="_blank" href="{{$v['sign_url']}}">Acessar</a>
-                                            {{-- <a class="dropdown-item" href="#">Something else here</a>
-                                            <div role="separator" class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Separated link</a> --}}
-                                        </div>
-                                    </span>
+                                    <input type="text" class="form-control" disabled value="{{$v['sign_url']}}" aria-label="Amount (to the nearest dollar)">
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ação <span class="caret"></span></button>
+                                        <ul class="dropdown-menu dropdown-menu-right">
+                                          <li><a class="" href="javascript:void(0)" onclick="copyTextToClipboard('{{$v['sign_url']}}')">Copiar</a></li>
+                                          <li><a class="" target="_blank" href="{{$v['sign_url']}}">Acessar</a></li>
+                                        </ul>
+                                      </div>
+
                                 </div>
                                 {{-- <div class="input-group">
                                     <div class="input-group-prepend">
