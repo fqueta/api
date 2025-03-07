@@ -15,12 +15,12 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
 
 </style>
 @if (is_array($assinantes))
-    <div class="panel panel-default panel-outline">
-        <div class="panel-header">
+    <div class="panel panel-default mt-2">
+        <div class="panel-heading">
             {{__('Gerenciamento de assinaturas')}}
         </div>
-        <div class="panel-body">
-            <div class="row">
+        <div class="panel-body px-0">
+            <div class="row mx-0">
                 @foreach ($assinantes as $k=>$v )
                 {{-- {{dd($v)}} --}}
                     @php
@@ -34,9 +34,9 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                         }
                     @endphp
                     <div class="panel w-100">
-                        <div class="panel-body">
+                        <div class="panel-body px-0">
                             <div class="col-md-12">
-                                <div class="row">
+                                <div class="row mx-0">
                                     <div class="col-md-6">
                                         <b>Nome: </b> {{@$v['name']}}
                                     </div>
