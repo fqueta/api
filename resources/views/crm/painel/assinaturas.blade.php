@@ -99,12 +99,14 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                 @php
                     $link = $arr_links['principal']['link'];
                     $icon = '<i class="fa fa-file-pdf-o fa-2x text-danger" aria-hidden="true"></i>';
+                    $i = 1;
                 @endphp
 
                 <h5>{{ $nome }}</h5>
                 <table class="table table-hover table-striped">
                     <tbody>
                         <tr>
+                            <td> 1 </td>
                             <td>{{__('Contrato principal')}}</td>
                             <td class="text-right">
                                 <a href="{{$link}}" target="_blank" title="Visualizar: o Contrato principal">{!! $icon !!}</a>
@@ -112,10 +114,14 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
                         </tr>
                         @if (isset($arr_links['extra']) && is_array($arr_links['extra']) && ($extra = $arr_links['extra']))
                             <tr>
-                                <td colspan="2" class="text-center">Documentos Anexos</td>
+                                <td colspan="3" class="text-center">Documentos Anexos</td>
                             </tr>
                             @foreach ($extra as $k=>$v )
+                                @php
+                                    $i++;
+                                @endphp
                                 <tr>
+                                    <td> {{$i}} </td>
                                     <td>{{$v['nome']}}</td>
                                     <td class="text-right">
                                         <a href="{{$v['link']}}" title="Visualizar: {{$v['nome']}}" target="_blank">{!! $icon !!}</a>
