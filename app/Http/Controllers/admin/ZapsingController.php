@@ -31,11 +31,11 @@ class ZapsingController extends Controller
                     $ret['arr_links'] = $arr_links;
                     return view('crm.painel.assinaturas',$ret);
                 }else{
-                    return '<i class="text-danger">Processo de assinatura incompleto!!</i>';
+                    return '<p><i class="text-danger">Processo de assinatura incompleto!!</i></p>';
                 }
                 // return $processo;
             }else{
-                return '<i class="text-danger">Matricula não encontrada!!</i>';
+                return '<p><i class="text-danger">Matricula não encontrada!!</i></p>';
             }
         }
     }
