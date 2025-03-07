@@ -15,7 +15,7 @@ if($token_zapsing){
     $link_verificador = '';
 }
 if($status == 'pending'){
-    $status = '<span class="badge badge-danger badge-error">Em curso</span>';
+    $status = '<span class="badge badge-danger badge-error" style="background-color: #b94a48;">Em curso</span>';
 }elseif($status == 'signed'){
     $status = '<span class="badge badge-success">Processo completo</span>';
 }else{
