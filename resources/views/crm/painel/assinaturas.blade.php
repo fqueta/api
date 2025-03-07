@@ -1,5 +1,5 @@
 {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> --}}
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+{{-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> --}}
 @php
 // dd($arr_processo);
 $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false;
@@ -43,7 +43,7 @@ if($status == 'pending'){
 
             <div class="row mx-0">
                 <div class="col-md-12">
-                    <a href="{{$link_verificador}}" target="_BLANK">Verificar validade e andamento da assinatura no zapsing</a>
+                    <a href="{{$link_verificador}}" class="underline" target="_BLANK">Verificar validade e andamento da assinatura no zapsing</a>
                 </div>
             </div>
             @endif
