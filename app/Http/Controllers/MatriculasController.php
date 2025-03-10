@@ -3057,6 +3057,8 @@ class MatriculasController extends Controller
             if($valor_combustivel){
                 $valor_combustivel = Qlib::valor_moeda($valor_combustivel);
             }
+            $data_contrato 			= date('d/m/Y (H:m:i)');
+            $ret = str_replace('{data_contrato}',$data_contrato,$ret);
             $ret = str_replace('{valor_combustivel}',$valor_combustivel,$ret);
             $ret = str_replace('{assinatura}',$assinatura,$ret);
             $ret = str_replace('{assinatura_contratada}',$assinatura_contratada,$ret);
