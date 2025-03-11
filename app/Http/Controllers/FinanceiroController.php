@@ -330,6 +330,7 @@ class FinanceiroController extends Controller
 
 			}
 			$dados = false;
+            $sql = false;
             if(Qlib::qoption('adicionar_pevisionamento_parcelamento')=='s'){
                 if(isset($config['id_turma']) && $config['id_turma']>0){
                     $sql = "SELECT * FROM parcelamento WHERE  `ativo`='s' AND turmas LIKE '%\"".$config['id_turma']."\"%' AND id_curso='".$config['id_curso']."' AND ".Qlib::compleDelete()." $compleSq ORDER BY `id` ASC";
