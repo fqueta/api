@@ -330,12 +330,51 @@ class FinanceiroController extends Controller
 
 			}
 			$dados = false;
-            if(isset($config['id_turma']) && $config['id_turma']>0){
-                $sql = "SELECT * FROM parcelamento WHERE  `ativo`='s' AND turmas LIKE '%\"".$config['id_turma']."\"%' AND id_curso='".$config['id_curso']."' AND ".Qlib::compleDelete()." $compleSq ORDER BY `id` ASC";
-                $dados = Qlib::buscaValoresDb($sql);
+            if(Qlib::qoption('adicionar_pevisionamento_parcelamento')=='s'){
+                if(isset($config['id_turma']) && $config['id_turma']>0){
+                    $sql = "SELECT * FROM parcelamento WHERE  `ativo`='s' AND turmas LIKE '%\"".$config['id_turma']."\"%' AND id_curso='".$config['id_curso']."' AND ".Qlib::compleDelete()." $compleSq ORDER BY `id` ASC";
+                    $dados = Qlib::buscaValoresDb($sql);
+                }
+            }else{
+                $compleSql = "";
+				if(isset($config['token_matricula'])){
+					$id_matricula = Qlib::get_matricula_id_by_token($config['token_matricula']);
+					$d_desconto = Qlib::get_matriculameta($id_matricula,'parcelamento_desconto',true);
+					if($d_desconto){
+						$arr_parcela = Qlib::decodeArray($d_desconto);
+						if(isset($arr_parcela['parcelamento']) && is_array($arr_parcela['parcelamento'])){
+							$and = " AND ";
+							$sqp = "";
+							if(count($arr_parcela['parcelamento'])>1){
+								foreach ($arr_parcela['parcelamento'] as $kp => $vp) {
+									if($kp==0){
+										$or = '(';
+									}else{
+										$or = ' OR';
+									}
+									$sqp .= "$or id='$vp'";
+								}
+								if($sqp){
+									$compleSql .= "$and $sqp)";
+								}
+							}else{
+								$compleSql .= " AND id='".$arr_parcela['parcelamento'][0]."'";
+							}
+						}
+					}
+				}
+				if($compleSql){
+					$sql = "SELECT * FROM parcelamento WHERE  `ativo`='s' $compleSql ORDER BY `id` ASC";
+				}
+				//caso não tenha tabela de parcelamento agregada não precisa exibir tabela nenhuma
+				// else{
+                    // $sql = "SELECT * FROM parcelamento WHERE  `ativo`='s' $compleSql AND id_curso='".$config['id_curso']."' AND ".Qlib::compleDelete()." $compleSq ORDER BY `id` ASC";
+				// }
+				// if(isAdmin(1)){
+				// 	dump($sql);
+				// }
             }
-			if(!$dados){
-                $sql = "SELECT * FROM parcelamento WHERE  `ativo`='s' $compleSql AND id_curso='".$config['id_curso']."' AND ".Qlib::compleDelete()." $compleSq ORDER BY `id` ASC";
+            if(!$dados){
                 $dados = Qlib::buscaValoresDb($sql);
             }
 			$ret = false;
