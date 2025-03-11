@@ -4,6 +4,7 @@ use App\Http\Controllers\admin\ZapsingController;
 use App\Http\Controllers\api\OrcamentoController;
 use App\Http\Controllers\api\RabController;
 use App\Http\Controllers\api\WebhookController;
+use App\Http\Controllers\api\ZapsingController as ApiZapsingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
@@ -43,8 +44,9 @@ Route::prefix('v1')->group(function(){
     Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
     Route::post('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
     //painel de assinaturas
-    // Route::get('/painel/assinaturas/{token}',[ ZapsingController::class,'painel_assinaturas'])->middleware('auth:sanctum');
-    Route::get('/painel/assinaturas/{token}',[ ZapsingController::class,'painel_assinaturas']);
+    Route::get('/painel/assinaturas/{token}',[ ZapsingController::class,'painel_assinaturas'])->middleware('auth:sanctum');
+    // Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing'])->middleware('auth:sanctum');
+    Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing']);
 });
 // Route::post('/tokens/create', function (Request $request) {
 //     //$token = $request->user()->createToken($request->token_name);
