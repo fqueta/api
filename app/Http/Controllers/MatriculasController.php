@@ -2951,6 +2951,7 @@ class MatriculasController extends Controller
         $ret = str_replace('{curso}','{nome_curso}',$texto_contrato);
         $ret = str_replace('{aluno}','{nome_completo}',$ret);
         if(is_array($dm) && $texto_contrato){
+            $contrato_firmado_curso = false; //Contrato firmado sob Piloto privado
             foreach($dm as $k=>$v){
                 if(!is_array($v)){
                     $ret = str_replace('{'.$k.'}',$v,$ret);
@@ -3004,12 +3005,12 @@ class MatriculasController extends Controller
                         $assinatura = '<span style="font-size:13px;" class="text-danger"><b>Contrato assinado eletronicamente pelo contratante em '.Qlib::dataExibe(@$arr_contratoAss['data_aceito_contrato']).'</b> </span><span style="text-align:right" class="text-danger"><b>Ip:</b> <i>'.@$arr_contratoAss['ip'].'</i></span>';
                         if(isset($config['opc']) && $config['opc']=='contratoMatriculaCombustivel'){
                             if($tipo_contrato_combustivel){
-                                $assinatura .= '<span class="text-danger pull-right">contrato firmado sob <b>'.$tipo_contrato_combustivel.'</b></span>';
+                                $contrato_firmado_curso = '<span class="text-danger pull-right">contrato firmado sob <b>'.$tipo_contrato_combustivel.'</b></span>';
                             }
 
                         }else{
                             if($tabela_fechada)
-                                $assinatura .= '<span class="text-danger pull-right">contrato firmado sob <b>'.$tabela_fechada.'</b></span>';
+                                $contrato_firmado_curso = '<span class="text-danger pull-right">contrato firmado sob <b>'.$tabela_fechada.'</b></span>';
                         }
                         $d = explode(' ',$arr_contratoAss['data_aceito_contrato']);
 
@@ -3070,6 +3071,7 @@ class MatriculasController extends Controller
             $ret = str_replace('{cpf_testemunha2}',$cpf_testemunha2,$ret);
             $ret = str_replace('{nome_testemunha2}',$nome_testemunha2,$ret);
             $ret = str_replace('{clausula_tipo_pagamento}',$clausula_tipo_pagamento,$ret);
+            $ret = str_replace('{contrato_firmado_curso}',$contrato_firmado_curso,$ret);
             $ret = str_replace('{exemplo_ilustrativo_comustivel}',$st->short_code('exemplo_ilustrativo_comustivel'),$ret);
 
         }
