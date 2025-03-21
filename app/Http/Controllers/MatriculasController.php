@@ -1316,10 +1316,10 @@ class MatriculasController extends Controller
                                 </tr>
                                 <tr>
                                     <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
-                                    <th style="width:57%"><div align="center">Etapa</div></th>
+                                    <th style="width:53%"><div align="center">Etapa</div></th>
                                     <th style="width:10%"><div align="center">Horas T.</div></th>
                                     <th style="width:10%"><div align="center">Horas P.</div></th>
-                                    <th style="width:10%"><div align="right"><b>Valor</b></div></th>
+                                    <th style="width:15%"><div align="right"><b>Valor</b></div></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1364,10 +1364,10 @@ class MatriculasController extends Controller
                                 </tr>
                                 <tr>
                                     <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
-                                    <th style="width:57%"><b>Etapa</b></th>
+                                    <th style="width:53%"><b>Etapa</b></th>
                                     <th style="width:10%" class="text-center">Horas T.</th>
                                     <th style="width:10%" class="text-center">Horas P.</th>
-                                    <th style="width:10%"><div align="right"><b>Valor</b></div></th>
+                                    <th style="width:15%"><div align="right"><b>Valor</b></div></th>
                                 </tr>
                             </thead>
                             <tbody>
