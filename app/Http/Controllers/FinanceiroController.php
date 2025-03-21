@@ -12,119 +12,96 @@ class FinanceiroController extends Controller
         global $categoriaMensalidade;
         $categoriaMensalidade = 15;
     }
-    private function tema(){
-
+    private function tema($entrada=null){
+        $combustivel = '';
+		if($combustivel=='s'){
+			$cols = 5;
+			$cols2=4;
+			$tm = '<th style="width:20%"><div align="center">COMBUSTIVEL</div></th>';
+		}else{
+			$cols = 4;
+			$cols2=3;
+			$tm = '';
+		}
+		if($entrada){
+			$entrada = '<th style="width:20%"><div align="left">ENTRADA</div></th>';
+		}else{
+			$entrada = '';
+		}
 		$tema = '<div class="col-md-{tam} tabe-parcelamento">
-
-										<table class="table">
-
-													<thead >
-
-														<tr>
-
-															<th style="width:100%" colspan="5"><div align="left">{{titulo}} {selecione}</div></th>
-
-														</tr>
-
-														{tr_entrada}
-
-														<tr>
-
-															<th style="width:60%" colspan="4"><div align="left">VALOR</div></th>
-
-															<th style="width:40%"><div align="right">{{valor}}</div></th>
-
-														</tr>
-
-														<tr>
-
-															<th style="width:20%"><div align="left">ENTRADA</div></th>
-
-															<th style="width:10%"><div align="center">PARCELAS</div></th>
-
-															<th style="width:20%"><div align="center">V. PARCELA</div></th>
-															<th style="width:20%"><div align="center">COMBUSTIVEL</div></th>
-
-															<th style="width:30%"><div align="right">TOTAL</div></th>
-
-														</tr>
-
-													</thead>
-
-													<tbody class="jss526">{{tr}}
-
-													</tbody>
-
-													<tfoot class="jss526">{{footer}}
-
-													</tfoot>
-
-										</table>
-
-										{{obs}}
-
-								</div>';
-
-
-
+        			<table class="table">
+						<thead >
+							<tr>
+								<th style="width:100%" colspan="'.$cols.'"><div align="left">{{titulo}} {selecione}</div></th>
+							</tr>
+							{tr_entrada}
+							<tr>
+								<th style="width:60%" colspan="'.$cols2.'"><div align="left">{{matricula}}</div></th>
+								<th style="width:40%"><div align="right">{{valor}}</div></th>
+							</tr>
+							<tr>
+								'.$entrada.'
+								<th style="width:10%"><div align="center">PARCELAS</div></th>
+								<th style="width:20%"><div align="center">V. PARCELA</div></th>
+								'.$tm.'
+								<th style="width:30%"><div align="right">TOTAL</div></th>
+							</tr>
+						</thead>
+						<tbody class="jss526">{{tr}}
+						</tbody>
+						<tfoot class="jss526">{{footer}}
+						</tfoot>
+					</table>
+					{{obs}}
+				</div>';
 		return $tema;
 
 	}
 
-	private function tema_pdf(){
-
+	private function tema_pdf($entrada=null){
+        $combustivel = '';
+		if($combustivel=='s'){
+			$cols = 3;
+			$cols2=4;
+			$tm = '<th style="width:20%"><div align="center">TOTAL</div></th>
+                    <th style="width:20%"><div align="center">COMBUSTIVEL</div></th>';
+		}else{
+			$cols = 2;
+			$cols2=3;
+			$tm = '<th style="width:20%"><div align="right">TOTAL</div></th>';
+		}
+		if($entrada){
+            $align_parcelas = 'center';
+			$entrada = '<th style="width:20%"><div align="left">ENTRADA</div></th>';
+		}else{
+            $align_parcelas = 'left';
+			$entrada = '';
+		}
 		$tema = '
-
-
-					<div  syle="width:100%;">
-
-										<table style="width:100%">
-
-													<thead >
-
-														<tr>
-
-															<th style="width:100%;font-size:15px;border-top:1px solid #ddd" colspan="4"><div align="center"><b>{{titulo}}</b></div></th>
-
-														</tr>
-
-														<!--{tr_entrada-->
-
-														<tr>
-
-															<th style="border-top:1px solid #ddd"><div align="left">VALOR </div></th>
-															<th style="border-top:1px solid #ddd"><div align="center">&nbsp; </div></th>
-
-															<th style="border-top:1px solid #ddd"><div align="right"><b>{{valor}}</b></div></th>
-
-														</tr>
-
-														<tr>
-
-															<th style="border-top:1px solid #ddd"><div align="left"><b>ENTRADA</b></div></th>
-
-															<th style="border-top:1px solid #ddd"><div align="center"><b>PARCELAS</b></div></th>
-
-															<th style="border-top:1px solid #ddd"><div align="center"><b>V. PARCELA</b></div></th>
-															<th style="border-top:1px solid #ddd"><div align="right"><b>COMBUSTIVEL</b></div></th>
-														</tr>
-
-													</thead>
-
-													<tbody class="jss526">{{tr}}
-
-													</tbody>
-
-													<tfoot class="jss526">{{footer}}
-
-													</tfoot>
-
-										</table>
-
-										{{obs}}
-
-								</div>';
-
+        	<div syle="width:100%;">
+				<table style="width:100%">
+					<thead >
+						<tr>
+							<th style="width:100%;font-size:15px;border-top:1px solid #ddd" colspan="4"><div align="center"><b>{{titulo}}</b></div></th>
+						</tr>
+						<tr>
+							<th style="border-top:1px solid #ddd" colspan="'.$cols.'"><div align="left">{{matricula}} </div></th>
+							<th style="border-top:1px solid #ddd"><div align="right"><b>{{valor}}</b></div></th>
+						</tr>
+						<tr>
+							'.$entrada.'
+							<th style="border-top:1px solid #ddd"><div align="'.$align_parcelas.'"><b>PARCELAS</b></div></th>
+							<th style="border-top:1px solid #ddd"><div align="center"><b>V. PARCELA</b></div></th>
+							'.$tm.'
+						</tr>
+					</thead>
+					<tbody class="jss526">{{tr}}
+					</tbody>
+					<tfoot class="jss526">{{footer}}
+					</tfoot>
+				</table>
+				{{obs}}
+		    </div>';
 		return $tema;
 
 	}
@@ -227,44 +204,63 @@ class FinanceiroController extends Controller
 		$combustivel = isset($config['combustivel']) ? $config['combustivel'] :NULL;
 		$token_matricula = isset($config['token_matricula']) ? $config['token_matricula'] :NULL;
 		$somar_cobustivel_total = Qlib::qoption('somar_cobustivel_total')?Qlib::qoption('somar_cobustivel_total'):'n';
-		$labCombustivel = false;
+        $numePrevTurma = false;
+        $ccur = new CursosController;
+		$arr_conf_turma = [];
+		$entrada_fds = 0;
+		$tipoCurso = $ccur->tipo($config['id_curso']);
+        $compleSql = false;
+
+		// $labCombustivel = false;
         if($somar_cobustivel_total=='s' && $combustivel){
 			//Preços calculado sem Levar em conta desconto.
 			$somc = Qlib::precoDbdase($combustivel);
 			$config['valor'] = ($config['valor'])+$somc;
-			$labCombustivel = '';
 		}
 		$valor = $config['valor'];
-		// dd($config);
 		$tabela_preco = false;
-		// if(Qlib::isAdmin(1)){
-		// 	dd($config);
-		// }
 		if(isset($config['tabela_preco'])){
 			$tabela_preco = Qlib::buscaValorDb0($GLOBALS['tab50'],'url',$config['tabela_preco'],'id');
 		}
 		$tam = isset($config['tam']) ? $config['tam'] :12;
+        if($tipoCurso==4){
+            $config['tema2']  = isset($config['tema2']) ? $config['tema2'] :'
+            <tr>
+                <td><div align="left">{label_parcela}</div></td>
+                <td><div align="center">{parcelaJuros}</div></td>
+                <td><div align="right">{totalOrcamento}</div></td>
+            </tr>';
+        }else{
+            $config['tema2']  = isset($config['tema2']) ? $config['tema2'] :'
+            <tr>
+                <td><div align="left" class="d-flex">{radio_select}&nbsp;<span class="">{entrada}</span></div></td>
+                <td><div align="center">{label_parcela}</div></td>
+                <td><div align="center">{parcelaJuros}</div></td>
+                <td><div align="right">{totalOrcamento}</div></td>
+            </tr>';
 
-		$config['tema2']  = isset($config['tema2']) ? $config['tema2'] :'
-		<tr>
-			<td><div align="left" class="d-flex">{radio_select}&nbsp;<span class="">{entrada}</span></div></td>
-			<td><div align="center">{label_parcela}</div></td>
-			<td><div align="center">{parcelaJuros}</div></td>
-			<td><div align="center">{combustivel}</div></td>
-			<td><div align="right">{totalOrcamento}</div></td>
-		</tr>';
+        }
         $is_pdf = (new MatriculasController)->is_pdf();
 		if($is_pdf){
 			//<!--<td><div align="right">{totalOrcamento}</div></td>-->
 			$styletd = 'style="border-top:1px solid #ddd"';
-			$config['tema2'] = '<tr>
-									<td '.$styletd.'>
-										<div align="left" class="">{radio_select}&nbsp;<span class="">{entrada}</span></div>
-									</td>
-									<td '.$styletd.'><div align="center">{label_parcela}</div></td>
-									<td '.$styletd.'><div align="center">{parcelaJuros}</div></td>
-									<td '.$styletd.'><div align="right">{combustivel}</div></td>
-								</tr>';
+            $tr_entrada = '<div align="left" class="">{radio_select}&nbsp;<span class="">{entrada}</span></div>';
+            if($tipoCurso==4){
+                $config['tema2'] = '<tr>
+                                        <td '.$styletd.'><div align="left">{label_parcela}</div></td>
+                                        <td '.$styletd.'><div align="center">{parcelaJuros}</div></td>
+                                        <td '.$styletd.'><div align="right">{totalOrcamento}</div></td>
+                                    </tr>';
+            }else{
+                $config['tema2'] = '<tr>
+                                        <td '.$styletd.'>
+                                            '.$tr_entrada.'
+                                        </td>
+                                        <td '.$styletd.'><div align="center">{label_parcela}</div></td>
+                                        <td '.$styletd.'><div align="center">{parcelaJuros}</div></td>
+                                        <td '.$styletd.'><div align="right">{totalOrcamento}</div></td>
+                                    </tr>';
+            }
             $config['local_imp'] = 'pdf';
         }
 		$config['tema3']  = isset($config['tema3']) ? $config['tema3'] :'<tr><th colspan="3"><div align="left">{label_parcela}</div></th><th><div align="right">{parcelaJuros}</div></th></tr>';
@@ -287,23 +283,19 @@ class FinanceiroController extends Controller
 				$compleSq .=" AND tabelas LIKE '%\"".$tabela_preco."\"%'";
 
 			}
-			$numePrevTurma = false;
-            $ccur = new CursosController;
-			$arr_conf_turma = [];
-			$entrada_fds = 0;
-			$tipoCurso = $ccur->tipo($config['id_curso']);
-            $compleSql = false;
 			//Plano de formação tipo curso id 4
             if($tipoCurso==4 && $is_pdf){
 				$ret = false;
 				$verificaPlano = Qlib::verificaPlano(['token_matricula'=>$token_matricula]);
-			    if(isset($verificaPlano['dadosTabela']['id'])){
-					$ret = $ccur->tabela_parcelamento_cliente($verificaPlano['dadosTabela']['id']);
+                if(isset($verificaPlano['dadosTabela']['id'])){
+                    $ret = $ccur->tabela_parcelamento_cliente($verificaPlano['dadosTabela']['id']);
 				}
-              	if(!$ret)
-				$ret = isset($verificaPlano['dadosTabela']['obs'])?$verificaPlano['dadosTabela']['obs']:false;
-
-				return $ret;
+                // dump($ret);
+              	if(!$ret){
+                    $ret = isset($verificaPlano['dadosTabela']['obs'])?$verificaPlano['dadosTabela']['obs']:false;
+                }else{
+                    return $ret;
+                }
 			}
 			if($tipoCurso==4){
 			}else{
@@ -381,13 +373,17 @@ class FinanceiroController extends Controller
 			$ret = false;
 
 			$tema0 = '{tabe1}{tabe2}';
+            $tm_entrada = true;
+            if($tipoCurso==4){
+                $tm_entrada = false;
+            }
 			if($config['local_imp'] == 'painel'){
 
-				$tema = isset($config['tema1'])? $config['tema1'] :  $this->tema();
+				$tema = isset($config['tema1'])? $config['tema1'] :  $this->tema($tm_entrada);
 
 			}elseif($config['local_imp'] == 'pdf'){
 
-				$tema = isset($config['tema1'])? $config['tema1'] : $this->tema_pdf();
+				$tema = isset($config['tema1'])? $config['tema1'] : $this->tema_pdf($tm_entrada);
 				// if(is_sandbox()){
 				// 	dd($config);
 				// }
@@ -409,7 +405,7 @@ class FinanceiroController extends Controller
 				}
 			}
 			if($dados){
-
+                $matricula = isset($dados[0]['valor']) ? $dados[0]['valor'] : 0;
 				$i = 1;
 				foreach($dados As $key=>$val){
 					$type_aplica = $val['type'] ? $val['type'] : 'valor_curso';
@@ -704,7 +700,6 @@ class FinanceiroController extends Controller
 									$label_entrada = false;
 
 									$valorTotalOrc = $config['valor'];
-
 									if($val['valor']>0){
 
 										$valor_entrada = $this->calcEntrada($val['valor'],$combustivel,$token_matricula);
@@ -859,9 +854,10 @@ class FinanceiroController extends Controller
 
 											if($tipoCurso==4){
 												$entrada = 0;
-												$matricula = isset($v['valor'])?$v['valor']:0;
+												$matricula = isset($matricula)?$matricula:0;
 												if($matricula){
-													$matricula = 'Matrícula '.$matricula.' Total ';
+													// $matricula = 'Matrícula: '. valor_moeda($matricula,'').' Total ';
+													$matricula =  Qlib::valor_moeda($matricula,'');
 												}
 											}
 											if(isset($v['valor'])&&!empty($v['valor'])){
@@ -1003,8 +999,14 @@ class FinanceiroController extends Controller
 									$matricula = isset($matricula)?$matricula:false;
 
 									//$titulo = $val['id'].' | '.$config['titulo'].' '.buscaValorDb($GLOBALS['lcf_formas_pagamentos'],'id',$val['forma_pagamento'],'nome');
-									$vlr = $matricula. number_format($valorTotalOrc,2,',','.');
-
+									// $vlr = $matricula. number_format($valorTotalOrc,2,',','.');
+                                    $vlr = 'Total: '.Qlib::valor_moeda($valorTotalOrc);
+                                    $ret = str_replace('{{valor}}',$vlr,$ret);
+									if($tipoCurso==4){
+										$ret = str_replace('{{matricula}}','Matrícula: '.$matricula,$ret);
+									}else{
+										$ret = str_replace('{{matricula}}','',$ret);
+									}
 									$ret = str_replace('{{valor}}',$vlr,$ret);
 
 									$ret = str_replace('{tr_entrada}',$tr_entrada,$ret);

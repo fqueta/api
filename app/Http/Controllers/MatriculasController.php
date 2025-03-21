@@ -225,6 +225,10 @@ class MatriculasController extends Controller
 				$link_guru = isset($arr_link['link_chat']) ? $arr_link['link_chat'] : '';
 			}
 			$dm['link_guru'] = $link_guru;
+            $dm['valor_orcamento'] = $dm['total'];
+            if(isset($dm['desconto']) && $dm['desconto'] > 0){
+                $dm['valor_orcamento'] = $dm['subtotal']-$dm['desconto'];
+            }
 
         }else{
             return false;
@@ -393,19 +397,7 @@ class MatriculasController extends Controller
 					$dados['entrada'] = Qlib::precoDbdase($dados['entrada']);
 				}
 				$ret['nome_arquivo'] = 'Proposta '.$dados['id'];
-				// $sqlDdCli ="SELECT * FROM ".$tab15." WHERE `id` = '".$dados['id_cliente']."'";
-				// $sqlDdCu ="SELECT * FROM ".$tab10." WHERE `id` = '".$dados['id_curso']."'";
-				// $dadosCli = DB::select($sqlDdCli);
-				// $dadosCu = DB::select($sqlDdCu);
-				// $descontoFooter = false;
-                   // if(isset($dadosCu[0])){
-                   //     $dadosCu[0] = (array)$dadosCu[0];
-                   // }
-                   // if(isset($dadosCli[0])){
-                   //     $dadosCli[0] = (array)$dadosCli[0];
-                   // }
-                   //if($dados['tipo_curso']==2){
-                if($dados['tipo_curso']==2){
+				if($dados['tipo_curso']==2){
 					$configMet=$dados;
 					$configMet['email'] = $dados['Email'];
 					// metricasOrcamento($configMet);//para salvar as estatisticas do orçamento;
@@ -1138,11 +1130,16 @@ class MatriculasController extends Controller
                         }
 						$ret['dadosCli'] =  $dadosCli;
 						$i=1;
+                        // if($dados['tipo_curso']==4){
+                            $ret['totalCurso'] = isset($dados['valor_orcamento']) ? $dados['valor_orcamento'] : $dados['valor_curso'];
+                        // }else{
+
+                        // }
 						$tr = str_replace('{num}',$i,$tema2);
 						$tr = str_replace('{descricao}','Curso '.$dados['titulo_curso'],$tr);
-						$tr = str_replace('{valor}',number_format($dados['valor_curso'],2,',','.'),$tr);
+						// $tr = str_replace('{valor}',number_format($dados['valor_curso'],2,',','.'),$tr);
+						$tr = str_replace('{valor}',number_format($ret['totalCurso'],2,',','.'),$tr);
 						$i++;
-						$ret['totalCurso'] = $dados['valor_curso'];
 						if(isset($dados['inscricao_curso'])&&$dados['inscricao_curso']>0){
 							$tr .= str_replace('{num}',$i,$tema2);
 							$tr = str_replace('{descricao}','Matrícula '.$dados['titulo_curso'],$tr);
@@ -1264,16 +1261,18 @@ class MatriculasController extends Controller
         $config['modulos'] = isset($config['modulos_curso']) ? $config['modulos_curso'] : false; //html ou pdf
         $is_pdf = $this->is_pdf();
         $arr_orc=[];
-        // dd($orc);
+        $id_matricula = null;
         if($token_matricula && !$orc){
             if(!$orc){
                 $d_or =  $this->dm($token_matricula);//dados od orçamento
             }
             $orc = isset($d_or['orc'])?$d_or['orc']: false;
+            $id_matricula = isset($d_or[0]['id'])?$d_or[0]['id']: null;
             if($orc){
                 $arr_orc = Qlib::lib_json_array($orc);
             }
         }else{
+            $id_matricula = isset($orc['id'])?$orc['id']: null;
             $arr_orc = $orc;
         }
         if(!isset($config['modulos']) && $id_curso){
@@ -1309,55 +1308,89 @@ class MatriculasController extends Controller
 
             if($is_pdf){
                 $tm1 = '
-                    <div class=""><h3>Detalhamento</h3></div>
-                    <table class="table get_modulos_cursos">
-                        <thead>
-                        <!--<tr>
-                            <th colspan="3" class="text-left"></th>
-                        </tr>-->
-                        <tr>
-                            <th style="width:53%"><div align="left"><b>Descrição</b></div></th>
-                            <th style="width:37%"><b>Etapa</b></th>
-                            <th style="width:10%"><div align="right"><b>C. Horária</b></div></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            {tr}
-                        </tbody>
-                    </table>&nbsp;&nbsp;';
-                $tm2 = '
-                    <tr>
-                        <td style="width:53%">{descricao}</td>
-                        <td style="width:37%">{curso}</td>
-                        <td style="width:10%"><div align="right">{carga}</div></td>
-                    </tr>';
-            }else{
-                $tm1 = '
-                    <table class="table table-striped get_modulos_cursos">
-                        <thead>
-                        <tr>
-                            <th colspan="3" class="text-left"><h3>Detalhamento</h3></th>
-                        </tr>
-                        <tr>
-                            <th style="width:45%"><div align="left"><b>Descrição</b></div></th>
-                            <th style="width:30%"><b>Etapa</b></th>
-                            <th style="width:15%"><div align="right"><b>Carga Horária</b></div></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            {tr}
-                        </tbody>
-                    </table>&nbsp;&nbsp;';
+                    <div class="">
+                        <table class="table table-striped get_modulos_cursos">
+                            <thead>
+                                <tr>
+                                    <th colspan="5" class="text-left"><h3>Detalhamento</h3></th>
+                                </tr>
+                                <tr>
+                                    <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
+                                    <th style="width:57%"><div align="center">Etapa</div></th>
+                                    <th style="width:10%"><div align="center">Horas T.</div></th>
+                                    <th style="width:10%"><div align="center">Horas P.</div></th>
+                                    <th style="width:10%"><div align="right"><b>Valor</b></div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tr}
+                            </tbody>
+                            {tr_foot}
+                        </table>
+                        <br>
+				        {table_taxas_1}
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>
+                                        Total do Orçamento
+                                    </th>
+                                    <th class="text-right">
+                                        <div align="right">
+                                            {total}
+                                        </div>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br><br>
+                    </div>
+                    ';
                 $tm2 = '
                     <tr>
                         <td>{descricao}</td>
                         <td>{curso}</td>
-                        <td><div align="right">{carga}</div></td>
+                        <td><div align="center">{carga}</div></td>
+                        <td><div align="center">{carga_pratica}</div></td>
+                        <td><div align="right">{valor}</div></td>
+                    </tr>';
+            }else{
+                $tm1 = '
+                   <div class="">
+                        <table class="table table-striped get_modulos_cursos">
+                            <thead>
+                                <tr>
+                                    <th colspan="5" class="text-left"><h3>Detalhamento</h3></th>
+                                </tr>
+                                <tr>
+                                    <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
+                                    <th style="width:57%"><b>Etapa</b></th>
+                                    <th style="width:10%" class="text-center">Horas T.</th>
+                                    <th style="width:10%" class="text-center">Horas P.</th>
+                                    <th style="width:10%"><div align="right"><b>Valor</b></div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tr}
+                            </tbody>
+                            {tr_foot}
+                        </table>
+                        &nbsp;&nbsp;
+                    </div>
+                    ';
+                $tm2 = '
+                    <tr>
+                        <td>{descricao}</td>
+                        <td>{curso}</td>
+                        <td><div align="center">{carga}</div></td>
+                        <td><div align="center">{carga_pratica}</div></td>
+                        <td><div align="right">{valor}</div></td>
                     </tr>';
             }
 
             $tr=false;
             if(is_array($arr_mod)){
+                $valor_total = 0;
                 foreach ($arr_mod as $id => $v) {
                     if($client){
                         $siga = isset($v['sele'])?$v['sele']:false;
@@ -1385,13 +1418,13 @@ class MatriculasController extends Controller
                                     $disabled_limite = false;
                                     $disabled_curso = false;
                                     $disabled_tipo = false;
+                                    $valor_total = isset($v['valor']) ? $v['valor'] : 0;
                                 }else{
                                     $checkbox = '';
                                     $disabled_titulo = 'disabled';
                                     $disabled_limite = 'disabled';
                                     $disabled_curso = 'disabled';
                                     $disabled_tipo = 'disabled';
-
                                 }
                             }else{
                                 $checkbox = 'checked';
@@ -1410,23 +1443,115 @@ class MatriculasController extends Controller
                                             <input type="hidden" '.$disabled_tipo.' name="dados[orc][modulos]['.$id.'][tipo]" value="'.$tipo.'">&nbsp;'.$v['titulo'].'
                                         </div>';
                         }else{
-                            //lib_print($v);
+                            if($arr_mod_save){
+                                if(isset($arr_mod_save[$id]['sele'])){
+                                    // $checkbox = 'checked';
+                                    // $disabled_titulo = false;
+                                    // $disabled_limite = false;
+                                    // $disabled_curso = false;
+                                    // $disabled_tipo = false;
+                                    $valor_total = isset($v['valor']) ? $v['valor'] : 0;
+                                // }else{
+                                //     $checkbox = '';
+                                //     $disabled_titulo = 'disabled';
+                                //     $disabled_limite = 'disabled';
+                                //     $disabled_curso = 'disabled';
+                                //     $disabled_tipo = 'disabled';
+                                }
+                            }
                         }
+                        $valor = isset($v['valor'])? $v['valor'] : 0;
+                        // $valor_total = isset($v['valor']) ? $v['valor'] : $valor;
                         $tr .= str_replace('{descricao}',$titulo,$tm2);
                         $tr = str_replace('{carga}',$v['limite'],$tr);
+                        $tr = str_replace('{carga_pratica}',$v['limite_pratico'],$tr);
                         $tr = str_replace('{curso}',$curso,$tr);
                         $tr = str_replace('{tipo}',$tipo,$tr);
+                        $tr = str_replace('{valor}',$valor,$tr);
                     }
                 }
             }
             $dtx = $this->get_taxas_curso($config);
             $ret['html'] = str_replace('{tr}',$tr,$tm1);
+            // if($this->is_pdf()){
+            //     $ret['html'] .= '<br>'.$dtx['html'];
+            // }else{
+            //     $ret['html'] .= $dtx['html'];
+            // }
+            // $ret['total_taxas'] = $dtx['total'];
             if($this->is_pdf()){
-                $ret['html'] .= '<br>'.$dtx['html'];
+                $ret['html'] = str_replace('{table_taxas_1}',$dtx['html'],$ret['html']);
             }else{
-                $ret['html'] .= $dtx['html'];
+                $ret['html'] = str_replace('{table_taxas_1}',$dtx['html'],$ret['html']);
             }
-            $ret['total_taxas'] = $dtx['total'];
+
+            $total_taxas = Qlib::precoDbdase($dtx['total']);
+            $total_taxas = (double)$total_taxas;
+            $ret['total_taxas'] = $total_taxas;
+            $subtotal = Qlib::precoDbdase($valor_total);
+            $subtotal = (double)$subtotal;
+            $desconto = null;
+            $subtotal_ = $subtotal;
+            $ret['subtotal'] = $subtotal_;
+            $label_desconto = 'Desconto';
+            if($id_matricula){
+                $desconto = Qlib::get_matriculameta($id_matricula,'desconto',true);
+                if($desconto){
+                    $id_matricula = Qlib::get_matricula_id_by_token($token_matricula);
+                    $d_desconto = Qlib::get_matriculameta($id_matricula,'parcelamento_desconto',true);
+                    $arr_parcela = Qlib::decodeArray($d_desconto);
+                    $label_desconto = isset($arr_parcela['nome']) ? $arr_parcela['nome'] : "Desconto";
+                    $subtotal = $subtotal - (double)$desconto;
+                }
+            }
+            $total_curso = $subtotal+$ret['total_taxas'];
+            $ret['total_curso'] = $total_curso;
+            $ret['desconto'] = $desconto;
+            $colspan = '4';
+            if($desconto){
+                $tr_foot = '
+                <tfoot>
+                    <tr class="vermelho text-danger">
+                        <td colspan="'.$colspan.'">
+                            '.$label_desconto.'
+                        </td>
+                        <td class="text-right">
+                            <div align="right">
+                                - '.Qlib::valor_moeda($desconto,'R$ ').'
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="'.$colspan.'">
+                            Subtotal
+                        </th>
+                        <th class="text-right">
+                            <div align="right">
+                                '.Qlib::valor_moeda($subtotal,'R$ ').'
+                            </div>
+                        </th>
+                    </tr>
+                </tfoot>
+                ';
+            }else{
+                $tr_foot = '
+                <tfoot>
+                    <tr>
+                        <th colspan="'.$colspan.'">
+                            Subtotal
+                        </th>
+                        <th>
+                            <div align="right">
+                                '.Qlib::valor_moeda($subtotal,'R$').'
+                            </div>
+                        </th>
+                    </tr>
+                </tfoot>
+                ';
+            }
+
+            $ret['html'] = str_replace('{tr_foot}',$tr_foot,$ret['html']);
+            $ret['html'] = str_replace('{total}',Qlib::valor_moeda($total_curso,'R$'),$ret['html']);
         }
         return $ret;
     }

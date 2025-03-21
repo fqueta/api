@@ -16,6 +16,7 @@ class PdfGenerateController extends Controller
             $orca = new MatriculasController;
             $d = $orca->dm($token);
             if($d){
+
                 //verifica se está assinado
                 // $config = $orca->get_matricula_assinado($token);
                 // if(@$config['exec'] && @$config['data']){
@@ -155,7 +156,7 @@ class PdfGenerateController extends Controller
          ];
          $html = view('pdf.pdf_com_imagem',$dados)->render();
          if($t_pdf=='false'){
-             return $html;
+            return $html;
          }
          // Gerar o PDF
          $pdf = SnappyPdf::loadHTML($html)
