@@ -1462,9 +1462,10 @@ class MatriculasController extends Controller
                         }
                         $valor = isset($v['valor'])? $v['valor'] : 0;
                         // $valor_total = isset($v['valor']) ? $v['valor'] : $valor;
+                        $limite_pratico = isset($v['limite_pratico']) ? $v['limite_pratico'] : false;
                         $tr .= str_replace('{descricao}',$titulo,$tm2);
                         $tr = str_replace('{carga}',$v['limite'],$tr);
-                        $tr = str_replace('{carga_pratica}',$v['limite_pratico'],$tr);
+                        $tr = str_replace('{carga_pratica}',$limite_pratico,$tr);
                         $tr = str_replace('{curso}',$curso,$tr);
                         $tr = str_replace('{tipo}',$tipo,$tr);
                         $tr = str_replace('{valor}',$valor,$tr);
