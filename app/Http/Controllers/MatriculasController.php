@@ -1445,23 +1445,15 @@ class MatriculasController extends Controller
                         }else{
                             if($arr_mod_save){
                                 if(isset($arr_mod_save[$id]['sele'])){
-                                    // $checkbox = 'checked';
-                                    // $disabled_titulo = false;
-                                    // $disabled_limite = false;
-                                    // $disabled_curso = false;
-                                    // $disabled_tipo = false;
                                     $valor_total = isset($v['valor']) ? $v['valor'] : 0;
-                                // }else{
-                                //     $checkbox = '';
-                                //     $disabled_titulo = 'disabled';
-                                //     $disabled_limite = 'disabled';
-                                //     $disabled_curso = 'disabled';
-                                //     $disabled_tipo = 'disabled';
                                 }
                             }
                         }
                         $valor = isset($v['valor'])? $v['valor'] : 0;
                         // $valor_total = isset($v['valor']) ? $v['valor'] : $valor;
+                        if(isset($_GET['teste'])){
+                            dump($v);
+                        }
                         $limite_pratico = isset($v['limite_pratico']) ? $v['limite_pratico'] : false;
                         $tr .= str_replace('{descricao}',$titulo,$tm2);
                         $tr = str_replace('{carga}',$v['limite'],$tr);
