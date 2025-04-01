@@ -16,7 +16,6 @@ class PdfGenerateController extends Controller
             $orca = new MatriculasController;
             $d = $orca->dm($token);
             if($d){
-
                 //verifica se está assinado
                 // $config = $orca->get_matricula_assinado($token);
                 // if(@$config['exec'] && @$config['data']){
@@ -57,7 +56,9 @@ class PdfGenerateController extends Controller
                 if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
                     $orcamento .= $res_orc['listMod']['html'];
                 }
+
                 if($type=='pdf'){
+                    // dump($type,$fundo,$d);
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
                         foreach ($fundo as $k => $v) {

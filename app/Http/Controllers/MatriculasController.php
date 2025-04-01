@@ -653,12 +653,40 @@ class MatriculasController extends Controller
 								// 	$descontoFooter .= '<tr class="verde"><td colspan="4" class="total-curso"><div align="right"><strong>Total do curso:</strong></div></td><td class="total-curso"><div align="right"><b> '.number_format($totalCurso,'2',',','.').'</b></div></td></tr>';
 								// 	$subtotal1 = $totalCurso;
 								// }
+                                $desconto_especial = Qlib::get_matriculameta($dados["id"],'desconto_especial');
+                                if($desconto_especial){
+                                    $desconto_especial = str_replace('R$','',$desconto_especial);
+                                    $desconto_especial = trim($desconto_especial);
+                                    $desconto_especial = Qlib::precoBanco($desconto_especial);
+                                    $dados['desconto_especial'] = (double)$desconto_especial;
+                                    $totalCurso = ($totalCurso) - $dados['desconto_especial'];
+                                    //$totalOrcamento = ($totalCurso) - ($dados['desconto_especial']);
+                                    $totalOrcamento = ($totalCurso);
+                                    $ret['desconto_especial'] = $dados['desconto_especial'];
+                                    $descontoFooter .= '
+                                    <tr class="vermelho">
+                                        <td colspan="4">
+                                            <div align="right"><strong>Desconto Especial</strong></div>
+                                        </td>
+                                        <td>
+                                            <div align="right"><b> '.number_format($dados['desconto_especial'],'2',',','.').'</b></div>
+                                        </td>
+                                    </tr>
+                                    <tr class="">
+                                        <td colspan="4">
+                                            <div align="right"><strong>Subtotal</strong></div>
+                                        </td>
+                                        <td>
+                                            <div align="right"><b> '.number_format($totalCurso,'2',',','.').'</b></div>
+                                        </td>
+                                    </tr>
+                                    ';
+                                }
 								$desconto_turma = Qlib::get_matriculameta($dados["id"],'desconto');
                                 if($desconto_turma){
                                     $desconto_turma = Qlib::precoBanco($desconto_turma);
                                     // $desconto_turma = number_format($desconto_turma,',','.');
                                 }
-                                // dump($desconto_turma);
                                 if((isset($dados['desconto']) && $dados['desconto'] >0) || (isset($dados['entrada']) && $dados['entrada'] >0) || (isset($dados['desconto_porcento']) && $dados['desconto_porcento']>0) || $desconto_turma){
 									// $totalCurso = $ret['total'];
 									if(!$footer){
