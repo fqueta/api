@@ -8,6 +8,17 @@ use Illuminate\Http\Request;
 
 class OrcamentoController extends Controller
 {
+    public function gerar_orcamento(Request $request)
+    {
+        $d = $request->all();
+        $ret = ['exec'=>false];
+        if(isset($d['id_cliente']) && isset($d['id_curso'])){
+            $d['token'] 	= isset($d['token'])	?$d['token']	:uniqid();
+            $ret = (new MatriculasController)->salvarMatricula($d);
+        }
+        return $ret;
+        // dd($d);
+    }
     /**
      * Display a listing of the resource.
      */

@@ -2240,7 +2240,7 @@ class Qlib
 				$ttp1 = '<table class="table"><thead><!--<th colspan="2" class="text-center">'.__translate('Resumo do pagamento',true).'</th>-->{tr_matricula}<tr><th>Parcelas</th><th class="text-right">Valores</th></tr></thead><tbody>{trp}</tbody></table>';
 				$ttp2 = '<tr><td>[parcelas]</td><td class="text-right">[valores]</td></tr>';
 				$trp = false;
-				$dadosTabela = dados_tab($GLOBALS['tab55'],'*',"WHERE id='".$ar_c['id']."'");
+				$dadosTabela = Qlib::dados_tab($GLOBALS['tab55'],['campos'=>'*','where'=>"WHERE id='".$ar_c['id']."'"]);
 				if($dadosTabela){
 					$ret['dadosTabela'] = $dadosTabela;
 					$obs = $dadosTabela[0]['obs'];
@@ -2578,6 +2578,9 @@ class Qlib
 
 
         }
+    }
+    static function deletar_registro($tab,$id){
+        return  DB::table($tab)->where('id','=',$id)->delete();
     }
     /**
      * Metodo para baixar um arquivo remoto e salvar em disco do servidor
