@@ -3397,7 +3397,7 @@ class MatriculasController extends Controller
                     foreach ($lista_contratos as $ka => $va) {
                         if(isset($va['short_code']) && $va['short_code'] == $opc && isset($va['obs']) && ($contrato = $va['obs'])){
                             $ger_cont = $this->contrato_matricula($token,$dm,$contrato);
-                            return $ger_cont;
+                            // return $ger_cont;
                         }
                     }
                 }
