@@ -3397,6 +3397,7 @@ class MatriculasController extends Controller
                     foreach ($lista_contratos as $ka => $va) {
                         if(isset($va['short_code']) && $va['short_code'] == $opc && isset($va['obs']) && ($contrato = $va['obs'])){
                             $ger_cont = $this->contrato_matricula($token,$dm,$contrato);
+                            return $ger_cont;
                         }
                     }
                 }
@@ -3611,6 +3612,7 @@ class MatriculasController extends Controller
         $clausula_tipo_pagamento = false;
         $tipo_contrato_combustivel = false;
         $data_contrato_aceito = '';
+        unset($dm['data_contrato']);
         if(is_array($dm) && $texto_contrato){
             $contrato_firmado_curso = false; //Contrato firmado sob Piloto privado
             foreach($dm as $k=>$v){
@@ -3716,8 +3718,9 @@ class MatriculasController extends Controller
             if($valor_combustivel){
                 $valor_combustivel = Qlib::valor_moeda($valor_combustivel);
             }
-            $data_contrato 			= date('d/m/Y (H:m:i)');
+            $data_contrato = $data_contrato_aceito ? $data_contrato_aceito : date('d/m/Y (H:m:i)');
             $ret = str_replace('{data_contrato}',$data_contrato,$ret);
+            $ret = str_replace('{data_contrato_aceito}',$data_contrato,$ret);
             $ret = str_replace('{valor_combustivel}',$valor_combustivel,$ret);
             $ret = str_replace('{assinatura}',$assinatura,$ret);
             $ret = str_replace('{assinatura_contratada}',$assinatura_contratada,$ret);
