@@ -2207,7 +2207,6 @@ class MatriculasController extends Controller
 
             $cond_valid = isset($config['cond_valid'])?$config['cond_valid'] : "WHERE `id_cliente` = '".$config['id_cliente']."' AND id_curso='".$config['id_curso']."' AND ".Qlib::compleDelete();
             $tipo_curso = 0;
-
             if(isset($config['id_curso'])){
 
                 $cursoRecorrente = $this->cursoRecorrente($config['id_curso']);
@@ -2234,7 +2233,7 @@ class MatriculasController extends Controller
 
             $config['aluno']			 = isset($config['aluno']) ? $config['aluno'] : Qlib::buscaValorDb0($GLOBALS['tab15'],'id',$config['id_cliente'],'Nome').' '.Qlib::buscaValorDb0($GLOBALS['tab15'],'id',$config['id_cliente'],'sobrenome');
 
-            $config['responsavel'] = isset($config['responsavel']) ? $config['responsavel'] : Qlib::buscaValorDb0($GLOBALS['tab16'],'id',@$config['id_responsavel'],'Nome');
+            $config['responsavel'] = isset($config['responsavel']) ? $config['responsavel'] : Qlib::buscaValorDb0('responsavel','id',@$config['id_responsavel'],'Nome');
 
             if(isset($config['dados']['orc'])){
 
@@ -2258,7 +2257,6 @@ class MatriculasController extends Controller
                 $config['situacao'] = 'a';
 
             }
-
 
             if($statusAtual==1&&$config['situacao']=='2'){
 
@@ -2394,13 +2392,14 @@ class MatriculasController extends Controller
                     // $config['meta']['ganhos_plano'] = isset($config['meta']['ganhos_plano'])?$config['meta']['ganhos_plano']:'';
                 }
             }
+            //Inserir valor Padroes para campos que não tenham eles
+            // $customDefaults = [
+            //     'role' => 'user',
+            //     'status' => 'active',
+            //     'created_at' => now(),
+            //     'updated_at' => now(),
+            // ];
             $ret = Qlib::update_tab($tabUser,$config2['dadosForm'],$cond_valid,true);
-            // $ret = json_decode(lib_salvarFormulario($config2),true);
-
-            // if(is_sandbox()){
-            // 	// lib_print($config2);
-            // 	lib_print($ret);
-            // }
             if(isset($config['meta'])){
                 $ret['meta'] = $this->sava_meta_fields($config);
 
@@ -2694,7 +2693,6 @@ class MatriculasController extends Controller
                             }
 
                         }
-
                     }
 
                 }
@@ -2897,14 +2895,15 @@ class MatriculasController extends Controller
         if(!$token_matricula){
             return $ret;
         }
-        $d = Qlib::dados_tab($GLOBALS['tab12'],['campos'=>'id,token,status','where'=>"WHERE id_curso='$id_curso' AND status!='5' AND id_cliente='$id_cliente' AND ".Qlib::compleDelete()]);
+        $d = Qlib::dados_tab($GLOBALS['tab12'],['campos'=>'id,token,status','where'=>"WHERE id_curso='$id_curso' AND status!='5' AND id_cliente='$id_cliente' AND ".Qlib::compleDelete()." ORDER BY id DESC"]);
         if($d){
-            // $d = $d[0];
+            $d = $d[0];
+            // dd($d);
             if($token_matricula == $d['token']){
                 //Se encontrou o mesmo pode retornar
                 return $ret;
             }
-            $arr_status_mat = sql_array("SELECT * FROM ".$GLOBALS['tab24']." ORDER BY nome ASC",'nome','id');
+            $arr_status_mat = Qlib::sql_array("SELECT * FROM status_matricula ORDER BY nome ASC",'nome','id');
             $link = Qlib::$RAIZ.'/cursos?sec=bWF0cmljdWxhcw==&list=false&acao=alt&id='.base64_encode($d['id']);
             $mensagem = Qlib::formatMensagemInfo('Não é possível salvar, foi encontrado uma proposta no status <b>'.$arr_status_mat[$d['status']].'</b> ele precisa concluir para poder prosseguir.. <br> Por favor verifique se o status está correto antes de fazer uma nova venda ou gerar orçamento para este cliente<br><a href="'.$link.'" target="_BLANK" class="btn btn-default">Acessar agora</a>','danger');
             $ret['exec'] = true;
@@ -2924,7 +2923,7 @@ class MatriculasController extends Controller
 
         // $suf_in = SUF_SYS;
 
-        $arr_status_mat = sql_array("SELECT * FROM ".$GLOBALS['tab24']." ORDER BY nome ASC",'nome','id');
+        $arr_status_mat = Qlib::sql_array("SELECT * FROM status_matricula ORDER BY nome ASC",'nome','id');
 
         if($config['ac'] == 'cad'){
 
@@ -3258,7 +3257,7 @@ class MatriculasController extends Controller
 	 */
 	public function sinc_ganhos(){
 		global $tab12;
-		$ganhos = dados_tab($tab12,'*',"WHERE situacao='g' AND ".compleDelete());
+		$ganhos = Qlib::dados_tab($tab12,['campos'=>'*','where'=>"WHERE situacao='g' AND ".compleDelete()]);
 		$ret['exec'] = false;
 		$ret['d'] = false;
 		if($ganhos){
@@ -3546,7 +3545,7 @@ class MatriculasController extends Controller
 
                     if(!$nome){
 
-                        $nome = Qlib::buscaValorDb0($GLOBALS['tab16'],'id',$id_cliente,'nome');
+                        $nome = Qlib::buscaValorDb0('responsavel','id',$id_cliente,'nome');
 
                     }else{
 
@@ -3576,7 +3575,7 @@ class MatriculasController extends Controller
 
                     if(!$nome){
 
-                        $nome = Qlib::buscaValorDb0($GLOBALS['tab16'],'id',$id_cliente,'nome');
+                        $nome = Qlib::buscaValorDb0('responsavel','id',$id_cliente,'nome');
 
                     }else{
 
@@ -4125,7 +4124,7 @@ class MatriculasController extends Controller
 
                                 if($responsavel){
 
-                                    $dadosResponsavel = Qlib::buscaValoresDb("SELECT *  FROM ".$GLOBALS['tab16']." WHERE id='".$responsavel."'");
+                                    $dadosResponsavel = Qlib::buscaValoresDb("SELECT *  FROM ".'responsavel'." WHERE id='".$responsavel."'");
 
                                     if($dadosResponsavel){
 
@@ -4382,7 +4381,7 @@ class MatriculasController extends Controller
                                         $arr_contrato = Qlib::lib_json_array($dm['contrato']);
                                         // dd($arr_contrato);
                                         foreach ($arr_fiador as $kf => $vf) {
-                                            $dfi = dados_tab($GLOBALS['tab16'],'*',"WHERE id='$vf'");
+                                            $dfi = dados_tab('responsavel','*',"WHERE id='$vf'");
                                             if($dfi){
                                                 if(isset($dfi[0]['config']) && !empty($dfi[0]['config'])){
                                                     $dfi[0]['config'] = Qlib::lib_json_array($dfi[0]['config']);
@@ -4714,7 +4713,7 @@ class MatriculasController extends Controller
                                     $valor_extensso		= Qlib::lib_valorPorExtenso(@$arr_valor['valor_total']);
                                 }
                                 if($responsavel){
-                                    $dadosResponsavel = Qlib::buscaValoresDb("SELECT *  FROM ".$GLOBALS['tab16']." WHERE id='".$responsavel."'");
+                                    $dadosResponsavel = Qlib::buscaValoresDb("SELECT *  FROM ".'responsavel'." WHERE id='".$responsavel."'");
                                     if($dadosResponsavel){
                                         $ret['exec'] = true;
                                         $tr_responsavel =

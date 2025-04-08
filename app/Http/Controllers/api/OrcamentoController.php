@@ -14,6 +14,15 @@ class OrcamentoController extends Controller
         $ret = ['exec'=>false];
         if(isset($d['id_cliente']) && isset($d['id_curso'])){
             $d['token'] 	= isset($d['token'])	?$d['token']	:uniqid();
+            $d['status'] 	= isset($d['status'])	?$d['status']	:1;
+            $d['situacao'] 	= isset($d['situacao'])	?$d['situacao']	:'a';
+            $d['ac'] 	= isset($d['ac'])	?$d['ac']	:'cad';
+            $d['id_responsavel'] = isset($d['id_responsavel'])	? $d['id_responsavel']	: 0;
+            $d['etapa_atual'] = isset($d['etapa_atual']) ? $d['etapa_atual'] : 4; //Lead interessado
+            //agora precisamos gerar um valor padrão
+            if($d['ac']=='cad'){
+                $d['valor'] = isset($d['valor']) ? $d['valor'] : 10; //Lead interessado
+            }
             $ret = (new MatriculasController)->salvarMatricula($d);
         }
         return $ret;

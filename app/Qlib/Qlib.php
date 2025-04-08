@@ -1,4 +1,7 @@
 <?php
+/**
+ * Ultima atualização 08/04/2025
+ */
 namespace App\Qlib;
 
 use App\Http\Controllers\admin\EventController;
@@ -17,6 +20,7 @@ use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Qoption;
 use DateTime;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class Qlib
@@ -2386,8 +2390,10 @@ class Qlib
      * @param string $tab nome da tabela para ser cadastrado os dados
      * @param array $dados array contendo os nomes de campos com seus respectivos valores..
      * @param bool $edit opções false| true controla a Edição ou não edição de um registro encontrado, caso     encontre um registro similar a opão false somente informa que o registro foi encontrado true pode alterar
+     * @param bool $edit opções false| true controla a Edição ou não edição de um registro encontrado, caso     encontre um registro similar a opão false somente informa que o registro foi encontrado true pode alterar
+     * @param array $customDefaults ativa uma funcionalidade para encontrar colunas do banco que não tem valor padrão e troca pelos valores padrão desta variavel
      */
-    static function update_tab($tab='',$dados=[],$where='',$edit=true){
+    static function update_tab($tab='',$dados=[],$where='',$edit=true,$customDefaults=[]){
         // $dados = [
         //     'Nome' => 'Maria',
         //     'Email' => 'maria@example.com',
@@ -2399,45 +2405,51 @@ class Qlib
         $ret['mens'] = 'Erro ao salvar';
         $ret['color'] = 'danger';
         try {
+            if(count($customDefaults)==0){
+                $customDefaults = ['data'=>now()];
+            }
             if(is_array($dados)){
+                // 1. Filtrar o $data para remover chaves que não existem nas colunas
+                $filteredData = self::filterDataByTableColumns($tab, $dados,$customDefaults);
+                // dd($dados,$filteredData);
                 if(!empty($where)){
                     $d = DB::select("SELECT id FROM $tab $where");
                     $id = isset($d[0]->id) ? $d[0]->id : null;
                     if($id){
                         if($edit){
-                            $salva = DB::table($tab)->where('id', $id)->update($dados);
+                            $salva = DB::table($tab)->where('id', $id)->update($filteredData);
                             if($salva){
                                 $ret['exec'] = true;
                                 $ret['idCad'] = $id;
-                                $ret['dados'] = $dados;
+                                $ret['dados'] = $filteredData;
                                 $ret['color'] = 'success';
                                 $ret['mens'] = 'Registro atualizado com sucesso!';
                             }else{
                                 $ret['exec'] = true;
                                 $ret['idCad'] = $id;
-                                $ret['dados'] = $dados;
+                                $ret['dados'] = $filteredData;
                                 $ret['color'] = 'success';
                                 $ret['mens'] = 'Registro sem necessidade de atualização!';
                             }
                         }else{
                             $ret['exec'] = false;
                             $ret['idCad'] = $id;
-                            $ret['dados'] = $dados;
+                            $ret['dados'] = $filteredData;
                             $ret['color'] = 'warning';
                             $ret['mens'] = 'Registro encotrado!';
                         }
                     }else{
-                        $id = DB::table($tab)->insertGetId($dados);
+                        $id = DB::table($tab)->insertGetId($filteredData);
                         if($id){
                             $ret['exec'] = true;
                             $ret['idCad'] = $id;
-                            $ret['dados'] = $dados;
+                            $ret['dados'] = $filteredData;
                             $ret['color'] = 'success';
                             $ret['mens'] = 'Registro criado com sucesso!';
                         }
                     }
                 }else{
-                    $id = DB::table($tab)->insertGetId($dados);
+                    $id = DB::table($tab)->insertGetId($filteredData);
                     if($id){
                         $ret['exec'] = true;
                         $ret['idCad'] = $id;
@@ -2462,6 +2474,50 @@ class Qlib
             //throw $th;
         }
         return $ret;
+    }
+    /**
+     * Funcção filtrar dados de colunas das tabelas
+     * Schema::getColumnListing('users'): pega todas as colunas da tabela users.
+     * array_filter(..., ARRAY_FILTER_USE_KEY): filtra $data pelas chaves (nomes dos campos), comparando com as colunas reais.
+     */
+    static function filterDataByTableColumns(string $table, array $data, array $customDefaults=[]): array {
+        $columns = Schema::getColumnListing($table);
+        // dd(count($customDefaults));
+        if(count($customDefaults)>0){
+            $columnsInfo = DB::select("
+                SELECT COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = ? AND TABLE_SCHEMA = DATABASE()
+            ", [$table]);
+            $filteredData = array_filter(
+                $data,
+                fn($key) => in_array($key, $columns),
+                ARRAY_FILTER_USE_KEY
+            );
+            foreach ($columnsInfo as $column) {
+                $colName = $column->COLUMN_NAME;
+                $hasDefaultInDB = $column->COLUMN_DEFAULT !== null;
+                $isNullable = $column->IS_NULLABLE === 'YES';
+
+                if (!array_key_exists($colName, $filteredData) && !$hasDefaultInDB && !$isNullable) {
+                    // Aqui você define os seus valores padrão customizados
+                    // $customDefaults = [
+                    //     'role' => 'user',
+                    //     'status' => 'active',
+                    //     'created_at' => now(),
+                    //     'updated_at' => now(),
+                    // ];
+
+                    // Se tiver um valor padrão definido no código, usa ele
+                    if (array_key_exists($colName, $customDefaults)) {
+                        $filteredData[$colName] = $customDefaults[$colName];
+                    }
+                }
+            }
+            return $filteredData;
+        }else{
+            return array_filter($data, fn($key) => in_array($key, $columns), ARRAY_FILTER_USE_KEY);
+        }
     }
     /**
      * Metodo para excluir um registro
