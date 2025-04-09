@@ -30,13 +30,19 @@ class OrcamentoController extends Controller
             $cursos_c = new CursosController;
             $mc = new MatriculasController;
             if($d['ac']=='cad' && isset($d['id_curso'])){
-                $d['valor'] = isset($d['valor']) ? $d['valor'] : 10; //Lead interessado
+                $tipo_curso = $cursos_c->tipo($d['id_curso']);
+                if($tipo_curso==1){
+                    $total_curso = Qlib::buscaValorDb0('cursos','id',$d['id_curso'],'valor');
+                }else{
+                    $total_curso = 0;
+                }
+                $d['total'] = $total_curso;
+                $d['valor'] = isset($d['valor']) ? $d['valor'] : 0; //Lead interessado
                 $d['acao'] = $d['ac'];
                 $d['html_exibe'] = false;
                 $turmas = $cursos_c->selectTurma($d);
                 $d['id_turma'] = isset($turmas['arr_id_turma'][0]) ? $turmas['arr_id_turma'][0] : 0;
                 $arr_tabelas = $this->select_tabela_preco($d['id_curso'],$d['id_turma']);
-                $tipo_curso = $cursos_c->tipo($d['id_curso']);
                 if($tipo_curso==2 && $arr_tabelas){
                     //array de orçamento
                     $d['orc'] = '';
