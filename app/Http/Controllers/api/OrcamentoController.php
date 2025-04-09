@@ -49,11 +49,22 @@ class OrcamentoController extends Controller
                         $d['orc'] = Qlib::lib_array_json($orc);
                     }
                     $d['id_turma'] = isset($turmas['arr_id_turma'][0]) ? $turmas['arr_id_turma'][0] : 0;
-                    // dd($d);
                     // dd($arr_tabelas);
                 }
             }
             $ret = $mc->salvarMatricula($d);
+            if(is_string($ret)){
+                $ret = Qlib::lib_json_array($ret);
+            }
+            if(isset($ret['exec']) && isset($ret['idCad']) && ($id_matricula = $ret['idCad'])){
+                $id_matricula = base64_encode($id_matricula);
+                $link = Qlib::$RAIZ.'/admin/cursos?sec=aW50ZXJlc3NhZG9z&list=false&regi_pg=100&pag=0&acao=alt&id='.$id_matricula.'&redirect_base=aHR0cHM6Ly9jcm0uYWVyb2NsdWJlamYuY29tLmJyL2FkbWluL2N1cnNvcz9zZWM9YVc1MFpYSmxjM05oWkc5eg==';
+                $ret['link_proposta_admin'] = $link;
+            }
+            if(isset($ret['exec']) && isset($ret['dados']['token']) && ($token_matricula = $ret['dados']['token'])){
+                $link_cliente = 'https://propostas.aeroclubejf.com.br/orcamento-pdf/'.$token_matricula;
+                $ret['link_proposta_cliente'] = $link_cliente;
+            }
         }
         return $ret;
         // dd($d);
