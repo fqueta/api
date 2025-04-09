@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\CursosController;
 use App\Http\Controllers\MatriculasController;
+use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 
 class OrcamentoController extends Controller
 {
+    /**
+     * Grava um orçamento de uma requisição da API
+     */
     public function gerar_orcamento(Request $request)
     {
         $d = $request->all();
@@ -16,17 +21,62 @@ class OrcamentoController extends Controller
             $d['token'] 	= isset($d['token'])	?$d['token']	:uniqid();
             $d['status'] 	= isset($d['status'])	?$d['status']	:1;
             $d['situacao'] 	= isset($d['situacao'])	?$d['situacao']	:'a';
+            $d['excluido'] 	= isset($d['excluido'])	?$d['excluido']	:'n';
+            $d['deletado'] 	= isset($d['deletado'])	?$d['deletado']	:'n';
             $d['ac'] 	= isset($d['ac'])	?$d['ac']	:'cad';
             $d['id_responsavel'] = isset($d['id_responsavel'])	? $d['id_responsavel']	: 0;
             $d['etapa_atual'] = isset($d['etapa_atual']) ? $d['etapa_atual'] : 4; //Lead interessado
             //agora precisamos gerar um valor padrão
-            if($d['ac']=='cad'){
+            $cursos_c = new CursosController;
+            $mc = new MatriculasController;
+            if($d['ac']=='cad' && isset($d['id_curso'])){
                 $d['valor'] = isset($d['valor']) ? $d['valor'] : 10; //Lead interessado
+                $d['acao'] = $d['ac'];
+                $d['html_exibe'] = false;
+                $turmas = $cursos_c->selectTurma($d);
+                $d['id_turma'] = isset($turmas['arr_id_turma'][0]) ? $turmas['arr_id_turma'][0] : 0;
+                $arr_tabelas = $this->select_tabela_preco($d['id_curso'],$d['id_turma']);
+                $tipo_curso = $cursos_c->tipo($d['id_curso']);
+                if($tipo_curso==2 && $arr_tabelas){
+                    //array de orçamento
+                    $d['orc'] = '';
+                    $sele_valores = isset($arr_tabelas['dados'][0]['nome']) ? $arr_tabelas['dados'][0]['nome'] : '';
+                    if($arr_tabelas){
+                        $orc = [
+                            'sele_valores'=>$sele_valores,
+                            'sele_pag_combustivel'=>'por_voo',
+                        ];
+                        $d['orc'] = Qlib::lib_array_json($orc);
+                    }
+                    $d['id_turma'] = isset($turmas['arr_id_turma'][0]) ? $turmas['arr_id_turma'][0] : 0;
+                    // dd($d);
+                    // dd($arr_tabelas);
+                }
             }
-            $ret = (new MatriculasController)->salvarMatricula($d);
+            $ret = $mc->salvarMatricula($d);
         }
         return $ret;
         // dd($d);
+    }
+    /**
+     * Gera um array contendo uma lista de todas as tabelas disponiveis para a turma e o curso selecionado
+     */
+    public function select_tabela_preco($id_curso,$id_turma=0){
+        $token_curso = Qlib::buscaValorDb0('cursos','id',$id_curso,'token');
+		if($id_turma){
+            $token_turma = Qlib::buscaValorDb0('turmas','id',$id_turma,'token');
+            $sql = "SELECT * FROM tabela_nomes WHERE ativo = 's' AND libera = 's' AND ".Qlib::compleDelete()." AND (cursos LIKE '%".$token_curso."%') AND (turmas LIKE '%".$token_turma."%') ORDER BY nome ASC";
+			$arr_tabelas = Qlib::sql_array($sql,'nome','url','','','',false);
+            $dados = Qlib::buscaValoresDb($sql);
+            // dd($arr_tabelas,$id_turma);
+		}else{
+            $sql = "SELECT * FROM tabela_nomes WHERE ativo = 's' AND libera = 's' AND ".Qlib::compleDelete()." AND (cursos LIKE '%".$token_curso."%' OR cursos='') ORDER BY nome ASC";
+            $arr_tabelas = Qlib::sql_array($sql,'nome','url');
+        }
+        $dados = Qlib::buscaValoresDb($sql);
+        $ret['dados'] = $dados;
+        $ret['arr_tabelas'] = $arr_tabelas;
+        return $ret;
     }
     /**
      * Display a listing of the resource.

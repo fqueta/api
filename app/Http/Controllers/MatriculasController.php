@@ -3184,7 +3184,7 @@ class MatriculasController extends Controller
 							}
 						}
 					}else{
-						$cond_valid = "WHERE id_matricula='".$dm['id']."' AND situacao='g' AND ".compleDelete();
+						$cond_valid = "WHERE id_matricula='".$dm['id']."' AND situacao='g' AND ".Qlib::compleDelete();
 						//verifica se ja tem registro duplicado de ganhos..
 						$ganhos_salvos = Qlib::dados_tab($tab,['campos'=>'*','where'=>$cond_valid]);
 						if($ganhos_salvos){
@@ -3257,7 +3257,7 @@ class MatriculasController extends Controller
 	 */
 	public function sinc_ganhos(){
 		global $tab12;
-		$ganhos = Qlib::dados_tab($tab12,['campos'=>'*','where'=>"WHERE situacao='g' AND ".compleDelete()]);
+		$ganhos = Qlib::dados_tab($tab12,['campos'=>'*','where'=>"WHERE situacao='g' AND ".Qlib::compleDelete()]);
 		$ret['exec'] = false;
 		$ret['d'] = false;
 		if($ganhos){
