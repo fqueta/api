@@ -64,7 +64,7 @@ class OrcamentoController extends Controller
             }
             if(isset($ret['exec']) && isset($ret['idCad']) && ($id_matricula = $ret['idCad'])){
                 $id_matricula = base64_encode($id_matricula);
-                $link = Qlib::$RAIZ.'/admin/cursos?sec=aW50ZXJlc3NhZG9z&list=false&regi_pg=100&pag=0&acao=alt&id='.$id_matricula.'&redirect_base=aHR0cHM6Ly9jcm0uYWVyb2NsdWJlamYuY29tLmJyL2FkbWluL2N1cnNvcz9zZWM9YVc1MFpYSmxjM05oWkc5eg==';
+                $link = Qlib::raiz().'/admin/cursos?sec=aW50ZXJlc3NhZG9z&list=false&regi_pg=100&pag=0&acao=alt&id='.$id_matricula.'&redirect_base=aHR0cHM6Ly9jcm0uYWVyb2NsdWJlamYuY29tLmJyL2FkbWluL2N1cnNvcz9zZWM9YVc1MFpYSmxjM05oWkc5eg==';
                 $ret['link_proposta_admin'] = $link;
             }
             if(isset($ret['exec']) && isset($ret['dados']['token']) && ($token_matricula = $ret['dados']['token'])){

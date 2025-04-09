@@ -32,7 +32,13 @@ class Qlib
         $tab12 = 'matriculas';
         $tab50 = 'tabela_nomes';
         $tab55 = 'parcelamento';
-        self::$RAIZ = self::qoption('dominio').'/admin';
+        self::$RAIZ = Qlib::qoption('dominio').'/admin';
+    }
+    static function dominio_site(){
+        return Qlib::qoption('dominio');
+    }
+    static function raiz(){
+        return Qlib::qoption('dominio').'/admin';
     }
     static public function lib_print($data){
       if(is_array($data) || is_object($data)){

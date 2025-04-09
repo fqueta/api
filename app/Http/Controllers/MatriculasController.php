@@ -2904,7 +2904,7 @@ class MatriculasController extends Controller
                 return $ret;
             }
             $arr_status_mat = Qlib::sql_array("SELECT * FROM status_matricula ORDER BY nome ASC",'nome','id');
-            $link = Qlib::$RAIZ.'/cursos?sec=bWF0cmljdWxhcw==&list=false&acao=alt&id='.base64_encode($d['id']);
+            $link = Qlib::raiz().'/cursos?sec=bWF0cmljdWxhcw==&list=false&acao=alt&id='.base64_encode($d['id']);
             $mensagem = Qlib::formatMensagemInfo('Não é possível salvar, foi encontrado uma proposta no status <b>'.$arr_status_mat[$d['status']].'</b> ele precisa concluir para poder prosseguir.. <br> Por favor verifique se o status está correto antes de fazer uma nova venda ou gerar orçamento para este cliente<br><a href="'.$link.'" target="_BLANK" class="btn btn-default">Acessar agora</a>','danger');
             $ret['exec'] = true;
             $ret['mens'] = $mensagem;
@@ -3493,7 +3493,7 @@ class MatriculasController extends Controller
                         }
                     }
                     if($mens){
-                        $url = Qlib::$RAIZ.'/cursos/iframe?sec=Y2FkX2NsaWVudGVz&acao=alt&id='.base64_encode($id_aluno).'&list=false&listSelect=true&local=matricula';
+                        $url = Qlib::raiz().'/cursos/iframe?sec=Y2FkX2NsaWVudGVz&acao=alt&id='.base64_encode($id_aluno).'&list=false&listSelect=true&local=matricula';
                         if(Qlib::isAdmin(7)){
                             $mens .= '<button class="btn btn-default" type="button" onclick="abrirjanelaPadrao(\''.$url.'\')" title="Editar cliente"><i class="fa fa-pencil"></i> Editar cliente</button>';
                             $ret['mens'] = Qlib::formatMensagem0('<b>Erro ao executar ação</b> '.$mens,'danger',100000);
@@ -4010,7 +4010,7 @@ class MatriculasController extends Controller
                                         $id_curso = isset($dadosCurso[0]['id']) ? $dadosCurso[0]['id'] : false;
                                         $curso = isset($dadosCurso[0]['nome']) ? $dadosCurso[0]['nome'] : false;
                                         if($id_curso && $curso){
-                                            $link = Qlib::$RAIZ.'/cursos/?sec=dG9kb3MtY3Vyc29z&list=false&acao=alt&id='.base64_encode($id_curso).'&etp=ZXRwNw==&redirect_base='. base64_encode(Qlib::UrlAtual());
+                                            $link = Qlib::raiz().'/cursos/?sec=dG9kb3MtY3Vyc29z&list=false&acao=alt&id='.base64_encode($id_curso).'&etp=ZXRwNw==&redirect_base='. base64_encode(Qlib::UrlAtual());
                                             $btn_cad = '<a href="'.$link.'"  class="btn btn-default">Cadastrar contrato</a>';
                                         }else{
                                             $btn_cad = '';
