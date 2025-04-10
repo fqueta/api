@@ -582,8 +582,17 @@ class MatriculasController extends Controller
 								foreach($dados['modulos'] AS $kei=>$valo){
 									$valo['id_curso'] = @$dados['id_curso'];
 									$tota = $this->calcPrecModulos($valo,$dados['sele_valores'],$arr_modu);
-									$total = @$tota['padrao']; //usa so valor da hora padrão
-									$total_com_desconto = @$tota['valor']; //usa o valor das horas das respectiva tabelas
+                                    $total = 0;
+									if(is_array($tota)){
+
+                                        $total = @$tota['padrao']; //usa so valor da hora padrão
+                                        $total_com_desconto = @$tota['valor']; //usa o valor das horas das respectiva tabelas
+                                        $salvaTotais[$kei] = @$tota['valor'];
+                                        if(isset($tota['custo'])){
+                                            $custo = @$tota['custo'];
+                                            $ret['custo'] += $custo;
+                                        }
+                                    }
 									if(Qlib::isAdmin(10)){
 									}else {
 										if($arrTotais && is_array($arrTotais)){
@@ -595,11 +604,7 @@ class MatriculasController extends Controller
 									}
 									$ret['total'] += (double)$total;
 									$ret['total_com_desconto'] += (double)$total_com_desconto;
-									$salvaTotais[$kei] = @$tota['valor'];
-									if(isset($tota['custo'])){
-										$custo = @$tota['custo'];
-										$ret['custo'] += $custo;
-									}
+
 									$valo['horas'] = isset($valo['horas'])?$valo['horas']:0;
 									$valo['horas'] = (int)$valo['horas'];
 									$totalHoras += @$valo['horas'];
