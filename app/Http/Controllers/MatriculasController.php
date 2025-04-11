@@ -5101,7 +5101,6 @@ class MatriculasController extends Controller
 				// dd($ret);
 		    }
             $mens = $this->valida_campos_obrigatorios($config);
-            dd($mens);
             if($mens){
                 $ret = ['exec'=>false,'mens'=>$mens];
                 return $ret;
