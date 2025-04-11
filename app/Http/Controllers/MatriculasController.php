@@ -5045,6 +5045,8 @@ class MatriculasController extends Controller
 					return $ret;
 				}
 
+
+
 				$cond_valid = "WHERE token = '".$config['token']."'";
 				$type_alt = 2;
 				// $config['conf'] = 's';//confirmação para salvar
@@ -5098,10 +5100,53 @@ class MatriculasController extends Controller
 				}
 				// dd($ret);
 		    }
-		}
+            $mens = $this->valida_campos_obrigatorios($config);
+            dd($mens);
+            if($mens){
+                $ret = ['exec'=>false,'mens'=>$mens];
+                return $ret;
+            }
+		}else{
+            $ret['valida']['mens'] = 'Informe o CPF';
+			$ret['valida']['cpf'] = 'error';
+			return $ret;
+        }
 		// dd($ret);
 		return $ret;
 	}
+    /**
+	 * Metodo para validar os campos obrigatorios
+	 */
+	public function valida_campos_obrigatorios($config=[]){
+        $arr_campos = [
+            "Nome" => "Informe o nome completo",
+            // "pais" => "Brasil",
+            "DtNasc2" => "Informe a data de nascimento",
+            "Cpf" => "Informe o CPF",
+            // "canac" => "",
+            "Ident" => "Informe a identidade",
+            "Cep" => "Informe o CEP",
+            "Endereco" => "Informe o Endereço",
+            "Numero" => "Informe o Número do seu endereço",
+            "Bairro" => "Informe o bairro",
+            "Cidade" => "Informe a cidade",
+            "Uf" => "Informe o Estado",
+            "nacionalidade" => "Informe a Nacionalidade",
+            "profissao" => "Informe a profissão",
+            "sexo" => "Informe o sexo",
+        ];
+        $ret = false;
+        foreach ($arr_campos as $kc => $vc) {
+			if(isset($config[$kc]) || is_null($config[$kc])){
+                if(empty($config[$kc])){
+	              $ret = $vc;
+                    break;
+                    return $ret;
+                }
+            }
+        }
+        return $ret;
+    }
     /**
 	 * Salvar um array de meta campos provedientes de um formulario
 	 * @param array $config
