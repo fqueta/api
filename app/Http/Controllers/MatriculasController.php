@@ -5044,7 +5044,13 @@ class MatriculasController extends Controller
 					$ret['valida']['nome'] = 'error';
 					return $ret;
 				}
-
+                $mens = $this->valida_campos_obrigatorios($config);
+                if($mens){
+                    // $ret = ['exec'=>false,'mens'=>$mens];
+                    $ret['valida']['mens'] = $mens;
+                    $ret['valida']['exec'] = false;
+                    return $ret;
+                }
 
 
 				$cond_valid = "WHERE token = '".$config['token']."'";
@@ -5100,13 +5106,7 @@ class MatriculasController extends Controller
 				}
 				// dd($ret);
 		    }
-            $mens = $this->valida_campos_obrigatorios($config);
-            if($mens){
-                // $ret = ['exec'=>false,'mens'=>$mens];
-                $ret['valida']['mens'] = $mens;
-			    $ret['valida']['exec'] = false;
-                return $ret;
-            }
+
 		}else{
             $ret['valida']['mens'] = 'Informe o CPF';
 			$ret['valida']['cpf'] = 'error';
@@ -5138,9 +5138,10 @@ class MatriculasController extends Controller
         ];
         $ret = false;
         foreach ($arr_campos as $kc => $vc) {
-			if(isset($config[$kc]) || is_null($config[$kc])){
+            if(isset($config[$kc]) || is_null($config[$kc])){
                 if(empty($config[$kc])){
-	              $ret = $vc;
+                    $ret = $vc;
+                    // dump($config[$kc],$vc);
                     break;
                     return $ret;
                 }
