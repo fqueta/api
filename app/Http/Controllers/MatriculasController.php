@@ -3616,6 +3616,7 @@ class MatriculasController extends Controller
         $clausula_tipo_pagamento = false;
         $tipo_contrato_combustivel = false;
         $data_contrato_aceito = '';
+        $data_contrato = date('d/m/Y (H:m:i)');
         unset($dm['data_contrato']);
         if(is_array($dm) && $texto_contrato){
             $contrato_firmado_curso = false; //Contrato firmado sob Piloto privado
@@ -3682,6 +3683,10 @@ class MatriculasController extends Controller
 
                     }
                 }
+                $data_contrato = isset($arr_contratoAss['data_aceito_contrato']) ? $arr_contratoAss['data_aceito_contrato'] : false;
+                if($data_contrato){
+                    $data_contrato = Qlib::dataExibe(@$arr_contratoAss['data_aceito_contrato']);
+                }
             }
             $id_contatada = Qlib::qoption('id_contatada') ? Qlib::qoption('id_contatada') : 14;
             $id_testemunha1 = Qlib::qoption('id_testemunha1') ? Qlib::qoption('id_testemunha1') : 137;
@@ -3722,7 +3727,7 @@ class MatriculasController extends Controller
             if($valor_combustivel){
                 $valor_combustivel = Qlib::valor_moeda($valor_combustivel);
             }
-            $data_contrato = $data_contrato_aceito ? $data_contrato_aceito : date('d/m/Y (H:m:i)');
+
             $ret = str_replace('{data_contrato}',$data_contrato,$ret);
             $ret = str_replace('{data_contrato_aceito}',$data_contrato,$ret);
             $ret = str_replace('{valor_combustivel}',$valor_combustivel,$ret);
