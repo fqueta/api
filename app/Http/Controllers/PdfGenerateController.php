@@ -203,7 +203,7 @@ class PdfGenerateController extends Controller
         $headerHtml = View::make('pdf.header')->render();
         $footerHtml = View::make('pdf.footer')->render();
         if(isset($_GET['tes'])){
-            return $headerHtml.$html;
+            return $headerHtml.$html.$footerHtml;
         }
         $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
