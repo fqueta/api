@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 
 class PdfGenerateController extends Controller
 {
@@ -199,10 +200,29 @@ class PdfGenerateController extends Controller
         // $nome_aquivo_savo='arquivo',$titulo='Arquivo'
         $ret['exec'] = '';
         $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>trim($html)])->render();
+        $headerHtml = View::make('pdf.header')->render();
+        $footerHtml = View::make('pdf.footer')->render();
         $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
-                ->setOption('margin-top', '10mm')
-                ->setOption('margin-bottom', '10mm');
+                // ->setOption('margin-top', 0)
+                // ->setOption('margin-bottom', 0)
+                // ->setOption('margin-left', 0)
+                // ->setOption('margin-right', 0)
+                // ->setOption('margin-top', 10)
+                // ->setOption('margin-bottom', 10)
+                ->setOption('header-html', $headerHtml)
+                ->setOption('margin-top', 23)
+                ->setOption('margin-bottom', 15)
+                ->setOption('margin-left', 0)
+                ->setOption('margin-right', 0)
+                ->setOption('disable-smart-shrinking', true)
+                // ->setOption('footer-right', 'Página [page] de [topage]');
+                ->setOption('footer-spacing', '0')
+                ->setOption('replace', [
+                    '{PAGE_NUM}' => '{PAGE_NUM}',
+                    '{PAGE_COUNT}' => '{PAGE_COUNT}'
+                ])
+                ->setOption('footer-html', $footerHtml);
         if($f_exibe=='pdf'){
             return $pdf->stream($nome_aquivo_savo.'.pdf');
         }elseif($f_exibe=='server' && $token){

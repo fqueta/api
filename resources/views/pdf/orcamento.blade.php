@@ -12,7 +12,7 @@
         }
 
         #overlay {
-            background-image: url('https://crm.aeroclubejf.com.br/enviaImg/uploads/ead/5e3d812dd5612/6542b60fd4295.png');
+            background-image: url('https://crm.aeroclubejf.com.br/enviaImg/uploads/ead/67f8242bbaf7a/67f824afe2a82.png');
             position:absolute;
             top:0;
             left:0;
