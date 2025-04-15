@@ -5462,7 +5462,11 @@ class MatriculasController extends Controller
                             'f_exibe'=>'server',
                         ];
                         // echo $contrato.'<br>';
-                        $ret['grav_pdf'][$km] = (new PdfGenerateController )->convert_html($dados);
+                        if(isset($_GET['tes'])){
+                            return (new PdfGenerateController )->convert_html($dados);
+                        }else{
+                            $ret['grav_pdf'][$km] = (new PdfGenerateController )->convert_html($dados);
+                        }
                         // $salv = Qlib::update_matriculameta($dm['id'],$km,base64_encode($contrato));
                         // converter em pdf
                         // $ret['ds'][$km]=$salv;

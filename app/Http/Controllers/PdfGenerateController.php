@@ -202,6 +202,9 @@ class PdfGenerateController extends Controller
         $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>trim($html)])->render();
         $headerHtml = View::make('pdf.header')->render();
         $footerHtml = View::make('pdf.footer')->render();
+        if(isset($_GET['tes'])){
+            return $headerHtml.$html;
+        }
         $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
                 // ->setOption('margin-top', 0)
