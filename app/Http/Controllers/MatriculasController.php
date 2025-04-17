@@ -3737,9 +3737,11 @@ class MatriculasController extends Controller
             $nome_curso		= $dm['nome_curso'];
             $email 			= $dm['Email'];
             $telefone 		= $dm['telefonezap'];
+            $numero_contrato = $this->numero_contrato(@$dm['id']);
             $ret = str_replace('{data_contrato}',$data_contrato,$ret);
             $ret = str_replace('{nome_curso}',$nome_curso,$ret);
             $ret = str_replace('{data_nascimento}',$data_nascimento,$ret);
+            $ret = str_replace('{numero_contrato}',$numero_contrato,$ret);
             $ret = str_replace('{email}',$email,$ret);
             $ret = str_replace('{telefone}',$telefone,$ret);
             $ret = str_replace('{data_contrato_aceito}',$data_contrato,$ret);

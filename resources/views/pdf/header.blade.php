@@ -5,7 +5,9 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
+            /* padding: 0; */
+            padding-bottom: 7px;
+            background-color: #f1f1f1;
         }
         .header {
             margin: 0;
