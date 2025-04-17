@@ -197,6 +197,7 @@ class MatriculasController extends Controller
         'clientes.Cep As cep',
         'clientes.Compl',
         'clientes.Ident As identidade',
+        'clientes.DtNasc2 As data_nascimento',
         'clientes.estado_civil',
         'clientes.profissao',
         'cursos.tipo as tipo_curso','cursos.config','cursos.modulos as modulos_curso','cursos.parcelas as parcelas_curso','cursos.valor_parcela as valor_parcela_curso','cursos.nome as nome_curso','cursos.titulo as titulo_curso','cursos.inscricao as inscricao_curso','cursos.valor as valor_curso','cursos.token as token_curso')
@@ -3727,8 +3728,20 @@ class MatriculasController extends Controller
             if($valor_combustivel){
                 $valor_combustivel = Qlib::valor_moeda($valor_combustivel);
             }
-
+            // dd($dm);
+            if(is_null($dm['data_nascimento'])){
+                $data_nascimento 			= $dm['data_nascimento'];
+            }else{
+                $data_nascimento 			= Qlib::dataExibe($dm['data_nascimento']);
+            }
+            $nome_curso		= $dm['nome_curso'];
+            $email 			= $dm['Email'];
+            $telefone 		= $dm['telefonezap'];
             $ret = str_replace('{data_contrato}',$data_contrato,$ret);
+            $ret = str_replace('{nome_curso}',$nome_curso,$ret);
+            $ret = str_replace('{data_nascimento}',$data_nascimento,$ret);
+            $ret = str_replace('{email}',$email,$ret);
+            $ret = str_replace('{telefone}',$telefone,$ret);
             $ret = str_replace('{data_contrato_aceito}',$data_contrato,$ret);
             $ret = str_replace('{valor_combustivel}',$valor_combustivel,$ret);
             $ret = str_replace('{assinatura}',$assinatura,$ret);
