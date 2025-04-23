@@ -7,6 +7,7 @@ use App\Http\Controllers\CursosController;
 use App\Http\Controllers\MatriculasController;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrcamentoController extends Controller
 {
@@ -168,5 +169,25 @@ class OrcamentoController extends Controller
         //indentificar o curso
         //selecionar a primeira turma disponivel
         //
+    }
+    /**
+     * Webhook para interagir com o CRM
+     */
+    public function webhook($d=[]){
+        $d['token_externo'] = isset($d['token_externo']) ? $d['token_externo'] : '';
+        $id = isset($d['id']) ? $d['id'] : '';
+        $ret['exec'] = false;
+        $ret['status'] = 500;
+        $ret['message'] = 'Error updating';
+        $tab = 'matriculas';
+        if($d){
+            $ret['exec'] = DB::table($tab)->where('id',$id)->update($d);
+            if($ret['exec']){
+                $ret['status'] = 200;
+                $ret['message'] = 'updated successfully';
+                $ret['data'] = DB::table($tab)->find($id);
+            }
+        }
+        return response()->json($ret);
     }
 }

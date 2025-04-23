@@ -29,6 +29,8 @@ class WebhookController extends Controller
             $ret = (new ZapguruController)->webhook($request->all());
         }elseif($seg3=='zapsing'){
             $ret = (new ApiZapsingController)->webhook($request->all());
+        }elseif($seg3=='crm'){
+            $ret = (new OrcamentoController)->webhook($request->all());
         }
         return $ret;
         // Route::prefix('webhook')->group(function(){
