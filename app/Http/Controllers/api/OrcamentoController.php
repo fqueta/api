@@ -183,7 +183,7 @@ class OrcamentoController extends Controller
         if($d){
             $ret['exec'] = DB::table($tab)->where('id',$id)->update($d);
             if($ret['exec']){
-                if(!empty($d['token_externo']) && ($id_contrato=$d['token_externo'])){
+                if($id_contrato=$d['token_externo']){
                     $ret['meta'] = Qlib::update_matriculameta($id,'id_contrato_leilao',$id_contrato);
                 }
                 //salvar um meta_campo
