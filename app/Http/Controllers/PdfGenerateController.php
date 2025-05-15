@@ -207,19 +207,12 @@ class PdfGenerateController extends Controller
         }
         $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
-                // ->setOption('margin-top', 0)
-                // ->setOption('margin-bottom', 0)
-                // ->setOption('margin-left', 0)
-                // ->setOption('margin-right', 0)
-                // ->setOption('margin-top', 10)
-                // ->setOption('margin-bottom', 10)
                 ->setOption('header-html', $headerHtml)
                 ->setOption('margin-top', 23)
                 ->setOption('margin-bottom', 15)
                 ->setOption('margin-left', 0)
                 ->setOption('margin-right', 0)
                 ->setOption('disable-smart-shrinking', true)
-                // ->setOption('footer-right', 'Página [page] de [topage]');
                 ->setOption('footer-spacing', '0')
                 ->setOption('replace', [
                     '{PAGE_NUM}' => '{PAGE_NUM}',

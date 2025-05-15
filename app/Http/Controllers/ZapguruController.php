@@ -106,8 +106,6 @@ class ZapguruController extends Controller
 		$ret = false;
 		$json = file_get_contents('php://input');
 
-		//$json = '{"campanha_id": "", "campanha_nome": "", "origem": "disparo_crm", "email": "553291648202@c.us", "nome": "Fernando Queta", "tags": ["Regi\u00e3o Sudeste"], "texto_mensagem": "", "campos_personalizados": {}, "bot_context": {}, "responsavel_nome": "Marcony", "responsavel_email": "marcony@aeroclubejf.com.br", "link_chat": "https://s4.chatguru.app/chats#5fbbc17d99409b35ace1b884", "celular": "553291648202", "phone_id": "5fb9305b5e3b368d9f99020c", "chat_id": "5fbbc17d99409b35ace1b884", "chat_created": "2020-11-23 14:04:45.593000", "datetime_post": "2021-03-20 14:20:52.352941"}';
-        //https://api.aeroclubejf.com.br/api/webhook/zapguru
 
 		$arr_json = Qlib::lib_json_array($json);
         $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
@@ -115,10 +113,7 @@ class ZapguruController extends Controller
         $nome = $this->get_nome($arr_json);
         $email = $this->get_email($arr_json);
         $id_cliente = $this->get_client_id($arr_json);
-        // $save = Qlib::saveEditJson($arr_json,'webhook_zapguru.json');
         Log::info('Webhook zapguru '.$event.':', $arr_json);
-        // dd($arr_json);
-        // return $arr_json;
         $ret['exec'] = false;
         if(isset($arr_json['origem'])){
 

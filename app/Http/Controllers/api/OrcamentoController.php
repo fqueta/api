@@ -156,6 +156,9 @@ class OrcamentoController extends Controller
     {
         //
     }
+    /**
+     * Para diparar a assinatura de uma proposta mediante o token da matricula
+     */
     public function assinar_proposta(string $token){
         $d = request()->all();
         if(!isset($d['token_matricula'])){

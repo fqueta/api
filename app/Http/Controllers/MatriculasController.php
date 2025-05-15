@@ -5426,8 +5426,29 @@ class MatriculasController extends Controller
         if($tm && !$dm){
             $dm = $this->dm($tm);
         }
-        $dtermo = Qlib::dados_tab('conteudo_site',['where'=>"WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." ORDER BY ordenar ASC"]);
-        return $dtermo;
+        $tipo_curso = isset($dm['tipo_curso']) ? $dm['tipo_curso'] : null;
+
+        if($tipo_curso==4){
+            //plano de formação
+            $modulos = isset($dm['orc']['modulos']) ? $dm['orc']['modulos'] : false;
+            if(is_array($modulos)){
+                //o numero do periodo é igula ao numero de modulos gravados na proposta
+                $arr_periodo = end($modulos);
+                $tit_periodo = isset($arr_periodo['titulo']) ? $arr_periodo['titulo'] : '';
+                if($tit_periodo){
+                    $tit_periodo = trim($tit_periodo);
+                    $periodo = isset($tit_periodo[0]) ? $tit_periodo[0] : '';
+                    $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
+                }
+            }
+            $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND (short_code='$short_code_periodo' OR short_code='contrato1') ORDER BY ordenar ASC";
+        }else{
+            $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." ORDER BY ordenar ASC";
+        }
+        $dtermo = Qlib::dados_tab('conteudo_site',['where'=>$where]);
+        $ret = $dtermo;
+        // dd($ret);
+        return $ret;
     }
     /**
 	 * Metodo para gravar os contratos estaticos na assinatura inicial da proposta
@@ -5447,7 +5468,7 @@ class MatriculasController extends Controller
             return $ret;
         }
         if($type==1){
-            $lista_contratos = $this->lista_contratos($id_curso);
+            $lista_contratos = $this->lista_contratos($id_curso,$token_matricula,$dm);
         }else{
             $lista_contratos = false;
         }
