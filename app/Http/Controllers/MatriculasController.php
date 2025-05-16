@@ -787,7 +787,7 @@ class MatriculasController extends Controller
 									<tr id="matri">
 										<!--<th style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></th>-->
 										<th style="width:85%">'.$labelSub.'</th>
-										<th style="width:'.$arr_wid2[3].'"><div align="right">'.number_format($subtotal2,'2',',','.').'</div></th>
+										<td style="width:'.$arr_wid2[3].'"><div align="right">'.number_format($subtotal2,'2',',','.').'</div></td>
 									</tr>';
 								}
 								$taxasHtml = false;
@@ -909,8 +909,7 @@ class MatriculasController extends Controller
 
 								$tr3 .= '
 									<tr id="matri" class="total">
-										<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-										<td style="width:85%"><div align="right"> <strong style="color:#F00;">'.$laber_taxas.'</strong></div></td>
+										<td style="width:85%"><div align="left"> <strong style="color:#F00;">'.$laber_taxas.'</strong></div></td>
 										<td style="width:'.$arr_wid2[3].'"><div align="right" style="color:#F00;"> <b>'.number_format($taxasValorMatri,'2',',','.').'</b></div></td>
 									</tr>';
                                     if($valor_desconto_taxa>0){
@@ -918,14 +917,13 @@ class MatriculasController extends Controller
                                         $val_t = $val_t-$valor_desconto_taxa;
                                         $tr3 .= '
                                             <tr class="">
-                                                <td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-                                                <td style="width:85%"><div align="right"> <strong style="">'.$title_desconto_taxa1.'</strong></div></td>
+                                                <td style="width:85%"><div align="left"> <strong style="">'.$title_desconto_taxa1.'</strong></div></td>
                                                 <td style="width:'.$arr_wid2[3].'"><div align="right" style=""> <b>'.number_format($val_t,'2',',','.').'</b></div></td>
                                             </tr>';
                                         $tr3 .= '
                                             <tr class="vermelho">
-                                                <td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-                                                <td style="width:85%"><div align="right"> <strong style="">'.$title_desconto_taxa2.'</strong></div></td>
+                                                <!--<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>-->
+                                                <td style="width:85%"><div align="left"> <strong style="">'.$title_desconto_taxa2.'</strong></div></td>
                                                 <td style="width:'.$arr_wid2[3].'"><div align="right" style=""> <b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
                                             </tr>';
 
@@ -945,21 +943,21 @@ class MatriculasController extends Controller
 									$laber_taxas = 'Total de taxas (A vista)';
 								}
 								$tr3_adm .='<tr class="vermelho">
-												<td colspan="2" style="width:100%"><div align="right"><strong>'.$laber_taxas.':</strong></div></td>
+												<td colspan="2" style="width:100%"><div align="left"><strong>'.$laber_taxas.':</strong></div></td>
 												<td colspan="" style="width:100%"><div align="right"><b>'.number_format($taxasValorMatri,'2',',','.').'</b></div></td>
 											</tr>';
                                 if($valor_desconto_taxa>0){
                                     $tr3_adm .='<tr class="vermelho">
-                                        <td colspan="2" style="width:100%"><div align="right"><strong>'.$title_desconto_taxa1.':</strong></div></td>
+                                        <td colspan="2" style="width:100%"><div align="left"><strong>'.$title_desconto_taxa1.':</strong></div></td>
                                         <td colspan="" style="width:100%"><div align="right"><b>'.number_format($val_t,'2',',','.').'</b></div></td>
                                     </tr>';
                                     $tr3_adm .='<tr class="vermelho">
-                                        <td colspan="2" style="width:100%"><div align="right"><strong>'.$title_desconto_taxa2.':</strong></div></td>
+                                        <td colspan="2" style="width:100%"><div align="left"><strong>'.$title_desconto_taxa2.':</strong></div></td>
                                         <td colspan="" style="width:100%"><div align="right"><b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
                                     </tr>';
                                 }
 								$tr3_adm .='<tr id="">
-												<td colspan="2" style="width:100%"><div align="right"><strong>'.$lbCurm.'</strong></div></td>
+												<td colspan="2" style="width:100%"><div align="left"><strong>'.$lbCurm.'</strong></div></td>
 												<td colspan="" style="width:100%"><div align="right"><b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
 											</tr>';
 								$ret['total_taxas'] = @$taxasValorMatri;
@@ -975,34 +973,33 @@ class MatriculasController extends Controller
 								$somar_cobustivel_orcamento = Qlib::qoption('somar_cobustivel_orcamento')?Qlib::qoption('somar_cobustivel_orcamento'):'s';
 
 								if($somar_cobustivel_orcamento=='s'){
-									$somar_cobustivel_total = Qlib::qoption('somar_cobustivel_total')?Qlib::qoption('somar_cobustivel_total'):'n';
-									if(isset($dadosOrc['sele_pag_combustivel'])&&$dadosOrc['sele_pag_combustivel']=='antecipado'){
-										$somar_cobustivel_total = 's';
+                                    $pagamento_combustivel = 'n';
+									// $somar_cobustivel_total = Qlib::qoption('somar_cobustivel_total')?Qlib::qoption('somar_cobustivel_total'):'n';
+                                   if(isset($dadosOrc['sele_pag_combustivel'])&&$dadosOrc['sele_pag_combustivel']=='antecipado'){
+										$pagamento_combustivel = 's';
+
 									}
-									if($somar_cobustivel_total=='s') {
-										$totalOrcamento = $totalOrcamento + $sc['valor'];
+                                    if($pagamento_combustivel=='s') {
+                                        //combustivel antecipado
+                                        $lbCurm = 'Etapa 3';
+                                        $totalOrcamento = $totalOrcamento + $sc['valor'];
+                                        $tr3 .= '
+										<tr id="matri" class="total">
+											<td style="width:85%"><div align="left"> <b>'.$lbCurm.'</b></div></td>
+											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.$dados['combustivel'].'</b></div></td>
+										</tr>';
+										$tr3_adm .='
+											<tr id="">
+												<td colspan="" style="width:100%"><div align="left"><b>'.$dados['combustivel'].'</b><input type="hidden" value="'.Qlib::precoDbdase($sc['valor']).'" name="combustivel" /></div></td>
+											</tr>';
+                                        // $totalOrcamento = $subtotal2 + $valor_combustivel;
 									}
 									// $lbCurm = 'Gasto estimado de combustível:';
-									$lbCurm = 'Etapa 3';
 									if($sc['valor_litro']){
 										//$lbCurm .= ' <small style="font-weight:500">Litro - R$ '.$sc['valor_litro'].'</small> Total:';
 										$label_sele_valores .= '<br>* '.$sc['valor_litro'].' Preço por litro ';
 										// if(Qlib::isAdmin(1));
 										// dd($label_sele_valores);
-									}
-                                    if($somar_cobustivel_total == 's'){
-										// $tr3 .= '
-										// <tr id="matri" class="total">
-										// 	<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-										// 	<td style="width:85%"><div align="right"> <b>'.$lbCurm.'</b></div></td>
-										// 	<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.$dados['combustivel'].'</b></div></td>
-										// </tr>';
-										$tr3_adm .='
-											<tr id="">
-												<td colspan="2" style="width:100%"><div align="right"><strong>'.$lbCurm.'</strong></div></td>
-												<td colspan="" style="width:100%"><div align="right"><b>'.$dados['combustivel'].'</b><input type="hidden" value="'.Qlib::precoDbdase($sc['valor']).'" name="combustivel" /></div></td>
-											</tr>';
-                                        $totalOrcamento = $subtotal2 + $valor_combustivel;
 									}
 								}
                                 if(@$dados['combustivel']){
@@ -1056,12 +1053,11 @@ class MatriculasController extends Controller
 							//<!--<a href="'.$linkComprar.'" target="_BLANK" style="padding:5px;">Comprar</a>-->
 							$tr3 .= '
 								<tr id="matri" class="total verde">
-									<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-									<td style="width:85%"><div align="right"> <strong class="color-price1">TOTAL DA PROPOSTA A VISTA:</strong></div></td>
+									<td style="width:85%"><div align="left"> <strong class="color-price1">TOTAL DA PROPOSTA A VISTA:</strong></div></td>
 									<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.number_format($totalOrcamento,'2',',','.').'</b></div></td>
 								</tr>
 							';
-							$tr3_adm .= '<td colspan="2" width="85%"><div align="center"><strong class="verde">TOTAL DA PROPOSTA A VISTA:</strong></div></td><td><div align="right"> <span class="verde"><b>'.number_format($totalOrcamento,'2',',','.').'</b></span></div></td>';
+							$tr3_adm .= '<td colspan="1" width="85%"><div align="center"><strong class="verde">TOTAL DA PROPOSTA A VISTA:</strong></div></td><td><div align="right"> <span class="verde"><b>'.number_format($totalOrcamento,'2',',','.').'</b></span></div></td>';
 
 							$ret['totalOrcamento'] = $totalOrcamento;
 							$incluir_taxas_parcelamento = Qlib::qoption('incluir_taxas_parcelamento')?Qlib::qoption('incluir_taxas_parcelamento'):'n';
