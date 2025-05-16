@@ -39,27 +39,14 @@ class PdfGenerateController extends Controller
 				$validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
                 $validade = Qlib::dataExibe($validade);
                 $res_orc = (new MatriculasController)->gerar_orcamento($token,'s');
-                // dd($res_orc);
-                // $dadosCli = '<p align="center" style="font-size:15pt;">
-
-				// 				<b>Cliente:</b> '.$d['Nome'].' '.$d['sobrenome'].'
-				// 				<br>
-				// 				<b>Telefone:</b> '.$d['telefonezap'].'  '.$d['Tel'].' <br>
-				// 				<b>Email:</b> '.$d['Email'].'  <br>
-				// 				<b>Data:</b> '.Qlib::dataExibe($d['atualizado']).' <b>Validade:</b> '.$validade.'<br>
-				// 			</p>';
                 $dadosCli = isset($res_orc['dadosCli']) ? $res_orc['dadosCli'] : '';
                 $orcamento = isset($res_orc['table']) ? $res_orc['table'] : '';
                 $parcelamento = isset($res_orc['parcelamento']) ? $res_orc['parcelamento'] : '';
-                // if(!$orcamento){
-                //     $orcamento = isset($res_orc['table2']) ? $res_orc['table2'] : '';
-                // }
                 if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
                     $orcamento .= $res_orc['listMod']['html'];
                 }
 
                 if($type=='pdf'){
-                    // dump($type,$fundo,$d);
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
                         foreach ($fundo as $k => $v) {
@@ -179,9 +166,19 @@ class PdfGenerateController extends Controller
             //grava statico no servidor
             $pdfbin = $pdf->output();
             Storage::put($fileName, $pdfbin);
-
-        // Retornar uma mensagem ou caminho do arquivo salvo
-            return response()->json(['message' => 'PDF salvo com sucesso!', 'path' => $fileName]);
+            $id_matricula = Qlib::get_matricula_id_by_token($token);
+            if (Storage::exists($fileName) && $id_matricula) {
+                $url = Storage::url($fileName);$short_code = 'proposta';
+                $ret['salvo'] = Qlib::update_matriculameta($id_matricula,$short_code.'_pdf',$url);
+                $ret['url'] = $url;
+                if($ret['salvo']){
+                    $ret['exec'] = true;
+                }
+                return $ret;
+            }else{
+                // Retornar uma mensagem ou caminho do arquivo salvo
+                return response()->json(['exec'=>true,'message' => 'PDF salvo com sucesso!', 'path' => $fileName]);
+            }
         }else{
             //grava statico no navegador
             return $pdf->inline($nome_arquivo.'.pdf');

@@ -332,6 +332,7 @@ class MatriculasController extends Controller
 			$is_signed = $this->verificaDataAssinatura(['campo_bus'=>'token','token'=>$tokenOrc]);
 			$arr_tabelas = Qlib::sql_array("SELECT * FROM $tab50 WHERE ativo = 's' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','url');
 			$dados = $this->dm($tokenOrc);
+            $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
 
 			$dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
             if($dados){
@@ -448,29 +449,29 @@ class MatriculasController extends Controller
 								$ret['table_adm'] = $ret['table'];
 								$ret['totalCurso'] = NULL;
 								$ret['vencido'] = true;
-								//if(Qlib::isAdmin(2)){
-								//}else{
+								if(Qlib::isAdmin(2)){
+								}else{
 									return $ret;
-								//}
+								}
 							}
 							$tema = '
 							<p class="apresentacao" style="">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
-								Temos o prazer em lhe apresentar nossa proposta comercial<br>Curso: <strong>'.$dados['titulo_curso'].'</strong></p>
+								Temos o prazer em lhe apresentar nossa proposta comercial<br><strong>'.$dados['titulo_curso'].'</strong></p>
 							<table id="table1" class="table"  cellspacing="0" >
 
 												<thead >
 
 													<tr>
 
-														<th style="width:'.$arr_wid[0].'"><div align="center">ITEM</div></th>
+														<th style="width:'.$arr_wid[0].'"><div align="center">Etapa 2</div></th>
 
-														<th style="width:'.$arr_wid[1].'"><div align="center">CRONOGRAMA</div></th>
+														<th style="width:'.$arr_wid[1].'"><div align="center">Conteúdo</div></th>
 
-														<th style="width:'.$arr_wid[2].'"><div align="center">AERONAVE</div></th>
+														<th style="width:'.$arr_wid[2].'"><div align="center">Aeronave</div></th>
 
-														<th style="width:'.$arr_wid[3].'"><div align="center">HORAS</div></th>
+														<th style="width:'.$arr_wid[3].'"><div align="center">Créditos</div></th>
 
-														<th style="width:'.$arr_wid[4].'"><div align="right">VALOR</div></th>
+														<th style="width:'.$arr_wid[4].'"><div align="right">Valor</div></th>
 
 													</tr>
 
@@ -485,13 +486,13 @@ class MatriculasController extends Controller
 												</tfoot>
 
 							</table>
-							<br><br>
+							{combustivelHtml}
 							<table id="table2" class="table" cellspacing="0" style="">
 								<thead >
 									<tr>
-										<th style="width:'.$arr_wid2[0].'"><div align="center">ITEM</div></th>
-										<th style="width:85%"><div align="center">DESCRIÇÃO</div></th>
-										<th style="width:'.$arr_wid2[3].'"><div align="right">TOTAL</div></th>
+										<th style="width:'.$arr_wid2[0].'"><div align="center">Item</div></th>
+										<th style="width:85%"><div align="center">Descrição</div></th>
+										<th style="width:'.$arr_wid2[3].'"><div align="right">Total</div></th>
 									</tr>
 								</thead>
 								<tbody class="jss526">{{table2}}
@@ -503,6 +504,7 @@ class MatriculasController extends Controller
 									</tbody>
 							</table>
 							<p style="font-family:arial;font-size:9pt;text-align:right;display:none">*'.$label_sele_valores.'</p>
+                            {info_proposta}
 							';
 							$tema_admn = '
 							<div class="col-md-12">
@@ -513,11 +515,11 @@ class MatriculasController extends Controller
 												<th style="width:100%" colspan="5"><div align="center">&nbsp;</div></th>
 											</tr>
 											<tr>
-												<th style="width:'.$arr_wid[0].'"><div align="center">ITEM</div></th>
-												<th style="width:'.$arr_wid[1].'"><div align="center">CRONOGRAMA</div></th>
-												<th style="width:'.$arr_wid[2].'"><div align="center">AERONAVE</div></th>
-												<th style="width:'.$arr_wid[3].'"><div align="center">HORAS/AULA</div></th>
-												<th style="width:'.$arr_wid[4].'"><div align="right">TOTAL</div></th>
+												<th style="width:'.$arr_wid[0].'"><div align="center">Etapa 2</div></th>
+												<th style="width:'.$arr_wid[1].'"><div align="center">Conteúdo</div></th>
+												<th style="width:'.$arr_wid[2].'"><div align="center">Aeronave</div></th>
+												<th style="width:'.$arr_wid[3].'"><div align="center">Créditos</div></th>
+												<th style="width:'.$arr_wid[4].'"><div align="right">Valor</div></th>
 											</tr>
 										</thead>
 										<tbody class="jss526">{{table}}
@@ -525,15 +527,16 @@ class MatriculasController extends Controller
 										<tfoot class="jss526">{{footer}}
 										</tfoot>
 									</table>
+                                    {combustivelHtml}
 								</div>
 								<br>
 								<div class="table-responsive padding-none tabe-2">
 									<table id="table3" class="table" cellspacing="0"  style="border-spacing:6px 12px;padding:10px 4px 10px 4px">
 										<thead >
 											<tr>
-												<th style="width:'.$arr_wid2[0].'"><div align="center">ITEM</div></th>
-												<th  style="width:'.$arr_wid2[2].'"><div align="center">DESCRIÇÃO</div></th>
-												<th style="width:'.$arr_wid2[3].'"><div align="right">TOTAL</div></th>
+												<th style="width:'.$arr_wid2[0].'"><div align="center">Item</div></th>
+												<th  style="width:'.$arr_wid2[2].'"><div align="center">Descrição</div></th>
+												<th style="width:'.$arr_wid2[3].'"><div align="right">Total</div></th>
 											</tr>
 										</thead>
 										<tbody class="jss526">{{table2}}
@@ -548,10 +551,9 @@ class MatriculasController extends Controller
 									</table>
 									<p style="font-family:arial;font-size:9pt;text-align:right">*'.$label_sele_valores.'</p>
 								</div>
+                                {info_proposta}
 							</div>
-							<!--<div class="row">
-							{link_proposta}
-							</div>-->
+
 							';
 							$tr = false;
 							$tr2 = false;
@@ -634,31 +636,6 @@ class MatriculasController extends Controller
 								$footer = '';
 								$totalCurso = $subtotal1;
 								//precisamos verificar se o total padrão é maior que o valor
-								// if($subtotal1>$subtotal1comDesconto){
-								// 	$descontoFooter = NULL;
-								// 	$footer .= '
-								// 	<tr>
-								// 		<td colspan="3"><div align="right"> Subtotal</div></td>
-								// 		<td><div align="center"><b>'.$totalHoras.'</b></div></td>
-								// 		<td><div align="right"><b>'.number_format($totalCurso,'2',',','.').'</b></div></td>
-								// 	</tr>';
-								// 	//verificar qual o valor da diferença por isso é o desconto aplicado em cima do valor padrão
-								// 	$desconto0 = (double)$subtotal1 - (double)$subtotal1comDesconto;
-								// 	if($desconto0>0){
-								// 		$descontoFooter .= '
-								// 		<tr class="vermelho">
-								// 			<td colspan="4">
-								// 				<div align="right"><strong>DESCONTO</strong></div>
-								// 			</td>
-								// 			<td>
-								// 				<div align="right"><b> '.number_format($desconto0,'2',',','.').'</b></div>
-								// 			</td>
-								// 		</tr>';
-								// 		$totalCurso = ($totalCurso) - $desconto0;
-								// 	}
-								// 	$descontoFooter .= '<tr class="verde"><td colspan="4" class="total-curso"><div align="right"><strong>Total do curso:</strong></div></td><td class="total-curso"><div align="right"><b> '.number_format($totalCurso,'2',',','.').'</b></div></td></tr>';
-								// 	$subtotal1 = $totalCurso;
-								// }
                                 $desconto_especial = Qlib::get_matriculameta($dados["id"],'desconto_especial');
 
 								$desconto_turma = Qlib::get_matriculameta($dados["id"],'desconto');
@@ -882,6 +859,7 @@ class MatriculasController extends Controller
 								$tr2 .=		$taxasHtml;
 								$tr3_adm .= $taxasHtml;
 							}
+
 							/*
 							if($dados['status']==1){
 								$totalOrcamento = ($ret['total']) + ($dados['inscricao_curso']);
@@ -1023,6 +1001,48 @@ class MatriculasController extends Controller
 									}
 								}
 							}
+                            if(@$dados['combustivel']){
+							    $valor_combustivel = Qlib::precoDbdase($dados['combustivel']);
+								$info_cobustivel = (new SiteController)->short_code('info_cobustivel',false,@$_GET['edit']);
+								$temaComb = '
+                                <table class="table" style="">
+                                    <thead >
+                                        <tr>
+                                            <th>
+                                                Etapa 3
+                                            </th>
+                                            <th>
+                                                <div align="left">
+                                                    Combustível Estimado
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2">
+                                                '.$info_cobustivel.'
+                                            </td>
+                                        </tr>
+                                    </tbody>
+								</table>
+								';
+								$label = __('Combustível estimado gasto em TODO curso prático. (O pagamento do combustível será realizado a cada voo. O valor pode variar de acordo com o preço do combustível.)');
+								$combustivelHtml = str_replace('{item}',$i2,$temaComb);
+								$combustivelHtml = str_replace('{label}',$label,$combustivelHtml);
+								$combustivelHtml = str_replace('{width0}',$arr_wid2[0],$combustivelHtml);
+								$combustivelHtml = str_replace('{width1}',$arr_wid2[1],$combustivelHtml);
+								$combustivelHtml = str_replace('{width3}',$arr_wid2[3],$combustivelHtml);
+								$combustivelHtml = str_replace('{valor_combustivel}','<span style="color:#F00;">'.$dados['combustivel'].'</span>',$combustivelHtml);
+								$combustivelHtml = str_replace('{valor_litro}',@$dados['valor_litro'],$combustivelHtml);
+								$totalOrcamento = $subtotal2 + $valor_combustivel;
+								// $tr3 .= 	$combustivelHtml;
+								// $tr2 = $combustivelHtml.$tr2 ;
+								// $tr3_adm .= $combustivelHtml;
+								// $mensComb = $combustivelHtml;
+							}else{
+								$totalOrcamento = $subtotal2;
+							}
 							$linkComprar = Qlib::qoption('dominio').'/area-do-aluno/meus-pedidos/p/'.$dados['id'];
 							if($dados['id_turma']>0){
 								$linkComprar .= '/'.base64_encode($dados['id_turma']);
@@ -1036,30 +1056,7 @@ class MatriculasController extends Controller
 								</tr>
 							';
 							$tr3_adm .= '<td colspan="2" width="85%"><div align="center"><strong class="verde">TOTAL DA PROPOSTA A VISTA:</strong></div></td><td><div align="right"> <span class="verde"><b>'.number_format($totalOrcamento,'2',',','.').'</b></span></div></td>';
-							if(@$dados['combustivel']){
-							    $valor_combustivel = Qlib::precoDbdase($dados['combustivel']);
-								$info_cobustivel = (new SiteController)->short_code('info_cobustivel',false,@$_GET['edit']);
-								$temaComb = '
-								<div align="center" style="">
-									'.$info_cobustivel.'
-								</div>
-								';
-								$label = __('Combustível estimado gasto em TODO curso prático. (O pagamento do combustível será realizado a cada voo. O valor pode variar de acordo com o preço do combustível.)');
-								$combustivelHtml = str_replace('{item}',$i2,$temaComb);
-								$combustivelHtml = str_replace('{label}',$label,$combustivelHtml);
-								$combustivelHtml = str_replace('{width0}',$arr_wid2[0],$combustivelHtml);
-								$combustivelHtml = str_replace('{width1}',$arr_wid2[1],$combustivelHtml);
-								$combustivelHtml = str_replace('{width3}',$arr_wid2[3],$combustivelHtml);
-								$combustivelHtml = str_replace('{valor_combustivel}','<span style="color:#F00;">'.$dados['combustivel'].'</span>',$combustivelHtml);
-								$combustivelHtml = str_replace('{valor_litro}',@$dados['valor_litro'],$combustivelHtml);
-								//$totalOrcamento = $subtotal2 + $valor_combustivel;
-								//$tr3 .= 	$combustivelHtml;
-								//$tr2 .= 	$combustivelHtml;
-								//$tr3_adm .= $combustivelHtml;
-								$mensComb = $combustivelHtml;
-							}else{
-								$totalOrcamento = $subtotal2;
-							}
+
 							$ret['totalOrcamento'] = $totalOrcamento;
 							$incluir_taxas_parcelamento = Qlib::qoption('incluir_taxas_parcelamento')?Qlib::qoption('incluir_taxas_parcelamento'):'n';
 							if($incluir_taxas_parcelamento=='s'){
@@ -1089,16 +1086,22 @@ class MatriculasController extends Controller
 							$ret['table'] = str_replace('{{footer}}',$footer,$ret['table']);
 							$ret['table'] = str_replace('{{table2}}',$tr2,$ret['table']);
 							$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
+							$ret['table'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table']);
+							$ret['table'] = str_replace('{info_proposta}',$info_proposta,$ret['table']);
 							$ret['table_adm'] = str_replace('{{table}}',$tr_adm,$tema_admn);
 							$ret['table_adm'] = str_replace('{{footer}}',$footer,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{table2}}',$tr2_adm,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{table3}}',$tr3_adm,$ret['table_adm']);
+							$ret['table_adm'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table_adm']);
+							$ret['table_adm'] = str_replace('{info_proposta}',$info_proposta,$ret['table_adm']);
 							$url_prop = Qlib::qoption('dominio_site').'/area-do-aluno/meus-pedidos/p/'.$dados['id'];
 							// $link_proposta = queta_formfield4('input-group-text', 12, 'link_proposta-', $url_prop, '', @$val['event'], @$val['clrw'], @$val['obs'], 'Link da proposta', '','','sm');
 							$link_proposta = $url_prop;
 							$ret['table_adm'] = str_replace('{link_proposta}',$link_proposta,$ret['table_adm']);
-							$ret['table'] .= $mensComb.$mens_taxa;
-							$ret['table_adm'] .= $mensComb.$mens_taxa;
+							// $ret['table'] .= $mensComb.$mens_taxa;
+							// $ret['table_adm'] .= $mensComb.$mens_taxa;
+							$ret['table'] .= $mens_taxa;
+							$ret['table_adm'] .= $mens_taxa;
 						}
 					}else{
 						$ret['table'] = Qlib::formatMensagem0('Erro: Cliente ou curso não encontrado(s)!!','danger',10000);
@@ -1123,7 +1126,7 @@ class MatriculasController extends Controller
 						$ret['total'] = $totalOrcamento;
 						$tema = '
 							<p class="apresentacao" style="font-family:helvetica;font-size:13pt;">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
-							Temos o prazer em lhe apresentar nossa proposta comercial<br>Curso: <strong>'.$dados['titulo_curso'].'</strong></p>
+							Temos o prazer em lhe apresentar nossa proposta comercial<br><strong>'.$dados['titulo_curso'].'</strong></p>
 							<br>
 							<table id="table4" cellspacing="0" class="table">
 								<thead >
