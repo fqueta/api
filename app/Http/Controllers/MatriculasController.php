@@ -456,7 +456,7 @@ class MatriculasController extends Controller
 							}
 							$tema = '
 							<p class="apresentacao" style="">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
-								Temos o prazer em lhe apresentar nossa proposta comercial<br><strong>'.$dados['titulo_curso'].'</strong></p>
+								Temos o prazer em lhe apresentar nossa proposta comercial<br><b>Orçamento: </b> '.$dados['titulo_curso'].'</p>
 							<table id="table1" class="table"  cellspacing="0" >
 
 												<thead >
@@ -490,8 +490,8 @@ class MatriculasController extends Controller
 							<table id="table2" class="table" cellspacing="0" style="">
 								<thead >
 									<tr>
-										<th style="width:'.$arr_wid2[0].'"><div align="center">Item</div></th>
-										<th style="width:85%"><div align="center">Descrição</div></th>
+										<!--<th style="width:'.$arr_wid2[0].'"><div align="center">Item</div></th>-->
+										<th style="width:85%"><div align="center">Resumo</div></th>
 										<th style="width:'.$arr_wid2[3].'"><div align="right">Total</div></th>
 									</tr>
 								</thead>
@@ -534,7 +534,7 @@ class MatriculasController extends Controller
 									<table id="table3" class="table" cellspacing="0"  style="border-spacing:6px 12px;padding:10px 4px 10px 4px">
 										<thead >
 											<tr>
-												<th style="width:'.$arr_wid2[0].'"><div align="center">Item</div></th>
+												<!--<th style="width:'.$arr_wid2[0].'"><div align="center">Item</div></th>-->
 												<th  style="width:'.$arr_wid2[2].'"><div align="center">Descrição</div></th>
 												<th style="width:'.$arr_wid2[3].'"><div align="right">Total</div></th>
 											</tr>
@@ -760,31 +760,32 @@ class MatriculasController extends Controller
 								$taxasValor = 0;
 								$subtotal2 = $subtotal1;
                                 if($dados['status']==1){
-									$subtotal2 = $subtotal1+$dados['inscricao_curso'];
+									// $subtotal2 = $subtotal1+$dados['inscricao_curso'];
+									$subtotal2 = $subtotal1;
 									$totalOrcamento = $subtotal2;
-									$labelSub = 'Curso + Matrícula';
+									$labelSub = 'Etapa 2';
 									$tr2 .= '
 										<tr id="matri">
-											<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>
+											<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
 											<td style="width:85%"><div align="left"> Matrícula</div></td>
 											<td style="width:'.$arr_wid2[3].'"><div align="right"> '.number_format($dados['inscricao_curso'],'2',',','.').'</div></td>
 										</tr>';
 									$tr2 .= '
 										<tr id="matri">
-											<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
-											<td style="width:85%"><div align="right"> <b>'.$labelSub.'</b></div></td>
+											<!--<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>-->
+											<td style="width:85%">'.$labelSub.'</div></td>
 											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
 										</tr>';
 									$tr2_adm .= '
 									<tr id="matri">
-										<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>
+										<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
 										<td style="width:85%"><div align="left"> Matrícula</div></td>
 										<td style="width:'.$arr_wid2[3].'"><div align="right"> '.number_format($dados['inscricao_curso'],'2',',','.').'</div></td>
 									</tr>';
 									$tr2_adm .= '
 									<tr id="matri">
 										<th style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></th>
-										<th style="width:85%"><div align="right"> '.$labelSub.'</div></th>
+										<th style="width:85%">'.$labelSub.'</th>
 										<th style="width:'.$arr_wid2[3].'"><div align="right">'.number_format($subtotal2,'2',',','.').'</div></th>
 									</tr>';
 								}
@@ -818,7 +819,7 @@ class MatriculasController extends Controller
 											if($valt >0){
                                                 $taxasHtml .=
                                                 '<tr id="matri">
-													<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>
+													<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
 													<td style="width:85%"><div align="left">'.$label.'</div></td>
 													<td style="width:'.$arr_wid2[3].'"><div align="right"> '.number_format($valt,'2',',','.').'</div></td>
 												</tr>';
@@ -844,7 +845,7 @@ class MatriculasController extends Controller
 											}
 											$taxasHtml .=
                                             '<tr id="matri">
-												<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>
+												<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
 												<td style="width:85%"><div align="left">'.$label.'</div></td>
 												<td style="width:'.$arr_wid2[3].'"><div align="right"> '.$v_exibe.'</div></td>
 											</tr>';
@@ -929,7 +930,7 @@ class MatriculasController extends Controller
 
 
                                     }
-									$lbCurm = 'Curso + Matrícula';
+									$lbCurm = 'Etapa 2';
 									if(Qlib::qoption('somar_taxas_orcamento')=='s'){
 										$lbCurm .= ' + Taxas';
 									}
@@ -979,7 +980,8 @@ class MatriculasController extends Controller
 									if($somar_cobustivel_total=='s') {
 										$totalOrcamento = $totalOrcamento + $sc['valor'];
 									}
-									$lbCurm = 'Gasto estimado de combustível:';
+									// $lbCurm = 'Gasto estimado de combustível:';
+									$lbCurm = 'Etapa 3';
 									if($sc['valor_litro']){
 										//$lbCurm .= ' <small style="font-weight:500">Litro - R$ '.$sc['valor_litro'].'</small> Total:';
 										$label_sele_valores .= '<br>* '.$sc['valor_litro'].' Preço por litro ';
@@ -1070,18 +1072,18 @@ class MatriculasController extends Controller
 							// 	dd($ret);
 							// }
 							$ret['table'] = str_replace('{{table}}',$tr,$tema);
-							/*$footer = '
+							$footer = '
 							<tr>
 								<td colspan="3"><div align="right">Subtotal</div></td>
 								<td><div align="center">'.$totalHoras.'</div></td>
 								<td><div align="right"> '.number_format($subtotal1,'2',',','.').'</div></td>
-							</tr>';*/
-							$footer = isset($footer)?$footer:'
-							<tr>
-								<td colspan="3"><div align="right">Subtotal</div></td>
-								<td><div align="center"><b>'.$totalHoras.'</b></div></td>
-								<td><div align="right"> <b>'.number_format($subtotal1,'2',',','.').'</b></div></td>
 							</tr>';
+							// $footer = isset($footer)?$footer:'
+							// <tr>
+							// 	<td colspan="3"><div align="right">Subtotal</div></td>
+							// 	<td><div align="center"><b>'.$totalHoras.'</b></div></td>
+							// 	<td><div align="right"> <b>'.number_format($subtotal1,'2',',','.').'</b></div></td>
+							// </tr>';
 							$footer .= $descontoFooter;
 							$ret['table'] = str_replace('{{footer}}',$footer,$ret['table']);
 							$ret['table'] = str_replace('{{table2}}',$tr2,$ret['table']);
@@ -1126,13 +1128,13 @@ class MatriculasController extends Controller
 						$ret['total'] = $totalOrcamento;
 						$tema = '
 							<p class="apresentacao" style="font-family:helvetica;font-size:13pt;">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
-							Temos o prazer em lhe apresentar nossa proposta comercial<br><strong>'.$dados['titulo_curso'].'</strong></p>
+							Temos o prazer em lhe apresentar nossa proposta comercial<br><b>Orçamento:</b> '.$dados['titulo_curso'].'</p>
 							<br>
 							<table id="table4" cellspacing="0" class="table">
 								<thead >
 									<tr>
-										<th style="width:'.$arr_wid2[0].'"><div align="left">ITEM</div></th>
-										<th style="width:'.$arr_wid2[1].'"><div align="center">DESCRIÇÃO</div></th>
+										<!--<th style="width:'.$arr_wid2[0].'"><div align="left">ITEM</div></th>-->
+										<th style="width:'.$arr_wid2[1].'"><div align="left">DESCRIÇÃO</div></th>
 										<th style="width:'.$arr_wid2[2].'"><div align="right">TOTAL</div></th>
 									</tr>
 								</thead>
