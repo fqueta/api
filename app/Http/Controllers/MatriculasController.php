@@ -5436,6 +5436,7 @@ class MatriculasController extends Controller
         if($tipo_curso==4){
             //plano de formação
             $modulos = isset($dm['orc']['modulos']) ? $dm['orc']['modulos'] : false;
+            // dump($modulos);
             if(is_array($modulos)){
                 //o numero do periodo é igula ao numero de modulos gravados na proposta
                 $arr_periodo = end($modulos);
@@ -5444,9 +5445,13 @@ class MatriculasController extends Controller
                     $tit_periodo = trim($tit_periodo);
                     $periodo = isset($tit_periodo[0]) ? $tit_periodo[0] : '';
                     $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
+                    if($periodo=='1'){
+                        $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND tag='$short_code_periodo' ORDER BY ordenar ASC";
+                    }else{
+                        $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND (short_code='$short_code_periodo' OR short_code='contrato1') ORDER BY ordenar ASC";
+                    }
                 }
             }
-            $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND (short_code='$short_code_periodo' OR short_code='contrato1') ORDER BY ordenar ASC";
         }else{
             $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." ORDER BY ordenar ASC";
         }
