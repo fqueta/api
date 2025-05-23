@@ -644,8 +644,7 @@ class MatriculasController extends Controller
                                     $titulo = isset($valo['titulo']) ? $valo['titulo'] : false;
                                     $valo['id_curso'] = @$dados['id_curso'];
                                     $total = 0;
-
-									$totalHoras += $horas;
+									$totalHoras += (int)$horas;
                                     if($etapa=='etapa1' && $titulo){
                                         $total = isset($valo['valor']) ? $valo['valor'] : 0;
                                         $ret['total'] += (double)$total;
