@@ -598,6 +598,7 @@ class MatriculasController extends Controller
 									$arr_totais = Qlib::lib_json_array($dados['totais']);
 								// }
                                 $ret['custo'] = 0;
+                                $desconto_ge = 0;
                                 //inicio do conteudo da tabela da etapa1
                                 $tr_etapa1='';
                                 $table_etapa1 = '';
@@ -612,7 +613,7 @@ class MatriculasController extends Controller
                                             </th>
                                             <th>
                                                 <div align="center">
-                                                    Conteúdo
+                                                    Conteúdo Ground School
                                                 </div>
                                             </th>
                                             <th>
@@ -635,6 +636,20 @@ class MatriculasController extends Controller
                                     <tbody>
                                         {tr_etapa1}
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="4">
+                                                <div align="right">
+                                                    Desconto especial:
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div align="right">
+                                                    {desconto_ge}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                                 ';
 
@@ -648,6 +663,10 @@ class MatriculasController extends Controller
                                     if($etapa=='etapa1' && $titulo){
                                         $total = isset($valo['valor']) ? $valo['valor'] : 0;
                                         $ret['total'] += (double)$total;
+                                        if(is_string($total)){
+                                            $total = (double)$total;
+                                        }
+                                        $desconto_ge -=$total;
                                         $tr_etapa1 .= '<tr id="lin_'.$kei.'">
                                                     <td><div align="left">'.$i.'</div></td>
                                                     <td><div align="left">'.$titulo.'</div></td>
@@ -5681,6 +5700,18 @@ class MatriculasController extends Controller
         }
 		return $ret;
 	}
+    /**
+     * Gerador de pdf estatico para ser usando no momento da assinatura do contrato
+     * @param string $token = o Tokem da proposta
+     * @uso $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
+     */
+    public function orcamento_pdf_estatico($token){
+        $ret = (new PdfGenerateController)->gerarPdfComImagemDeFundo([
+            'token'=>$token,
+            'f_exibe'=>'server',
+        ]);
+        return $ret;
+    }
     /**
 	 * Metodo gravar os contratos estaticos do periodo do plano de formação
 	 * @uso $ret = (new Orcamentos)->grava_contrato_statico_periodo($token_matricula,$token_periodo);

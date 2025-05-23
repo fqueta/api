@@ -114,6 +114,7 @@ class PdfGenerateController extends Controller
         $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'navegador'; // navegador ou download
 
         $nome_arquivo = isset($config['nome_arquivo']) ? $config['nome_arquivo'] : 'Pdf_com_imagem';
+
         $paginas = isset($config['paginas']) ? $config['paginas'] : [
              [
                  'bk_img'=>'https://crm.aeroclubejf.com.br/enviaImg/uploads/ead/5e3d812dd5612/6542b60fd4295.png',
@@ -139,14 +140,16 @@ class PdfGenerateController extends Controller
                  'margin'=>'0px',
              ],
          ];
+            dd($f_exibe,$t_pdf,$paginas,$config);
          $dados = [
              'style_content'=>'padding:20px;text-align:justify;',
              'paginas' =>$paginas,
          ];
-         $html = view('pdf.pdf_com_imagem',$dados)->render();
-         if($t_pdf=='false'){
+        $html = view('pdf.pdf_com_imagem',$dados)->render();
+        if($t_pdf=='false'){
             return $html;
-         }
+        }
+
          // Gerar o PDF
          $pdf = SnappyPdf::loadHTML($html)
              ->setPaper('a4') // Define o tamanho do papel
@@ -158,10 +161,13 @@ class PdfGenerateController extends Controller
             //  ->setOption('ignore-certificate-errors', true); // Necessário para imagens locais
 
          // $pdf->setOption('header-html', view('header')->render());
+
+
         if($f_exibe=='download'){
             //faz download
             return $pdf->download($nome_arquivo.'.pdf');
         }elseif($f_exibe=='server'){
+
             $fileName = $arquivo_tipo.'/'.$token.'/proposta.pdf';
             //grava statico no servidor
             $pdfbin = $pdf->output();
