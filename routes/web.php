@@ -23,6 +23,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/orcamento-pdf/{token}', [PdfGenerateController::class,'gera_orcamento'])->name('orcamento.pdf');
+Route::get('/orcamento/{token}', [MatriculasController::class,'orcamento_html'])->name('orcamento');
 Route::get('/youtube', [YoutubeController::class,'envia'])->name('yt.send');
 Route::get('/teste', [TesteController::class,'index'])->name('teste');
 Route::get('/contratos/{token}/{type}', [MatriculasController::class,'contratos'])->name('contratos');

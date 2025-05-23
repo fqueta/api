@@ -316,6 +316,21 @@ class MatriculasController extends Controller
         return $ret;
     }
     /**
+     * Metodo para gerar uma apresentação do oraçmento em uma página Html dinamico
+     * @param string $token token do orçamento
+     */
+    public function orcamento_html($token){
+        $do = $this->gerar_orcamento($token);
+        // dd($do);
+        $orcamento = isset($do['table']) ? $do['table'] : false;
+        $table2 = isset($do['table2']) ? $do['table2'] : false;
+        $orcamento .= $table2;
+        $ret = [
+            'orcamento'=>$orcamento,
+        ];
+        return view('site.index',$ret);
+    }
+    /**
      * Metodo para gerar um orçamento atualizado
      * @param string $tokenOrc token do orçamento
      * @param string $exibir_parcelamento 's' para sim 'n' para não
@@ -403,7 +418,7 @@ class MatriculasController extends Controller
 					$configMet=$dados;
 					$configMet['email'] = $dados['Email'];
 					// metricasOrcamento($configMet);//para salvar as estatisticas do orçamento;
-					$arr_wid = array('5%','50%','25%','10%','10%');
+					$arr_wid = array('10%','50%','25%','10%','10%');
 					if(!isset($dados['sele_valores'])){
 						$ret['table'] = Qlib::formatMensagem0('Erro: Tabela não selecionada!!','danger',100000);
 						return $ret;
