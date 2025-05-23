@@ -519,7 +519,7 @@ class MatriculasController extends Controller
 									</tbody>
 							</table>
 							<p style="font-family:arial;font-size:9pt;text-align:right;display:none">*'.$label_sele_valores.'</p>
-                            {info_proposta}
+                            <small style="font-size:10px">{info_proposta}</small>
 							';
 							$tema_admn = '
 							<div class="col-md-12">
@@ -541,7 +541,7 @@ class MatriculasController extends Controller
 										<tfoot class="jss526">{{footer}}
 										</tfoot>
 									</table>
-                                    {combustivelHtml}
+                                    <small>{combustivelHtml}</small>
 								</div>
 								<br>
 								<div class="table-responsive padding-none tabe-2">
@@ -567,7 +567,7 @@ class MatriculasController extends Controller
 									</table>
 									<p style="font-family:arial;font-size:9pt;text-align:right">*'.$label_sele_valores.'</p>
 								</div>
-                                {info_proposta}
+                                <small style="font-size:10px">{info_proposta}</small>
 							</div>
 
 							';
