@@ -418,7 +418,7 @@ class MatriculasController extends Controller
 					$configMet=$dados;
 					$configMet['email'] = $dados['Email'];
 					// metricasOrcamento($configMet);//para salvar as estatisticas do orçamento;
-					$arr_wid = array('10%','50%','25%','10%','10%');
+					$arr_wid = array('7%','50%','25%','10%','10%');
 					if(!isset($dados['sele_valores'])){
 						$ret['table'] = Qlib::formatMensagem0('Erro: Tabela não selecionada!!','danger',100000);
 						return $ret;
@@ -649,7 +649,7 @@ class MatriculasController extends Controller
                                         $total = isset($valo['valor']) ? $valo['valor'] : 0;
                                         $ret['total'] += (double)$total;
                                         $tr_etapa1 .= '<tr id="lin_'.$kei.'">
-                                                    <td><div align="center">'.$i.'</div></td>
+                                                    <td><div align="left">'.$i.'</div></td>
                                                     <td><div align="left">'.$titulo.'</div></td>
                                                     <td><div align="center">Teórica</div></td>
                                                     <td><div align="center">'.$horas.'</div></td>
@@ -657,7 +657,7 @@ class MatriculasController extends Controller
                                                 </tr>
                                         ';
                                     }
-                                    if($etapa=='etapa2'){
+                                    if($etapa=='etapa2' && $titulo){
                                         $tota = $this->calcPrecModulos($valo,$dados['sele_valores'],$arr_modu);
                                         if(is_array($tota)){
 
@@ -684,7 +684,7 @@ class MatriculasController extends Controller
                                         $valo['horas'] = isset($valo['horas'])?$valo['horas']:0;
                                         $valo['horas'] = (int)$valo['horas'];
                                         $tr .= '<tr id="lin_'.$kei.'">
-                                                    <td style="width:'.$arr_wid[0].'"><div align="center">'.$i.'</div></td>
+                                                    <td style="width:'.$arr_wid[0].'"><div align="left">'.$i.'</div></td>
                                                     <td style="width:'.$arr_wid[1].'"><div align="left">'.@$valo['titulo'].'</div></td>
                                                     <td style="width:'.$arr_wid[2].'"><div align="center">'.Qlib::buscaValorDb0($GLOBALS['tab54'],'id',@$valo['aviao'],'nome').'</div></td>
                                                     <td style="width:'.$arr_wid[3].'"><div align="center">'.@$valo['horas'].'</div></td>
@@ -692,8 +692,8 @@ class MatriculasController extends Controller
                                                 </tr>
                                         ';
                                         $tr_adm .= '<tr id="lin_'.$kei.'">
-                                                    <td><div align="center">'.$i.'</div></td>
-                                                    <td><div align="left">'.@$valo['titulo'].'</div></td>
+                                                    <td><div align="left">'.$i.'</div></td>
+                                                    <td><div align="left">'.$titulo.'</div></td>
                                                     <td><div align="center"> '.Qlib::buscaValorDb0($GLOBALS['tab54'],'id',@$valo['aviao'],'nome').'</div></td>
                                                     <td><div align="center">'.$valo['horas'].'</div></td>
                                                     <td><div align="right"> '.@number_format($total,'2',',','.').'</div></td>
