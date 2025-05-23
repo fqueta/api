@@ -469,37 +469,38 @@ class MatriculasController extends Controller
 									return $ret;
 								}
 							}
+
 							$tema = '
-							<p class="apresentacao" style="">Prezado(a) <strong>'.$dados['Nome'].'</strong>,<br>
+							<p class="apresentacao" style="">Prezado(a) <strong>'.urldecode($dados['Nome']).'</strong>,<br>
 								Temos o prazer em lhe apresentar nossa proposta comercial<br><b>Orçamento: </b> '.$dados['titulo_curso'].'</p>
-							<table id="table1" class="table"  cellspacing="0" >
 
-												<thead >
-
-													<tr>
-
-														<th style="width:'.$arr_wid[0].'"><div align="center">Etapa 2</div></th>
-
-														<th style="width:'.$arr_wid[1].'"><div align="center">Conteúdo</div></th>
-
-														<th style="width:'.$arr_wid[2].'"><div align="center">Aeronave</div></th>
-
-														<th style="width:'.$arr_wid[3].'"><div align="center">Créditos</div></th>
-
-														<th style="width:'.$arr_wid[4].'"><div align="right">Valor</div></th>
-
-													</tr>
-
-												</thead>
-
-												<tbody class="jss526">{{table}}
-
-												</tbody>
-
-												<tfoot class="jss526">{{footer}}
-
-												</tfoot>
-
+                            {table_etapa1}
+							<table id="table1-etapa2" class="table"  cellspacing="0" >
+								<thead >
+									<tr>
+										<th style="width:'.$arr_wid[0].'">
+                                                     <div align="left">Etapa 2</div>
+                                                 </th>
+										<th style="width:'.$arr_wid[1].'">
+                                                     <div align="center">Conteúdo</div>
+                                                 </th>
+										<th style="width:'.$arr_wid[2].'">
+                                                     <div align="center">Aeronave</div>
+                                                 </th>
+										<th style="width:'.$arr_wid[3].'">
+                                                     <div align="center">Créditos</div>
+                                                 </th>
+										<th style="width:'.$arr_wid[4].'">
+                                                     <div align="right">Valor</div>
+                                                 </th>
+									</tr>
+								</thead>
+								<tbody class="jss526">
+                                             {{table}}
+								</tbody>
+								<tfoot class="jss526">
+                                             {{footer}}
+								</tfoot>
 							</table>
 							{combustivelHtml}
 							<table id="table2" class="table" cellspacing="0" style="">
@@ -523,11 +524,12 @@ class MatriculasController extends Controller
 							$tema_admn = '
 							<div class="col-md-12">
 								<div class="table-responsive padding-none tabe-1">
+                                    {table_etapa1}
 									<table id="table-admin" class="table table-striped table-hover">
 										<thead >
 
 											<tr>
-												<th style="width:'.$arr_wid[0].'"><div align="center">Etapa 2</div></th>
+												<th style="width:'.$arr_wid[0].'"><div align="left">Etapa 2</div></th>
 												<th style="width:'.$arr_wid[1].'"><div align="center">Conteúdo</div></th>
 												<th style="width:'.$arr_wid[2].'"><div align="center">Aeronave</div></th>
 												<th style="width:'.$arr_wid[3].'"><div align="center">Créditos</div></th>
@@ -595,53 +597,114 @@ class MatriculasController extends Controller
 									// echo $is_signed;
 									$arr_totais = Qlib::lib_json_array($dados['totais']);
 								// }
-                                      $ret['custo'] = 0;
+                                $ret['custo'] = 0;
+                                //inicio do conteudo da tabela da etapa1
+                                $tr_etapa1='';
+                                $table_etapa1 = '';
+                                $tem_etp1 = '
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <div align="left">
+                                                    Etapa 1
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div align="center">
+                                                    Conteúdo
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div align="center">
+                                                    Aula
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div align="center">
+                                                    Créditos
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div align="right">
+                                                    Valor
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {tr_etapa1}
+                                    </tbody>
+                                </table>
+                                ';
+
 								foreach($dados['modulos'] AS $kei=>$valo){
-									$valo['id_curso'] = @$dados['id_curso'];
-									$tota = $this->calcPrecModulos($valo,$dados['sele_valores'],$arr_modu);
+                                    $etapa = isset($valo['etapa']) ? $valo['etapa'] : 'etapa2';
+                                    $horas = isset($valo['horas']) ? $valo['horas'] : 0;
+                                    $titulo = isset($valo['titulo']) ? $valo['titulo'] : false;
+                                    $valo['id_curso'] = @$dados['id_curso'];
                                     $total = 0;
-									if(is_array($tota)){
 
-                                        $total = @$tota['padrao']; //usa so valor da hora padrão
-                                        $total_com_desconto = @$tota['valor']; //usa o valor das horas das respectiva tabelas
-                                        $salvaTotais[$kei] = @$tota['valor'];
-                                        if(isset($tota['custo'])){
-                                            $custo = @$tota['custo'];
-                                            $ret['custo'] += $custo;
-                                        }
+									$totalHoras += $horas;
+                                    if($etapa=='etapa1' && $titulo){
+                                        $total = isset($valo['valor']) ? $valo['valor'] : 0;
+                                        $ret['total'] += (double)$total;
+                                        $tr_etapa1 .= '<tr id="lin_'.$kei.'">
+                                                    <td><div align="center">'.$i.'</div></td>
+                                                    <td><div align="left">'.$titulo.'</div></td>
+                                                    <td><div align="center">Teórica</div></td>
+                                                    <td><div align="center">'.$horas.'</div></td>
+                                                    <td><div align="right"> '.@number_format($total,'2',',','.').'</div></td>
+                                                </tr>
+                                        ';
                                     }
-									if(Qlib::isAdmin(10)){
-									}else {
-										if($arrTotais && is_array($arrTotais)){
-											$total = isset($arrTotais[$kei]) ? $arrTotais[$kei] : 0; ;
-										}
-									}
-									if($is_signed){
-										$total = @$arr_totais[$kei];
-									}
-									$ret['total'] += (double)$total;
-									$ret['total_com_desconto'] += (double)$total_com_desconto;
+                                    if($etapa=='etapa2'){
+                                        $tota = $this->calcPrecModulos($valo,$dados['sele_valores'],$arr_modu);
+                                        if(is_array($tota)){
 
-									$valo['horas'] = isset($valo['horas'])?$valo['horas']:0;
-									$valo['horas'] = (int)$valo['horas'];
-									$totalHoras += @$valo['horas'];
-                                  	$tr .= '<tr id="lin_'.$kei.'">
-                                  				<td style="width:'.$arr_wid[0].'"><div align="center">'.$i.'</div></td>
-                                  				<td style="width:'.$arr_wid[1].'"><div align="left">'.@$valo['titulo'].'</div></td>
-                                  				<td style="width:'.$arr_wid[2].'"><div align="center">'.Qlib::buscaValorDb0($GLOBALS['tab54'],'id',@$valo['aviao'],'nome').'</div></td>
-                                  				<td style="width:'.$arr_wid[3].'"><div align="center">'.@$valo['horas'].'</div></td>
-                                  				<td style="width:'.$arr_wid[4].'"><div align="right"> '.@number_format($total,'2',',','.').'</div></td>
-                                  			</tr>
-                                  	';
-                                  	$tr_adm .= '<tr id="lin_'.$kei.'">
-                                  				<td><div align="center">'.$i.'</div></td>
-                                  				<td><div align="left">'.@$valo['titulo'].'</div></td>
-                                  				<td><div align="center"> '.Qlib::buscaValorDb0($GLOBALS['tab54'],'id',@$valo['aviao'],'nome').'</div></td>
-                                  				<td><div align="center">'.$valo['horas'].'</div></td>
-                                  				<td><div align="right"> '.@number_format($total,'2',',','.').'</div></td>
-                                  			</tr>
-                                  	';
+                                            $total = @$tota['padrao']; //usa so valor da hora padrão
+                                            $total_com_desconto = @$tota['valor']; //usa o valor das horas das respectiva tabelas
+                                            $salvaTotais[$kei] = @$tota['valor'];
+                                            if(isset($tota['custo'])){
+                                                $custo = @$tota['custo'];
+                                                $ret['custo'] += $custo;
+                                            }
+                                        }
+                                        if(Qlib::isAdmin(10)){
+                                        }else {
+                                            if($arrTotais && is_array($arrTotais)){
+                                                $total = isset($arrTotais[$kei]) ? $arrTotais[$kei] : 0; ;
+                                            }
+                                        }
+                                        if($is_signed){
+                                            $total = @$arr_totais[$kei];
+                                        }
+                                        $ret['total'] += (double)$total;
+                                        $ret['total_com_desconto'] += (double)$total_com_desconto;
+
+                                        $valo['horas'] = isset($valo['horas'])?$valo['horas']:0;
+                                        $valo['horas'] = (int)$valo['horas'];
+                                        $tr .= '<tr id="lin_'.$kei.'">
+                                                    <td style="width:'.$arr_wid[0].'"><div align="center">'.$i.'</div></td>
+                                                    <td style="width:'.$arr_wid[1].'"><div align="left">'.@$valo['titulo'].'</div></td>
+                                                    <td style="width:'.$arr_wid[2].'"><div align="center">'.Qlib::buscaValorDb0($GLOBALS['tab54'],'id',@$valo['aviao'],'nome').'</div></td>
+                                                    <td style="width:'.$arr_wid[3].'"><div align="center">'.@$valo['horas'].'</div></td>
+                                                    <td style="width:'.$arr_wid[4].'"><div align="right"> '.@number_format($total,'2',',','.').'</div></td>
+                                                </tr>
+                                        ';
+                                        $tr_adm .= '<tr id="lin_'.$kei.'">
+                                                    <td><div align="center">'.$i.'</div></td>
+                                                    <td><div align="left">'.@$valo['titulo'].'</div></td>
+                                                    <td><div align="center"> '.Qlib::buscaValorDb0($GLOBALS['tab54'],'id',@$valo['aviao'],'nome').'</div></td>
+                                                    <td><div align="center">'.$valo['horas'].'</div></td>
+                                                    <td><div align="right"> '.@number_format($total,'2',',','.').'</div></td>
+                                                </tr>
+                                        ';
+                                    }
                                   	$i++;
+                                }
+                                if($tipo_curso==2){
+                                    $table_etapa1 = str_replace('{tr_etapa1}',$tr_etapa1,$tem_etp1);
                                 }
 								$ret['salvaTotais'] = $salvaTotais;
 								$subtotal1 = $ret['total'];
@@ -1105,7 +1168,9 @@ class MatriculasController extends Controller
 							$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
 							$ret['table'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table']);
 							$ret['table'] = str_replace('{info_proposta}',$info_proposta,$ret['table']);
+							$ret['table'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table']);
 							$ret['table_adm'] = str_replace('{{table}}',$tr_adm,$tema_admn);
+							$ret['table_adm'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{footer}}',$footer,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{table2}}',$tr2_adm,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{table3}}',$tr3_adm,$ret['table_adm']);
@@ -1363,7 +1428,7 @@ class MatriculasController extends Controller
                                 </tr>
                                 <tr>
                                     <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
-                                    <th style="width:53%"><div align="center">Etapa</div></th>
+                                    <th style="width:53%"><div align="left">Etapa</div></th>
                                     <th style="width:10%"><div align="center">Horas T.</div></th>
                                     <th style="width:10%"><div align="center">Horas P.</div></th>
                                     <th style="width:15%"><div align="right"><b>Valor</b></div></th>
