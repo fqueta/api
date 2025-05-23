@@ -636,18 +636,18 @@ class MatriculasController extends Controller
                                     <tbody>
                                         {tr_etapa1}
                                     </tbody>
-                                    <tfoot>
+                                    <tfoot style="color:red">
                                         <tr>
-                                            <td colspan="4">
+                                            <th colspan="4">
                                                 <div align="right">
                                                     Desconto especial:
                                                 </div>
-                                            </td>
-                                            <td>
+                                            </th>
+                                            <th>
                                                 <div align="right">
                                                     {desconto_ge}
                                                 </div>
-                                            </td>
+                                            </th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -662,7 +662,8 @@ class MatriculasController extends Controller
 									$totalHoras += (int)$horas;
                                     if($etapa=='etapa1' && $titulo){
                                         $total = isset($valo['valor']) ? $valo['valor'] : 0;
-                                        $ret['total'] += (double)$total;
+                                        //não soma por que é um valor simbolico
+                                        // $ret['total'] += (double)$total;
                                         if(is_string($total)){
                                             $total = (double)$total;
                                         }
@@ -723,6 +724,8 @@ class MatriculasController extends Controller
                                 }
                                 if($tipo_curso==2){
                                     $table_etapa1 = str_replace('{tr_etapa1}',$tr_etapa1,$tem_etp1);
+                                    //Desconto do Graund School
+                                    $table_etapa1 = str_replace('{desconto_ge}',Qlib::valor_moeda($desconto_ge),$table_etapa1);
                                 }
 								$ret['salvaTotais'] = $salvaTotais;
 								$subtotal1 = $ret['total'];
