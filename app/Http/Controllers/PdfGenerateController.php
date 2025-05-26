@@ -25,8 +25,8 @@ class PdfGenerateController extends Controller
                 //     $ret['save'] = $orca->salva_orcamento_assinado($token,$d[0]);
                 //     $config = $orca->get_matricula_assinado($token);
                 // }
-                $t_pdf = $config['t_pdf'] ? $config['t_pdf'] : false;
-                $f_exibe = $config['f_exibe'] ? $config['f_exibe'] : false;
+                $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : false;
+                $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : false;
 
                 $t_pdf = $t_pdf ? $t_pdf : false;
                 $f_exibe = $f_exibe ? $f_exibe : 'navegador';
