@@ -140,7 +140,7 @@ class PdfGenerateController extends Controller
                  'margin'=>'0px',
              ],
          ];
-            dd($f_exibe,$t_pdf,$paginas,$config);
+            // dd($f_exibe,$t_pdf,$paginas,$config);
          $dados = [
              'style_content'=>'padding:20px;text-align:justify;',
              'paginas' =>$paginas,
