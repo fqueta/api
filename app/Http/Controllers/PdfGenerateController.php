@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\View;
 
 class PdfGenerateController extends Controller
 {
-    public function gera_orcamento($token=false,$type='pdf'){
+    public function gera_orcamento($token=false,$type='pdf',$config=[]){
         if($token){
             $orca = new MatriculasController;
             $d = $orca->dm($token);
@@ -25,6 +25,12 @@ class PdfGenerateController extends Controller
                 //     $ret['save'] = $orca->salva_orcamento_assinado($token,$d[0]);
                 //     $config = $orca->get_matricula_assinado($token);
                 // }
+                $t_pdf = $config['t_pdf'] ? $config['t_pdf'] : false;
+                $f_exibe = $config['f_exibe'] ? $config['f_exibe'] : false;
+
+                $t_pdf = $t_pdf ? $t_pdf : false;
+                $f_exibe = $f_exibe ? $f_exibe : 'navegador';
+
                 $nome = isset($d['Nome']) ? $d['Nome'] : '';
                 $code = 'fundo_proposta';
                 $id_curso = isset($d['id_curso']) ? $d['id_curso'] : '';
@@ -80,17 +86,10 @@ class PdfGenerateController extends Controller
                         }
                     }
                 }
-                // $pdf = Pdf::loadView('pdf.orcamento',$config);
-                // $pdf = Pdf::loadView('pdf.orcamento-bk',$config);
-                // // $pdf = Pdf::view('pdf.orcamento');
-                // $path = storage_path('/orcamentos/');
-                // $filename = 'Orçamento ' . $nome.'.pdf';
 
                 $filename = 'Orçamento ' . $nome;
                 $arquivo = isset($res_orc['nome_arquivo']) ? $res_orc['nome_arquivo'] : $filename;
                 //,'paginas'=>['bk_img'=>'','title'=>'','content']
-                $t_pdf = request()->get('t_pdf')?request()->get('t_pdf') : false;
-                $f_exibe = request()->get('f_exibe')?request()->get('f_exibe') : 'navegador';
                 if($type == 'pdf'){
                     $ret = $this->gerarPdfComImagemDeFundo(['token'=>$token,'nome_arquivo' => $arquivo,'paginas'=>$paginas,'t_pdf'=>$t_pdf,'f_exibe'=>$f_exibe]);
                 }else{
@@ -108,7 +107,7 @@ class PdfGenerateController extends Controller
 
      public function gerarPdfComImagemDeFundo($config=[])
     {
-        $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : true;
+        $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : 'true';
         $arquivo_tipo = isset($config['arquivo_tipo']) ? $config['arquivo_tipo'] : 'orcamentos';
         $token = isset($config['token']) ? $config['token'] : uniqid();
         $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : 'navegador'; // navegador ou download
@@ -140,13 +139,13 @@ class PdfGenerateController extends Controller
                  'margin'=>'0px',
              ],
          ];
-            // dd($f_exibe,$t_pdf,$paginas,$config);
          $dados = [
              'style_content'=>'padding:20px;text-align:justify;',
              'paginas' =>$paginas,
          ];
         $html = view('pdf.pdf_com_imagem',$dados)->render();
         if($t_pdf=='false'){
+            dd($f_exibe,$t_pdf,$paginas,$config);
             return $html;
         }
 
@@ -163,6 +162,7 @@ class PdfGenerateController extends Controller
          // $pdf->setOption('header-html', view('header')->render());
 
 
+
         if($f_exibe=='download'){
             //faz download
             return $pdf->download($nome_arquivo.'.pdf');
@@ -175,7 +175,10 @@ class PdfGenerateController extends Controller
             $id_matricula = Qlib::get_matricula_id_by_token($token);
             if (Storage::exists($fileName) && $id_matricula) {
                 $url = Storage::url($fileName);$short_code = 'proposta';
-                $ret['salvo'] = Qlib::update_matriculameta($id_matricula,$short_code.'_pdf',$url);
+                $short_code .= '_pdf';
+                $ret['salvo'] = Qlib::update_matriculameta($id_matricula,$short_code,$url);
+                $ret['id_matricula'] = $id_matricula;
+                $ret['short_code'] = $short_code;
                 $ret['url'] = $url;
                 if($ret['salvo']){
                     $ret['exec'] = true;

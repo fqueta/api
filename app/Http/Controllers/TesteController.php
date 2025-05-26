@@ -113,7 +113,7 @@ class TesteController extends Controller
         //     "endpoint" => $endpoint,
         //     "body" => $body,
         // ]);
-        $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
+        $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token);
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // SendZapsingJoub::dispatch($token);

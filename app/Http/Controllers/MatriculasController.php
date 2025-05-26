@@ -307,7 +307,7 @@ class MatriculasController extends Controller
         $nome_completo = isset($dados['nome_completo']) ? $dados['nome_completo'] : $dados['Nome'].' '.$dados['sobrenome'];
         $ret = '
                 <p align="center" style="font-size:15pt;">
-                    <b>Cliente:</b> '.$nome_completo.'  <b>N°: </b> '.$dados['id'].'
+                    <b>Cliente:</b> '. urldecode($nome_completo) .'  <b>N°: </b> '.$dados['id'].'
                     <br>
                     <b>Telefone:</b> '.$dados['telefonezap'].'  '.$dados['Tel'].' <br>
                     <b>Email:</b> '.$dados['Email'].'  <br>
@@ -5583,7 +5583,12 @@ class MatriculasController extends Controller
         }else{
             $lista_contratos = false;
         }
-        if(is_array($lista_contratos)){
+        //Gerar a propostas estatica por aqui...
+        $ret = (new MatriculasController)->orcamento_pdf_estatico($token_matricula);
+        if(!$ret['exec']){
+            return $ret;
+        }
+        if(is_array($lista_contratos) && $ret['exec']){
             foreach ($lista_contratos as $km => $vm) {
                 $contrato = isset($vm['obs']) ? $vm['obs'] : '';
                 if(!empty($vm['obs'])){
@@ -5709,8 +5714,12 @@ class MatriculasController extends Controller
      * @uso $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
      */
     public function orcamento_pdf_estatico($token){
-        $ret = (new PdfGenerateController)->gerarPdfComImagemDeFundo([
-            'token'=>$token,
+        // $ret = (new PdfGenerateController)->gerarPdfComImagemDeFundo([
+        //     'token'=>$token,
+        //     'f_exibe'=>'server',
+        // ]);
+        $ret = (new PdfGenerateController)->gera_orcamento($token,'pdf',[
+            't_pdf'=>'true',
             'f_exibe'=>'server',
         ]);
         return $ret;
