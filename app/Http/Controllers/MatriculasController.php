@@ -5116,6 +5116,9 @@ class MatriculasController extends Controller
 		$ret['valida']['mens'] = false;
         if(isset($config['pagina']) && $config['pagina']==2){
             //salvar conteudo da página 2
+            // if(isset($config['teste'])){
+            //     dd($config);
+            // }
             if(isset($config['token_matricula']) && isset($config['contrato']) && is_array($config['contrato'])){
                 //11 o id da etapa 'Proposta aprovada' do flow de atendimento
 				// $sql = "UPDATE IGNORE ".$GLOBALS['tab12']." SET contrato='".Qlib::lib_array_json($config['contrato'])."',etapa_atual='11' WHERE token='".$config['token_matricula']."'";
