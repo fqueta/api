@@ -5132,7 +5132,7 @@ class MatriculasController extends Controller
 					if($ret['validar']){
 						// $ret['gravar_copia'] = $this->grava_contrato_statico($config['token_matricula']);
                         GeraPdfContratoJoub::dispatch($config['token_matricula']);
-                        SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
+                        SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(10));
             			$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a';
 					}else{
 						$ret['exec'] = false;
@@ -5396,7 +5396,7 @@ class MatriculasController extends Controller
         if(isset($ret['exec'])){
             $post_id = isset($dm['id']) ? $dm['id'] : null;
             if($post_id){
-                $ret['salv_hist'] = Qlib::update_postmeta($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
+                $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
             }
         }
         // Log::info('send_to_zapSing:', $ret);

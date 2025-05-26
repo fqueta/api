@@ -115,7 +115,6 @@ class TesteController extends Controller
         // ]);
         $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token);
-        // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);
         // SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));
