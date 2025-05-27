@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\api\ZapsingController;
 use App\Jobs\GeraPdfContratoJoub;
+use App\Jobs\GeraPdfPropostaJoub;
 use App\Jobs\SendZapsingJoub;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
@@ -113,7 +114,11 @@ class TesteController extends Controller
         //     "endpoint" => $endpoint,
         //     "body" => $body,
         // ]);
-        $ret = (new MatriculasController)->grava_contrato_statico($token);
+        // $routeName = request()->route()->getName();
+        // dd($routeName);
+        // dd();
+         GeraPdfPropostaJoub::dispatch($token);
+        // $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token);
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);

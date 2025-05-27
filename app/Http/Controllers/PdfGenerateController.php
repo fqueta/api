@@ -26,6 +26,7 @@ class PdfGenerateController extends Controller
                 //     $config = $orca->get_matricula_assinado($token);
                 // }
                 $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : false;
+                // $routeName = isset($config['routeName']) ? $config['routeName'] : request()->route()->getName();
                 $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : false;
 
                 $t_pdf = $t_pdf ? $t_pdf : false;
@@ -51,7 +52,6 @@ class PdfGenerateController extends Controller
                 if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
                     $orcamento .= $res_orc['listMod']['html'];
                 }
-
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF

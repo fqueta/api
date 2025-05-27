@@ -6,6 +6,7 @@ use App\Models\Matricula;
 use App\Qlib\Qlib;
 use App\Http\Controllers\api\ZapsingController;
 use App\Jobs\GeraPdfContratoJoub;
+use App\Jobs\GeraPdfPropostaJoub;
 use App\Jobs\SendZapsingJoub;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1450,8 +1451,8 @@ class MatriculasController extends Controller
                                 <tr>
                                     <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
                                     <th style="width:53%"><div align="left">Etapa</div></th>
-                                    <th style="width:10%"><div align="center">Horas T.</div></th>
-                                    <th style="width:10%"><div align="center">Horas P.</div></th>
+                                    <th style="width:10%"><div align="center">H. Teóricas</div></th>
+                                    <th style="width:10%"><div align="center">H. Práticas</div></th>
                                     <th style="width:15%"><div align="right"><b>Valor</b></div></th>
                                 </tr>
                             </thead>
@@ -1498,8 +1499,8 @@ class MatriculasController extends Controller
                                 <tr>
                                     <th style="width:13%"><div align="left"><b>Descrição</b></div></th>
                                     <th style="width:53%"><b>Etapa</b></th>
-                                    <th style="width:10%" class="text-center">Horas T.</th>
-                                    <th style="width:10%" class="text-center">Horas P.</th>
+                                    <th style="width:10%" class="text-center">H. Teóricas</th>
+                                    <th style="width:10%" class="text-center">H. Práticas</th>
                                     <th style="width:15%"><div align="right"><b>Valor</b></div></th>
                                 </tr>
                             </thead>
@@ -1685,13 +1686,24 @@ class MatriculasController extends Controller
      * Metodo para verificar se a requisição é de uma pagina de pdf válida
      */
     public function is_pdf(){
-        $route_name = request()->route()->getName();
-        if($route_name=='orcamento.pdf'){
-            $ret = true;
-        }else{
-            $ret = false;
+        try {
+            $console = app()->runningInConsole();
+            if ($console) {
+                // Estamos fora do ciclo HTTP (provavelmente fila ou command)
+                $routeName = false;
+            } else {
+                $routeName = request()->route()?->getName();
+            }
+            if($routeName=='orcamento.pdf'){
+                $ret = true;
+            }else{
+                $ret = false;
+            }
+            return $ret;
+        } catch (\Throwable $th) {
+            //throw $th;
+            return false;
         }
-        return $ret;
     }
     /**
      * Metodo para exibir um table com as taxas dos cursos especificos*
@@ -1725,10 +1737,10 @@ class MatriculasController extends Controller
                         </tbody>
                         '.$tmsomaTaxa.'
                     </table>&nbsp;&nbsp;';
-        $tm2 = '<tr>
-                    <td style="width:90%">{descricao}</td>
-                    <td style="width:10%"><div align="right">{valor}</div></td>
-                </tr>';
+            $tm2 = '<tr>
+                        <td style="width:90%">{descricao}</td>
+                        <td style="width:10%"><div align="right">{valor}</div></td>
+                    </tr>';
         }else{
             $tm1 = '<table class="table table-striped">
                         <thead>
@@ -5134,8 +5146,9 @@ class MatriculasController extends Controller
 					$ret['validar'] = $this->valida_respostas_assinatura($config['token_matricula'],'token');
 					if($ret['validar']){
 						// $ret['gravar_copia'] = $this->grava_contrato_statico($config['token_matricula']);
-                        GeraPdfContratoJoub::dispatch($config['token_matricula']);
-                        SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(10));
+                        GeraPdfPropostaJoub::dispatch($config['token_matricula']);
+                        GeraPdfContratoJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
+                        SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
             			$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a';
 					}else{
 						$ret['exec'] = false;
@@ -5587,11 +5600,11 @@ class MatriculasController extends Controller
             $lista_contratos = false;
         }
         //Gerar a propostas estatica por aqui...
-        $ret = (new MatriculasController)->orcamento_pdf_estatico($token_matricula);
-        if(!$ret['exec']){
-            return $ret;
-        }
-        if(is_array($lista_contratos) && $ret['exec']){
+        // $ret = (new MatriculasController)->orcamento_pdf_estatico($token_matricula);
+        // if(!$ret['exec']){
+        //     return $ret;
+        // }
+        if(is_array($lista_contratos)){
             foreach ($lista_contratos as $km => $vm) {
                 $contrato = isset($vm['obs']) ? $vm['obs'] : '';
                 if(!empty($vm['obs'])){
