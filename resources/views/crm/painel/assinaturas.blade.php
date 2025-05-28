@@ -134,14 +134,14 @@ if($status == 'pending'){
                     <tbody>
                         <tr>
                             <td> 1 </td>
-                            <td>{{__('Contrato principal')}}</td>
+                            <td>{{__('Proposta Aceita')}}</td>
                             <td class="text-right">
-                                <a href="{{$link}}" target="_blank" title="Visualizar: o Contrato principal">{!! $icon !!}</a>
+                                <a href="{{$link}}" target="_blank" title="Visualizar: Proposta Aceita">{!! $icon !!}</a>
                             </td>
                         </tr>
                         @if (isset($arr_links['extra']) && is_array($arr_links['extra']) && ($extra = $arr_links['extra']))
                             <tr>
-                                <td colspan="3" class="text-center">Documentos Anexos</td>
+                                <td colspan="3" class="text-center">Contratos Anexos</td>
                             </tr>
                             @foreach ($extra as $k=>$v )
                                 @php
