@@ -149,7 +149,7 @@ if($status == 'pending'){
                                 @endphp
                                 <tr>
                                     <td> {{$i}} </td>
-                                    <td>{{$v['nome']}}</td>
+                                    <td>{{str_replace('_',' ',$v['nome'])}}</td>
                                     <td class="text-right">
                                         <a href="{{$v['link']}}" title="Visualizar: {{$v['nome']}}" target="_blank">{!! $icon !!}</a>
                                     </td>
