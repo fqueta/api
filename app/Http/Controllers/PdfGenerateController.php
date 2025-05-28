@@ -18,6 +18,12 @@ class PdfGenerateController extends Controller
             $d = $orca->dm($token);
             if($d){
                 //verifica se está assinado
+                $is_signed = (new MatriculasController)->verificaDataAssinatura(['campo_bus'=>'token','token'=>$token]);
+                if($is_signed){
+                    //se está assinado redireciona para o link de página assinado
+                    $link_assinado = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$token.'/a';
+                    return redirect($link_assinado);
+                }
                 // $config = $orca->get_matricula_assinado($token);
                 // if(@$config['exec'] && @$config['data']){
                 //     $ret = @$config;
@@ -52,6 +58,7 @@ class PdfGenerateController extends Controller
                 if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
                     $orcamento .= $res_orc['listMod']['html'];
                 }
+                // dd($d);
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
