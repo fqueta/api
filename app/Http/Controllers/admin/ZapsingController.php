@@ -27,6 +27,10 @@ class ZapsingController extends Controller
                 if($processo){
                     $links = Qlib::get_matriculameta($id_matricula,$campo_meta2,true);
                     $arr_processo = Qlib::lib_json_array($processo);
+                    if(!isset($arr_processo['signers']) && isset($arr_processo['enviar']['response']['signers'])){
+                        $arr_processo['signers'] = $arr_processo['enviar']['response']['signers'];
+                    }
+                    // dump($arr_processo);
                     $arr_links = Qlib::lib_json_array($links);
                     $ret['arr_processo'] = $arr_processo;
                     $ret['arr_links'] = $arr_links;

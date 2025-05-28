@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\api\ZapsingController;
+use App\Http\Controllers\admin\ZapsingController;
 use App\Jobs\GeraPdfContratoJoub;
 use App\Jobs\GeraPdfPropostaJoub;
 use App\Jobs\SendZapsingJoub;
@@ -117,7 +117,9 @@ class TesteController extends Controller
         // $routeName = request()->route()->getName();
         // dd($routeName);
         // dd();
-         GeraPdfPropostaJoub::dispatch($token);
+        //  GeraPdfPropostaJoub::dispatch($token);
+        $ret = (new ZapsingController )->painel_assinaturas($token);
+
         // $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token);
         // SendZapsingJoub::dispatch($token);
