@@ -912,7 +912,6 @@ class MatriculasController extends Controller
 									$labelSub = 'Etapa 2';
 									$tr2 .= '
 										<tr id="matri">
-											<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
 											<th style="width:85%"><div align="left"> Matrícula</div></th>
 											<th style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></th>
 										</tr>';
@@ -923,29 +922,12 @@ class MatriculasController extends Controller
 										</tr>';
 									$tr2 .= '
 										<tr id="matri">
-											<th style="width:85%">'.$labelSub.'</div></th>
-											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.Qlib::valor_moeda($total_etapa2,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
+											<th style="width:85%">Etapa 2</div></th>
+											<td><div align="right"> <b>'.Qlib::valor_moeda($total_etapa2,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 										</tr>
                                         {tr_resumo_etapa3}
                                         ';
-									$tr2_adm .= '
-									<tr id="matri">
-										<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
-										<td style="width:85%"><div align="left"> Matrícula</div></td>
-										<td style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></td>
-									</tr>';
-                                    $tr2_adm .= '
-										<tr id="matri">
-											<th style="width:85%">Etapa 1</div></th>
-											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.Qlib::valor_moeda($total_etapa1,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
-										</tr>';
-									$tr2_adm .= '
-									<tr id="matri">
-										<th style="width:85%">'.$labelSub.'</th>
-										<td style="width:'.$arr_wid2[3].'"><div align="right">'.Qlib::valor_moeda($subtotal2,Qlib::qoption('sigla_moeda').' ').'</div></td>
-									</tr>
-                                    {tr_resumo_etapa3}
-                                    ';
+									$tr2_adm .= $tr2;
 								}
 								$taxasHtml = false;
 								$taxasValor = 0;
@@ -1154,7 +1136,7 @@ class MatriculasController extends Controller
                                         ';
                                          $tr_resumo_etapa3 = '
 										<tr id="matri" class="total">
-											<td style="width:85%"><div align="left"> <b>'.$lbCurm.'</b></div></td>
+											<td style="width:85%"><div align="left"> <b>Etapa 3</b></div></td>
 											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>{valor_combustivel}</b></div></td>
 										</tr>';
 
