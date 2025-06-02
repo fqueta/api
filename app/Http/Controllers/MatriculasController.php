@@ -1078,8 +1078,8 @@ class MatriculasController extends Controller
 									$laber_taxas = 'Total de taxas (A vista)';
 								}
 								$tr3_adm .='<tr class="vermelho">
-												<td style="width:100%"><div align="left"><strong>'.$laber_taxas.':</strong></div></td>
-												<td style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($taxasValorMatri,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
+												<td><div align="left"><strong>'.$laber_taxas.':</strong></div></td>
+												<td><div align="right"><b>'.Qlib::valor_moeda($taxasValorMatri,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 											</tr>';
                                 if($valor_desconto_taxa>0){
                                     // $tr3_adm .='<tr class="vermelho">
@@ -1234,7 +1234,7 @@ class MatriculasController extends Controller
 									<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.Qlib::valor_moeda($totalOrcamento,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 								</tr>
 							';
-							$tr3_adm .= '<td colspan="1" width="80%"><div align="center"><strong class="verde">TOTAL DA PROPOSTA A VISTA:</strong></div></td><td><div align="right"> <span class="verde"><b>'.Qlib::valor_moeda($totalOrcamento,Qlib::qoption('sigla_moeda').' ').'</b></span></div></td>';
+							$tr3_adm .= '<td width="80%"><div align="left"><strong class="verde">TOTAL DA PROPOSTA A VISTA:</strong></div></td><td><div align="right"> <span class="verde"><b>'.Qlib::valor_moeda($totalOrcamento,Qlib::qoption('sigla_moeda').' ').'</b></span></div></td>';
 
 							$ret['totalOrcamento'] = $totalOrcamento;
 							$incluir_taxas_parcelamento = Qlib::qoption('incluir_taxas_parcelamento')?Qlib::qoption('incluir_taxas_parcelamento'):'n';
