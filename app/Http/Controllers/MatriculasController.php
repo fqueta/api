@@ -1043,7 +1043,7 @@ class MatriculasController extends Controller
                                         $valor_desconto_taxa = $val_t - $desconto_taxa;
                                     }
                                 }
-                                $laber_taxas = __('Total de taxas Não inclusas no orçamento');
+                                $laber_taxas = __('Total de taxas não inclusas no orçamento');
 
 								$tr3 .= '
 									<trclass="total">
