@@ -1077,18 +1077,18 @@ class MatriculasController extends Controller
 								if(Qlib::qoption('somar_taxas_orcamento')=='s'){
 									$laber_taxas = 'Total de taxas (A vista)';
 								}
-								// $tr3_adm .='<tr class="vermelho">
-								// 				<td style="width:100%"><div align="left"><strong>'.$laber_taxas.':</strong></div></td>
-								// 				<td style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($taxasValorMatri,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
-								// 			</tr>';
+								$tr3_adm .='<tr class="vermelho">
+												<td style="width:100%"><div align="left"><strong>'.$laber_taxas.':</strong></div></td>
+												<td style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($taxasValorMatri,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
+											</tr>';
                                 if($valor_desconto_taxa>0){
+                                    // $tr3_adm .='<tr class="vermelho">
+                                    //     <td style="width:100%"><div align="left"><strong>'.$title_desconto_taxa1.':</strong></div></td>
+                                    //     <td colspan="" style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($val_t,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
+                                    // </tr>';
                                     $tr3_adm .='<tr class="vermelho">
-                                        <td style="width:100%"><div align="left"><strong>'.$title_desconto_taxa1.':</strong></div></td>
-                                        <td colspan="" style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($val_t,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
-                                    </tr>';
-                                    $tr3_adm .='<tr class="vermelho">
-                                        <td colspan="2" style="width:100%"><div align="left"><strong>'.$title_desconto_taxa2.':</strong></div></td>
-                                        <td colspan="" style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($valor_desconto_taxa,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
+                                        <td style="width:100%"><div align="left"><strong>'.$title_desconto_taxa2.':</strong></div></td>
+                                        <td style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($valor_desconto_taxa,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
                                     </tr>';
                                 }
 								// $tr3_adm .='<tr id="">
