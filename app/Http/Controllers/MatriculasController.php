@@ -998,7 +998,7 @@ class MatriculasController extends Controller
                                 }
 								//$taxasHtml = $taxasHtml ? $taxasHtml : '<span>*valor de taxas não incluso</span>';
 								$tr2 .=		$taxasHtml;
-								$tr3_adm = $tr2;
+								$tr3_adm .= $taxasHtml;
 							}
 
 							/*
