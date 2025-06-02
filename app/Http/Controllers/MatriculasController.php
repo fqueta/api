@@ -1135,14 +1135,14 @@ class MatriculasController extends Controller
                                          $tr_resumo_etapa3 = '
 										<tr class="matri" class="total">
 											<td style="width:80%"><div align="left"> <b>Etapa 3</b></div></td>
-											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>{valor_combustivel}</b></div></td>
+											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>{valor_combustivel}</b><input type="hidden" value="'.Qlib::precoDbdase($sc['valor']).'" name="combustivel" /></div></td>
 										</tr>';
 
 
-										$tr3_adm .='
-											<tr id="">
-												<td colspan="" style="width:100%"><div align="left"><b>{valor_combustivel}</b><input type="hidden" value="'.Qlib::precoDbdase($sc['valor']).'" name="combustivel" /></div></td>
-											</tr>';
+										// $tr3_adm .='
+										// 	<tr id="">
+										// 		<td colspan="" style="width:100%"><div align="left"><b>{valor_combustivel}</b></div></td>
+										// 	</tr>';
                                         $tr_resumo_etapa3 = str_replace('{valor_combustivel}',$dados['combustivel'],$tr_resumo_etapa3);
                                         $tr3_adm = str_replace('{valor_combustivel}',$dados['combustivel'],$tr3_adm);
                                         // $totalOrcamento = $subtotal2 + $valor_combustivel;
