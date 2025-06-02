@@ -911,17 +911,17 @@ class MatriculasController extends Controller
 									$totalOrcamento = $subtotal2;
 									$labelSub = 'Etapa 2';
 									$tr2 .= '
-										<tr id="matri">
+										<tr class="matri">
 											<th style="width:80%"><div align="left"> Matrícula</div></th>
 											<th style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></th>
 										</tr>';
 									$tr2 .= '
-										<tr id="matri">
+										<tr class="matri">
 											<th style="width:80%">Etapa 1</div></th>
 											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.Qlib::valor_moeda($total_etapa1,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 										</tr>';
 									$tr2 .= '
-										<tr id="matri">
+										<tr class="matri">
 											<th style="width:80%">Etapa 2</div></th>
 											<td><div align="right"> <b>'.Qlib::valor_moeda($total_etapa2,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 										</tr>
@@ -958,7 +958,7 @@ class MatriculasController extends Controller
 											}
 											if($valt >0){
                                                 $taxasHtml .=
-                                                '<tr id="matri">
+                                                '<tr class="matri">
 													<!--<td style="width:'.$arr_wid2[0].'"><div align="center">'.$i2.'</div></td>-->
 													<td style="width:80%"><div align="left">'.$label.'</div></td>
 													<td style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($valt,Qlib::qoption('sigla_moeda').' ').'</div></td>
@@ -984,7 +984,7 @@ class MatriculasController extends Controller
 												$v_exibe = '0,00';
 											}
 											$taxasHtml .=
-                                            '<tr id="matri">
+                                            '<tr class="matri">
 												<td style="width:80%"><div align="left">'.$label.'</div></td>
 												<td style="width:'.$arr_wid2[3].'"><div align="right"> '.$v_exibe.'</div></td>
 											</tr>';
@@ -1046,7 +1046,7 @@ class MatriculasController extends Controller
                                 $laber_taxas = __('Total de taxas Não inclusas no orçamento');
 
 								$tr3 .= '
-									<tr id="matri" class="total">
+									<tr class="matri" class="total">
 										<td style="width:80%"><div align="left"> <strong style="color:#F00;">'.$laber_taxas.'</strong></div></td>
 										<td style="width:'.$arr_wid2[3].'"><div align="right" style="color:#F00;"> <b>'.Qlib::valor_moeda($taxasValorMatri,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 									</tr>';
@@ -1070,7 +1070,7 @@ class MatriculasController extends Controller
 										$lbCurm .= ' + Taxas';
 									}
 									// $tr3 .= '
-									// <tr id="matri" class="total">
+									// <tr class="matri" class="total">
 									// 	<td style="width:'.$arr_wid2[0].'"><div align="center">&nbsp;</div></td>
 									// 	<td style="width:80%"><div align="right"> <b>'.$lbCurm.'</b></div></td>
 									// 	<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
@@ -1134,7 +1134,7 @@ class MatriculasController extends Controller
                                         </tr>
                                         ';
                                          $tr_resumo_etapa3 = '
-										<tr id="matri" class="total">
+										<tr class="matri" class="total">
 											<td style="width:80%"><div align="left"> <b>Etapa 3</b></div></td>
 											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>{valor_combustivel}</b></div></td>
 										</tr>';
@@ -1230,7 +1230,7 @@ class MatriculasController extends Controller
 							}
 							//<!--<a href="'.$linkComprar.'" target="_BLANK" style="padding:5px;">Comprar</a>-->
 							$tr3 .= '
-								<tr id="matri" class="total verde">
+								<tr class="matri" class="total verde">
 									<td style="width:80%"><div align="left"> <strong class="color-price1">TOTAL DA PROPOSTA A VISTA:</strong></div></td>
 									<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>'.Qlib::valor_moeda($totalOrcamento,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 								</tr>
