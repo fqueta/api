@@ -118,7 +118,7 @@ class TesteController extends Controller
         // dd($routeName);
         // dd();
         //  GeraPdfPropostaJoub::dispatch($token);
-        $ret = (new ZapsingController )->painel_assinaturas($token);
+        // $ret = (new ZapsingController )->painel_assinaturas($token);
 
         // $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token);

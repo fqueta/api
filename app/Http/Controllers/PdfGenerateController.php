@@ -62,6 +62,7 @@ class PdfGenerateController extends Controller
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
+                        $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
                         foreach ($fundo as $k => $v) {
                             $pagina = ($k+1);
                             $title = '';//'<h1>Title pagina '.$pagina.'.</h1>';
@@ -78,10 +79,13 @@ class PdfGenerateController extends Controller
                             }
                             if($k==2){
                                 if($tipo_curso!=4){
-                                    $title = '<h2>Parcelamento</h2>';
+                                    $title = '';
                                 }
+                                $title2 = '<h2>Parcelamento</h2>';
                                 $padding = '120px 30px 10px 30px';
-                                $content = $parcelamento;
+                                $content = '<span style="font-size:12px">'.$info_proposta.'</span>';
+                                $content .= $title2;
+                                $content .= $parcelamento;
                             }
                             $paginas[$k] = [
                                 'bk_img'=>$v['url'],
