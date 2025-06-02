@@ -1226,6 +1226,7 @@ class MatriculasController extends Controller
                                     $combustivelHtml = str_replace('{width3}',$arr_wid2[3],$combustivelHtml);
                                     $combustivelHtml = str_replace('{valor_combustivel}',$dados['combustivel'],$combustivelHtml);
                                     $combustivelHtml = str_replace('{valor_litro}',@$dados['valor_litro'],$combustivelHtml);
+                                    $combustivelHtml = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$combustivelHtml);
 
                                     // $tr3 .= 	$combustivelHtml;
                                     // $tr2 = $combustivelHtml.$tr2 ;
