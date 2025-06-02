@@ -998,7 +998,7 @@ class MatriculasController extends Controller
                                 }
 								//$taxasHtml = $taxasHtml ? $taxasHtml : '<span>*valor de taxas não incluso</span>';
 								$tr2 .=		$taxasHtml;
-								$tr3_adm .= $taxasHtml;
+								$tr3_adm = $tr2;
 							}
 
 							/*
@@ -1081,22 +1081,22 @@ class MatriculasController extends Controller
 								}
 								$tr3_adm .='<tr class="vermelho">
 												<td colspan="2" style="width:100%"><div align="left"><strong>'.$laber_taxas.':</strong></div></td>
-												<td colspan="" style="width:100%"><div align="right"><b>'.number_format($taxasValorMatri,'2',',','.').'</b></div></td>
+												<td colspan="" style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($taxasValorMatri,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
 											</tr>';
                                 if($valor_desconto_taxa>0){
                                     $tr3_adm .='<tr class="vermelho">
                                         <td colspan="2" style="width:100%"><div align="left"><strong>'.$title_desconto_taxa1.':</strong></div></td>
-                                        <td colspan="" style="width:100%"><div align="right"><b>'.number_format($val_t,'2',',','.').'</b></div></td>
+                                        <td colspan="" style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($val_t,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
                                     </tr>';
                                     $tr3_adm .='<tr class="vermelho">
                                         <td colspan="2" style="width:100%"><div align="left"><strong>'.$title_desconto_taxa2.':</strong></div></td>
-                                        <td colspan="" style="width:100%"><div align="right"><b>'.number_format($valor_desconto_taxa,'2',',','.').'</b></div></td>
+                                        <td colspan="" style="width:100%"><div align="right"><b>'.Qlib::valor_moeda($valor_desconto_taxa,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
                                     </tr>';
                                 }
-								$tr3_adm .='<tr id="">
-												<td colspan="2" style="width:100%"><div align="left"><strong>'.$lbCurm.'</strong></div></td>
-												<td colspan="" style="width:100%"><div align="right"><b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
-											</tr>';
+								// $tr3_adm .='<tr id="">
+								// 				<td colspan="2" style="width:100%"><div align="left"><strong>'.$lbCurm.'</strong></div></td>
+								// 				<td colspan="" style="width:100%"><div align="right"><b>'.number_format($subtotal2,'2',',','.').'</b></div></td>
+								// 			</tr>';
 								$ret['total_taxas'] = @$taxasValorMatri;
 							}
 							//Combustivel
