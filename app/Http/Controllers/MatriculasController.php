@@ -1152,15 +1152,19 @@ class MatriculasController extends Controller
                                                 </th>
                                         </tr>
                                         ';
-                                        $tr_resumo_etapa3 = '
+                                         $tr_resumo_etapa3 = '
 										<tr id="matri" class="total">
 											<td style="width:85%"><div align="left"> <b>'.$lbCurm.'</b></div></td>
 											<td style="width:'.$arr_wid2[3].'"><div align="right"> <b>{valor_combustivel}</b></div></td>
 										</tr>';
+
+
 										$tr3_adm .='
 											<tr id="">
 												<td colspan="" style="width:100%"><div align="left"><b>{valor_combustivel}</b><input type="hidden" value="'.Qlib::precoDbdase($sc['valor']).'" name="combustivel" /></div></td>
 											</tr>';
+                                        $tr_resumo_etapa3 = str_replace('{valor_combustivel}',$dados['combustivel'],$tr_resumo_etapa3);
+                                        $tr3_adm = str_replace('{valor_combustivel}',$dados['combustivel'],$tr3_adm);
                                         // $totalOrcamento = $subtotal2 + $valor_combustivel;
 									}
 									// $lbCurm = 'Gasto estimado de combustível:';
@@ -1224,9 +1228,9 @@ class MatriculasController extends Controller
                                     $combustivelHtml = str_replace('{width0}',$arr_wid2[0],$combustivelHtml);
                                     $combustivelHtml = str_replace('{width1}',$arr_wid2[1],$combustivelHtml);
                                     $combustivelHtml = str_replace('{width3}',$arr_wid2[3],$combustivelHtml);
-                                    $combustivelHtml = str_replace('{valor_combustivel}',$dados['combustivel'],$combustivelHtml);
                                     $combustivelHtml = str_replace('{valor_litro}',@$dados['valor_litro'],$combustivelHtml);
                                     $combustivelHtml = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$combustivelHtml);
+                                    $combustivelHtml = str_replace('{valor_combustivel}',$dados['combustivel'],$combustivelHtml);
 
                                     // $tr3 .= 	$combustivelHtml;
                                     // $tr2 = $combustivelHtml.$tr2 ;
@@ -1279,19 +1283,17 @@ class MatriculasController extends Controller
 							</tr>';
 							$footer .= $descontoFooter;
 							$ret['table'] = str_replace('{{footer}}',$footer,$ret['table']);
-							$ret['table'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table']);
 							$ret['table'] = str_replace('{{table2}}',$tr2,$ret['table']);
 							$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
 							$ret['table'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table']);
 							$ret['table'] = str_replace('{info_proposta}',$info_proposta,$ret['table']);
 							$ret['table'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table']);
                             $ret['table'] = str_replace('{valor_combustivel}',$dados['combustivel'],$ret['table']);
+							$ret['table'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table']);
 
                             $ret['table_adm'] = str_replace('{{table}}',$tr_adm,$tema_admn);
 							$ret['table_adm'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table_adm']);
-                            $ret['table_adm'] = str_replace('{valor_combustivel}',$dados['combustivel'],$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{footer}}',$footer,$ret['table_adm']);
-							$ret['table_adm'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{table2}}',$tr2_adm,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{{table3}}',$tr3_adm,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table_adm']);
@@ -1302,6 +1304,8 @@ class MatriculasController extends Controller
 							$ret['table_adm'] = str_replace('{link_proposta}',$link_proposta,$ret['table_adm']);
 							// $ret['table'] .= $mensComb.$mens_taxa;
 							// $ret['table_adm'] .= $mensComb.$mens_taxa;
+                            $ret['table_adm'] = str_replace('{valor_combustivel}',$dados['combustivel'],$ret['table_adm']);
+							$ret['table_adm'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table_adm']);
 							$ret['table'] .= $mens_taxa;
 							$ret['table_adm'] .= $mens_taxa;
 						}
