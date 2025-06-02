@@ -1279,10 +1279,10 @@ class MatriculasController extends Controller
 							</tr>';
 							$footer .= $descontoFooter;
 							$ret['table'] = str_replace('{{footer}}',$footer,$ret['table']);
+							$ret['table'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table']);
 							$ret['table'] = str_replace('{{table2}}',$tr2,$ret['table']);
 							$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
 							$ret['table'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table']);
-							$ret['table'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table']);
 							$ret['table'] = str_replace('{info_proposta}',$info_proposta,$ret['table']);
 							$ret['table'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table']);
                             $ret['table'] = str_replace('{valor_combustivel}',$dados['combustivel'],$ret['table']);
