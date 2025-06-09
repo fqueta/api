@@ -678,8 +678,9 @@ class ZapguruController extends Controller
         return $ret;
     }
     /**
-     * Metodo para criar um chat zapguru
+     * Metodo para criar um chat zapguru com o Email do cliente ou telefone
      * @param array estrutura do array $config=['telefonezap'=>'553299999999','dialog_id'=>'opcional'];
+     * uso $ret = (new ZapguruController)->criar_chat(['email'=>'ger.maisaqui1@gmail.com','text'=>'Mensagem de teste']);
      */
 	public function criar_chat($config=false){
 
@@ -697,31 +698,64 @@ class ZapguruController extends Controller
         $cel = isset($config['telefonezap']) ? $config['telefonezap'] : false;
         $tab = isset($config['tab']) ? $config['tab'] : $GLOBALS['tab15'];
         $user_id = isset($config['user_id']) ? $config['user_id'] : '';
-        $cadastrado = isset($config['cadastrados']) ? $config['cadastrados'] : false; // permite criar chat de clientes cadastrados ou não
+        $cadastrado = isset($config['cadastrados']) ? $config['cadastrados'] : true; // permite criar chat de clientes cadastrados ou não
         // $text 		 	= isset($config['text'])?$config['text'] 	:'Olá *{nome}* como podemos ajudá-lo';
         $text 		 	= isset($config['text'])?$config['text'] 	:' ';
         if(!$cel){
             $cel = isset($config['Celular']) ? $config['Celular'] : false;
         }
-		if(isset($config['telefonezap'])){
+		if($cel){
             if($tab=='capta_lead'){
                 $comSc = " AND celular='".$cel."'";
             }else{
                 $comSc = " AND telefonezap='".$cel."'";
             }
 		}else{
-			$comSc = " AND Celular='".$cel."'";
-		}
-        if($comSc){
-            //dados_tab('lcf_planos',['comple_sql'=>"WHERE token_matricula='".$config['token_matricula']."' $compleSql"])
-			$dadosCli = Qlib::dados_tab($tab,['campos'=>'*','where'=>"WHERE ".Qlib::compleDelete()."$comSc"]);
-            // return $dadosCli;
-			if(!$dadosCli && $cadastrado){
-
-				$ret['mens'] = Qlib::formatMensagemInfo('Cliente com telefone '.$cel.' não encontrado!','danger');
-
+            //verificar se foi informado um email para conseguir o telefonezap pelo email
+            $email = isset($config['email']) ? $config['email'] : false;
+            if($email){
+                if($tab=='capta_lead'){
+                    $campo_bus = 'email';
+                    $campo_enc = 'celular';
+                    $cel = Qlib::buscaValorDb0($tab,$campo_bus,$email,$campo_enc," AND ".Qlib::compleDelete());
+                }elseif($tab == 'usuarios_sistemas'){
+                    $campo_bus = 'email';
+                    $campo_enc = 'telefonezap';
+                    $comSc = "WHERE $campo_bus='$email'";
+                }else{
+                    $campo_bus = 'Email';
+                    $campo_enc = 'telefonezap';
+                    $cel = Qlib::buscaValorDb0($tab,$campo_bus,$email,$campo_enc," AND ".Qlib::compleDelete());
+                }
+                // dd($cel);
+                if($tab != 'usuarios_sistemas'){
+                    if($cel){
+                        $comSc = " AND $campo_enc='".$cel."'";
+                    }else{
+                        $ret['mens'] = Qlib::formatMensagemInfo('Telefone não informado não encontrado!','danger');
+                        $ret['color'] = 'danger';
+                        return $ret;
+                    }
+                }
+            }else{
+           		$ret['mens'] = Qlib::formatMensagemInfo('Email ou telefone não informado não encontrado!','danger');
+                $ret['color'] = 'danger';
 				return $ret;
 
+            }
+		}
+        if($comSc){
+            if($tab=='usuarios_sistemas'){
+                $dadosCli = Qlib::get_user_data($comSc);
+                dd($dadosCli);
+            }else{
+                $dadosCli = Qlib::dados_tab($tab,['campos'=>'*','where'=>"WHERE ".Qlib::compleDelete()."$comSc"]);
+            }
+            // return $dadosCli;
+			if(!$dadosCli && $cadastrado){
+				$ret['mens'] = Qlib::formatMensagemInfo('Cliente com telefone '.$cel.' não encontrado!','danger');
+                $ret['color'] = 'danger';
+				return $ret;
 			}
             $id_cliente = isset($dadosCli[0]['id']) ? $dadosCli[0]['id'] : false;
             // dump($dadosCli);
@@ -734,9 +768,7 @@ class ZapguruController extends Controller
                 }else{
                     $nome 		 	= isset($dadosCli[0]['Nome'])?$dadosCli[0]['Nome'] 	:false;
                     $pais = !empty($dadosCli[0]['pais'])?$dadosCli[0]['pais']:'Brasil';
-
                     $codi_pais = false;
-
                     if($pais=='Brasil' && !isset($config['telefonezap'])){
 
                         $codi_pais = '55';
@@ -782,7 +814,7 @@ class ZapguruController extends Controller
 			$ret['config'] = $config;
             //adiciona o id no nome
             if(isset($dadosCli[0]['id']) && ($id_cliente=$dadosCli[0]['id'])){
-                $name .= '|'.$id_cliente;
+                $name .= ' - '.$id_cliente.' | CRM';
             }
             // return $nome;
 			$url = $this->url.'action='.$action.'&phone_id='.$phone_id.'&name='.$name.'&text='.$text.'&chat_number='.$chat_number;
@@ -827,6 +859,7 @@ class ZapguruController extends Controller
 		return $ret;
 
 	}
+
     /**
      * retorna o link de um chat aparti de uma respota webhook zapguru valida
      * @param array $config

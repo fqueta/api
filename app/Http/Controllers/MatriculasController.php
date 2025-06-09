@@ -231,7 +231,14 @@ class MatriculasController extends Controller
             if(isset($dm['desconto']) && $dm['desconto'] > 0){
                 $dm['valor_orcamento'] = $dm['subtotal']-$dm['desconto'];
             }
-
+            $campo_processo_zapsing = (new ZapsingController )->campo_processo;
+            $dm['webhook_zapsing'] = null;
+            if(isset($dm['id']) && ($id_orcamento=$dm['id'])){
+                $web = Qlib::get_matriculameta($id_orcamento,$campo_processo_zapsing,true);
+                if($web){
+                    $dm['webhook_zapsing'] = Qlib::lib_json_array($web);
+                }
+            }
         }else{
             return false;
         }
@@ -697,7 +704,6 @@ class MatriculasController extends Controller
                                     $titulo = isset($valo['titulo']) ? $valo['titulo'] : false;
                                     $valo['id_curso'] = @$dados['id_curso'];
                                     $total = 0;
-									$totalHoras += (int)$horas;
                                     if($etapa=='etapa1' && $titulo){
                                         $total = isset($valo['valor']) ? $valo['valor'] : 0;
                                         //não soma por que é um valor simbolico
@@ -713,9 +719,10 @@ class MatriculasController extends Controller
                                         $tr_etapa1 = str_replace('{aula}',$aula,$tr_etapa1);
                                         $tr_etapa1 = str_replace('{horas}',$horas,$tr_etapa1);
                                         $tr_etapa1 = str_replace('{total}',Qlib::valor_moeda($total,Qlib::qoption('sigla_moeda').' '),$tr_etapa1);
-
                                     }
                                     if($etapa=='etapa2' && $titulo){
+                                        //Somar total de créditos apenas para a etapa 2
+                                        $totalHoras += (int)$horas;
                                         $tota = $this->calcPrecModulos($valo,$dados['sele_valores'],$arr_modu);
                                         if(is_array($tota)){
 
@@ -783,7 +790,7 @@ class MatriculasController extends Controller
                                 }
                                 if((isset($dados['desconto']) && $dados['desconto'] >0) || (isset($dados['entrada']) && $dados['entrada'] >0) || (isset($dados['desconto_porcento']) && $dados['desconto_porcento']>0) || $desconto_turma || $desconto_especial){
 									// $totalCurso = $ret['total'];
-									if(!$footer){
+                                    if(!$footer){
 										$footer = '
 										<tr>
 											<th colspan="3"><div align="right"> Subtotal</div></th>
@@ -897,7 +904,16 @@ class MatriculasController extends Controller
                                     }
 									$descontoFooter .= '<tr class="verde"><td colspan="4" class="total-curso"><div align="right"><strong>'.$label_total.'</strong></div></td><td class="total-curso"><div align="right"><b> '.Qlib::valor_moeda($totalCurso,Qlib::qoption('sigla_moeda').' ').'</b></div></td></tr>';
 									$subtotal1 = $totalCurso;
-								}
+								}else{
+                                    if(!$footer){
+										$footer = '
+										<tr>
+											<th colspan="3"><div align="right"> Subtotal</div></th>
+											<td><div align="center"><b>'.$totalHoras.'</b></div></td>
+											<td><div align="right"><b>'.Qlib::valor_moeda($totalCurso,Qlib::qoption('sigla_moeda').' ').'</b></div></td>
+										</tr>';
+									}
+                                }
 								$ret['subtotal'] = $subtotal1;
 								/*Fim desconto*/
 								$taxasHtml = false;

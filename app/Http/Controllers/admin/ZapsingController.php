@@ -50,4 +50,47 @@ class ZapsingController extends Controller
             }
         }
     }
+    /**
+     * Metodo para adiminstrar um envio de mensagem do zapsing
+     * @param string $token
+     */
+    public function enviar_link_assinatura($token_orcamento=null){
+        $d = (new MatriculasController)->dm($token_orcamento);
+        // dd($d);
+        $ret['exec'] = false;
+        $webhook_zapsing = isset($d['webhook_zapsing']['enviar']['response']) ? $d['webhook_zapsing']['enviar']['response'] : [];
+        $email = isset($d['email']) ? $d['email'] : false;
+        $app = config('app.name');
+        $temm = 'Olá *{nome}* sua assinatura foi solicitada, pelo App *{app}*, para o documento, *{nome_doc}* segue o link de assinatura {link}';
+        $i = 0;
+        // dd($webhook_zapsing['signers']);
+        if(isset($webhook_zapsing['signers'][$i]['sign_url']) && is_string($webhook_zapsing['signers'][$i]['sign_url']) && ($signers=$webhook_zapsing['signers'])){
+            if(is_array($signers)){
+                foreach ($signers as $k => $signer) {
+                    $nome = isset($signer['name']) ? $signer['name'] : '';
+                    $nome_doc = isset($signer['name']) ? $signer['name'] : '';
+                    // $email = isset($signering['email']) ? $signering['email'] : $email;
+                    $email = isset($signer['email']) ? $signer['email'] : '';
+                    $link = isset($signer['sign_url']) ? $signer['sign_url'] : '';
+                    $mens = str_replace('{nome}',$nome,$temm);
+                    $mens = str_replace('{nome_doc}',$nome_doc,$mens);
+                    $mens = str_replace('{link}',$link,$mens);
+                    $mens = str_replace('{app}',$app,$mens);
+                    $ret['signer'][$k]['name'] = $nome;
+                    $ret['signer'][$k]['email'] = $email;
+                    $ret['signer'][$k]['nome_doc'] = $nome_doc;
+                    $ret['signer'][$k]['link'] = $link;
+                    // $ret['signer'][$k]['name'] = $nome;
+                    //Ver se enviar com o telefone ou o id do usuario..
+                    // dump($mens,$email,$link);
+                    // $email = $request->get('email') ? $request->get('email') : 'ger.maisaqui1@gmail.com';
+                    // $ret['signer'][$k]['criar_chat'] = (new ZapsingController)->criar_chat(['email'=>$email,'text'=>$mens]);
+                    //Registrar um log
+                    // Log::info('enviar_link_assinatura para o zapguru:', $ret);
+                }
+            }
+
+        }
+        return $ret;
+    }
 }
