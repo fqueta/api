@@ -22,13 +22,14 @@ class TesteController extends Controller
         // $rd = new RdstationController;
         // dd($rd->token_api);
 
+        $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = Qlib::saveEditJson($data);
         // $ret = Qlib::update_tab('clientes',$dados,"WHERE Email='".$dados['Email']."'");
         // $zg = new ZapguruController;
         // $ret = (new ZapguruController)->get_telefonezap_by_token_proposta($token);
 		// $ret = $zg->criar_chat(array('telefonezap'=>'5532984748644','cadastrados'=>true));
 		// $ret = $zg->criar_chat(array('email'=>$email,'tab'=>'usuarios_sistemas','text'=>'Olá *{nome}* como podemos ajudá-lo','cadastrados'=>true));
-        $ret = (new ZapsingController)->enviar_link_assinatura($token);
+        // $ret = (new ZapsingController)->enviar_link_assinatura($token);
         // dd(Qlib::qoption('dominio'));
         // $ret = (new ZapguruController)->post('553291648202','dialog_execute',$comple_url='&dialog_id=679a438a9d7c8affe47e29b5');
         // $rdc = new RdstationController;
@@ -123,7 +124,6 @@ class TesteController extends Controller
         //  GeraPdfPropostaJoub::dispatch($token);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
 
-        // $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token);
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);

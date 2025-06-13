@@ -12,31 +12,36 @@ use Illuminate\Support\Facades\View;
 
 class PdfGenerateController extends Controller
 {
+    /**
+     * Metodo para expor um oraçamento PDF
+     */
+    public function orcamento_pdf($token){
+        $ret = $this->gera_orcamento($token,'pdf',[
+            'verificar_assinatura'=>true,
+        ]);
+        return $ret;
+    }
     public function gera_orcamento($token=false,$type='pdf',$config=[]){
         if($token){
             $orca = new MatriculasController;
             $d = $orca->dm($token);
             if($d){
-                //verifica se está assinado
-                $is_signed = (new MatriculasController)->verificaDataAssinatura(['campo_bus'=>'token','token'=>$token]);
-                if($is_signed){
-                    //se está assinado redireciona para o link de página assinado
-                    $link_assinado = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$token.'/a';
-                    return redirect($link_assinado);
-                }
-                // $config = $orca->get_matricula_assinado($token);
-                // if(@$config['exec'] && @$config['data']){
-                //     $ret = @$config;
-                // }else{
-                //     $ret['save'] = $orca->salva_orcamento_assinado($token,$d[0]);
-                //     $config = $orca->get_matricula_assinado($token);
-                // }
                 $t_pdf = isset($config['t_pdf']) ? $config['t_pdf'] : false;
                 // $routeName = isset($config['routeName']) ? $config['routeName'] : request()->route()->getName();
                 $f_exibe = isset($config['f_exibe']) ? $config['f_exibe'] : false;
+                $verificar = isset($config['verificar_assinatura']) ? $config['verificar_assinatura'] : false;
 
                 $t_pdf = $t_pdf ? $t_pdf : false;
                 $f_exibe = $f_exibe ? $f_exibe : 'navegador';
+                if($verificar){
+                    //verifica se está assinado
+                    $is_signed = (new MatriculasController)->verificaDataAssinatura(['campo_bus'=>'token','token'=>$token]);
+                    if($is_signed){
+                        //se está assinado redireciona para o link de página assinado
+                        $link_assinado = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$token.'/a';
+                        return redirect($link_assinado);
+                    }
+                }
 
                 $nome = isset($d['Nome']) ? $d['Nome'] : '';
                 $code = 'fundo_proposta';
