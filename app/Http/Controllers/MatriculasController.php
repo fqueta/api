@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\admin\ZapsingController as AdminZapsingController;
 use App\Models\Matricula;
 use App\Qlib\Qlib;
 use App\Http\Controllers\api\ZapsingController;
@@ -5512,7 +5513,7 @@ class MatriculasController extends Controller
             if($post_id){
                 $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
                 //Envia o link de assinatura para o whatsapp atrave do zapguru
-                $ret['enviar_link_assinatura'] = (new ZapsingController)->enviar_link_assinatura($tm);
+                $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm);
             }
         }
         // Log::info('send_to_zapSing:', $ret);
