@@ -837,7 +837,7 @@ class ZapguruController extends Controller
 				$url .= '&user_id='.$user_id.'';
 			}
 			$ret['url'] = $url;
-            return $url;
+            // return $url;
             // return $ret;
             $response = Http::accept('application/json')->post($url);
 
