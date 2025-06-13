@@ -5511,6 +5511,8 @@ class MatriculasController extends Controller
             $post_id = isset($dm['id']) ? $dm['id'] : null;
             if($post_id){
                 $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
+                //Envia o link de assinatura para o whatsapp atrave do zapguru
+                $ret['enviar_link_assinatura'] = (new ZapsingController)->enviar_link_assinatura($tm);
             }
         }
         // Log::info('send_to_zapSing:', $ret);

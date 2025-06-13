@@ -21,11 +21,18 @@ class ZapguruController extends Controller
         $this->origem_padrao = (new RdstationController)->origem_padrao;
 	}
     /**
-     * Display a listing of the resource.
+     * Retorna o telefonezap de um aluno como o token da proposta
+     * @param string $token
+     * @uso $telefonezap = (new ZapguruController)->get_telefonezap_by_token_proposta($token);
      */
-    public function index()
+    public function get_telefonezap_by_token_proposta($token=null)
     {
-        //
+        $ret = null;
+        $id_cliente = Qlib::buscaValorDb0('matriculas','token',$token,'id_cliente');
+        if($id_cliente){
+            $ret = Qlib::buscaValorDb0('clientes','id',$id_cliente,'telefonezap');
+        }
+        return $ret;
     }
 
     /**
@@ -681,6 +688,7 @@ class ZapguruController extends Controller
      * Metodo para criar um chat zapguru com o Email do cliente ou telefone
      * @param array estrutura do array $config=['telefonezap'=>'553299999999','dialog_id'=>'opcional'];
      * uso $ret = (new ZapguruController)->criar_chat(['email'=>'ger.maisaqui1@gmail.com','text'=>'Mensagem de teste']);
+     * uso $ret = (new ZapguruController)->criar_chat(['telefonezap'=>'5532999999','text'=>'Mensagem de teste']);
      */
 	public function criar_chat($config=false){
 
@@ -747,9 +755,8 @@ class ZapguruController extends Controller
         if($comSc){
             if($tab=='usuarios_sistemas'){
                 $dadosCli = Qlib::get_user_data($comSc);
-                dd($dadosCli);
             }else{
-                $dadosCli = Qlib::dados_tab($tab,['campos'=>'*','where'=>"WHERE ".Qlib::compleDelete()."$comSc"]);
+                $dadosCli = Qlib::dados_tab($tab,['campos'=>'*','where'=>"WHERE ".Qlib::compleDelete()."$comSc ORDER BY id DESC"]);
             }
             // return $dadosCli;
 			if(!$dadosCli && $cadastrado){
@@ -774,25 +781,23 @@ class ZapguruController extends Controller
                         $codi_pais = '55';
 
                     }
-                    $Celular 	 	= str_replace('(','',$dadosCli[0]['Celular']);
                     $sobrenome 		= isset($dadosCli[0]['sobrenome']) ? $dadosCli[0]['sobrenome'] 	:false;
-                    if(!empty($dadosCli[0]['telefonezap'])){
-
+                    if(isset($dadosCli[0]['telefonezap']) && !empty($dadosCli[0]['telefonezap'])){
                         $chat_number 	= $dadosCli[0]['telefonezap'];
-
                     }else{
-
+                        if($tab=='usuarios_sistemas'){
+                            $Celular 	 	= str_replace('(','',$dadosCli['celular']);
+                            $nome 		 	= isset($dadosCli['nome'])?$dadosCli['nome'] 	:false;
+                        }else{
+                            $Celular 	 	= str_replace('(','',$dadosCli[0]['Celular']);
+                        }
+                        $Celular 		= str_replace(')','',$Celular);
+                        $Celular 		= str_replace('-','',$Celular);
                         $chat_number 	= $codi_pais.$Celular;
                     }
                 }
                 $name  = urlencode($nome.' '.$sobrenome);
-                $Celular 		= str_replace(')','',$Celular);
-                $Celular 		= str_replace('-','',$Celular);
                 $ret['dadosCli'] = $dadosCli;
-
-
-
-
 			}else{
                 $name = 'Senhor(a)';
                 $chat_number 	= $cel;
@@ -813,19 +818,26 @@ class ZapguruController extends Controller
 
 			$ret['config'] = $config;
             //adiciona o id no nome
-            if(isset($dadosCli[0]['id']) && ($id_cliente=$dadosCli[0]['id'])){
-                $name .= ' - '.$id_cliente.' | CRM';
+            if($tab=='usuarios_sistemas'){
+                if(isset($dadosCli['id']) && ($id_cliente=$dadosCli['id'])){
+                    $name .= ' - '.$id_cliente.' | CRM';
+                }
+            }else{
+                if(isset($dadosCli[0]['id']) && ($id_cliente=$dadosCli[0]['id'])){
+                    $name .= ' - '.$id_cliente.' | CRM';
+                }
             }
             // return $nome;
 			$url = $this->url.'action='.$action.'&phone_id='.$phone_id.'&name='.$name.'&text='.$text.'&chat_number='.$chat_number;
-			if($dialog_id){
+			// return $url;
+            if($dialog_id){
 				$url .= '&dialog_id='.$dialog_id.'';
 			}
 			if($user_id){
 				$url .= '&user_id='.$user_id.'';
 			}
-            // return $url;
 			$ret['url'] = $url;
+            return $url;
             // return $ret;
             $response = Http::accept('application/json')->post($url);
 

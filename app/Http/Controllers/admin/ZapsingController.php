@@ -5,8 +5,10 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\api\ZapsingController as ApiZapsingController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\MatriculasController;
+use App\Http\Controllers\ZapguruController;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ZapsingController extends Controller
 {
@@ -58,17 +60,23 @@ class ZapsingController extends Controller
         $d = (new MatriculasController)->dm($token_orcamento);
         // dd($d);
         $ret['exec'] = false;
-        $webhook_zapsing = isset($d['webhook_zapsing']['enviar']['response']) ? $d['webhook_zapsing']['enviar']['response'] : [];
+        $webhook_zapsing = isset($d['webhook_zapsing']['enviar']['response']) ? $d['webhook_zapsing']['enviar']['response'] : false;
+        if(!$webhook_zapsing){
+            $webhook_zapsing = isset($d['webhook_zapsing']) ? $d['webhook_zapsing'] : [];
+        }
         $email = isset($d['email']) ? $d['email'] : false;
         $app = config('app.name');
-        $temm = 'Olá *{nome}* sua assinatura foi solicitada, pelo App *{app}*, para o documento, *{nome_doc}* segue o link de assinatura {link}';
+        $temm = 'Olá *{nome}* sua assinatura foi solicitada, pelo *{app}*, para o documento, *{nome_doc}* segue o link de assinatura {link}';
         $i = 0;
-        // dd($webhook_zapsing['signers']);
+        $zgc = new ZapguruController;
+        $external_id = isset($webhook_zapsing['external_id']) ? $webhook_zapsing['external_id'] : false;
+        $nome_doc = isset($webhook_zapsing['name']) ? $webhook_zapsing['name'] : '';
         if(isset($webhook_zapsing['signers'][$i]['sign_url']) && is_string($webhook_zapsing['signers'][$i]['sign_url']) && ($signers=$webhook_zapsing['signers'])){
             if(is_array($signers)){
                 foreach ($signers as $k => $signer) {
                     $nome = isset($signer['name']) ? $signer['name'] : '';
-                    $nome_doc = isset($signer['name']) ? $signer['name'] : '';
+                    $status = isset($signer['status']) ? $signer['status'] : '';
+                    // $nome_doc = isset($signer['name']) ? $signer['name'] : '';
                     // $email = isset($signering['email']) ? $signering['email'] : $email;
                     $email = isset($signer['email']) ? $signer['email'] : '';
                     $link = isset($signer['sign_url']) ? $signer['sign_url'] : '';
@@ -80,17 +88,23 @@ class ZapsingController extends Controller
                     $ret['signer'][$k]['email'] = $email;
                     $ret['signer'][$k]['nome_doc'] = $nome_doc;
                     $ret['signer'][$k]['link'] = $link;
-                    // $ret['signer'][$k]['name'] = $nome;
-                    //Ver se enviar com o telefone ou o id do usuario..
-                    // dump($mens,$email,$link);
-                    // $email = $request->get('email') ? $request->get('email') : 'ger.maisaqui1@gmail.com';
-                    // $ret['signer'][$k]['criar_chat'] = (new ZapsingController)->criar_chat(['email'=>$email,'text'=>$mens]);
-                    //Registrar um log
-                    // Log::info('enviar_link_assinatura para o zapguru:', $ret);
+                    if($k==0){
+                        $telefonezap = $zgc->get_telefonezap_by_token_proposta($external_id);
+                        $conf_link_zap = ['telefonezap'=>$telefonezap,'text'=>$mens];
+                    }else{
+                        $conf_link_zap = ['email'=>$email,'text'=>$mens,'tab'=>'usuarios_sistemas'];
+                    }
+                    if($status=='signed'){
+                        $ret['signer'][$k]['status'] = $status;
+                    }else{
+                        $ret['signer'][$k]['criar_chat'] = $zgc->criar_chat($conf_link_zap);
+                    }
                 }
             }
 
         }
+        //Registrar um log
+        Log::info('enviar_link_assinatura para o zapguru:', $ret);
         return $ret;
     }
 }

@@ -15,6 +15,7 @@ class TesteController extends Controller
         $ret['exec'] = false;
         // $ret = (new SiteController())->short_code('fundo_proposta',['compl'=>'']);
         $token = $request->get('token');
+        $email = $request->get('email');
         // $ret = (new MatriculasController)->gerar_orcamento($token);
         // $ret = Qlib::qoption('validade_orcamento');
         // $ret = Qlib::dados_tab('cursos',['id' => 97]);
@@ -23,11 +24,11 @@ class TesteController extends Controller
 
         // $ret = Qlib::saveEditJson($data);
         // $ret = Qlib::update_tab('clientes',$dados,"WHERE Email='".$dados['Email']."'");
-        $zg = new ZapguruController;
-
+        // $zg = new ZapguruController;
+        // $ret = (new ZapguruController)->get_telefonezap_by_token_proposta($token);
 		// $ret = $zg->criar_chat(array('telefonezap'=>'5532984748644','cadastrados'=>true));
-		$ret = $zg->criar_chat(array('email'=>'contato@aeroclubejf.com.br','tab'=>'usuarios_sistemas','text'=>'Olá *{nome}* como podemos ajudá-lo','cadastrados'=>true));
-        // $ret = (new ZapsingController)->enviar_link_assinatura($token);
+		// $ret = $zg->criar_chat(array('email'=>$email,'tab'=>'usuarios_sistemas','text'=>'Olá *{nome}* como podemos ajudá-lo','cadastrados'=>true));
+        $ret = (new ZapsingController)->enviar_link_assinatura($token);
         // dd(Qlib::qoption('dominio'));
         // $ret = (new ZapguruController)->post('553291648202','dialog_execute',$comple_url='&dialog_id=679a438a9d7c8affe47e29b5');
         // $rdc = new RdstationController;
