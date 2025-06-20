@@ -21,7 +21,7 @@
             color: #333;
         }
         .conteudo{
-            text-align: justify;
+            /* text-align: justify; */
             widows: 100%;
             /* margin: 0 25px ; */
             padding: 10px 30px ;
