@@ -21,7 +21,9 @@ class TesteController extends Controller
         // $ret = Qlib::dados_tab('cursos',['id' => 97]);
         // $rd = new RdstationController;
         // dd($rd->token_api);
-        $ret = (new ZapsingController )->painel_assinaturas($token);
+        $ret = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
+        // $ret = (new ZapsingController )->painel_assinaturas($token);
 
         // $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = Qlib::saveEditJson($data);
@@ -38,7 +40,6 @@ class TesteController extends Controller
         // $ret = Qlib::buscaValoresDb_SERVER('SELECT * FROM usuarios_sistemas');
         // $ret = Qlib::dados_tab('cursos',['where' =>'WHERE '.Qlib::compleDelete()." AND id='69'"]);
         // $token_matricula = '66e99d69953c0';
-        // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $json = '{
         //     "token": "679d1019169b2",
         //     "pagina": "1",

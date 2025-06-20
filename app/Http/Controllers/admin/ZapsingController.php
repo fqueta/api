@@ -34,9 +34,9 @@ class ZapsingController extends Controller
                     }
                     $arr_links = Qlib::lib_json_array($links);
                     //Reordenar os contratos
-                    if(isset($arr_links['extra']) && is_array($arr_links['extra'])){
-                        ksort($arr_links['extra']);
-                    }
+                    // if(isset($arr_links['extra']) && is_array($arr_links['extra'])){
+                    //     ksort($arr_links['extra']);
+                    // }
                     // dump($campo_meta2,$arr_links);
                     $ret['arr_processo'] = $arr_processo;
                     $ret['arr_links'] = $arr_links;

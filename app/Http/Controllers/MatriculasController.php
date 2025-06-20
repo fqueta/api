@@ -5556,10 +5556,8 @@ class MatriculasController extends Controller
                     foreach($contatos_anexos As $k=>$v){
                         $link = isset($v['meta_value']) ? $v['meta_value'] : false;
                         if ($k === $lastKey) {
-                            // echo "$value (último elemento)\n";
                             $nome_arquivo = isset($v['meta_key']) ? $v['meta_key'] : false;
                         } else {
-                            // echo "$value\n";
                             $arr_n = explode('/', $link);
                             $nome_arquivo = str_replace('-',' ',end($arr_n));
                         }
@@ -5581,6 +5579,7 @@ class MatriculasController extends Controller
      * metodos que retorna o link de todos os contratos estaticos em pdf salvos no servidor de acordo com o id da matricula
      * @param string $id o id da matricula
      * @param bool $todos true para listar todos e false para remover o primeiro item que é o contrato de prestação de serviços que é o principal
+     *
      */
     public function contatos_estaticos_pdf($id,$todos=true,$dm=false){
         $dc = Qlib::dados_tab('matriculameta',['where'=>"WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC"]);
@@ -5605,7 +5604,7 @@ class MatriculasController extends Controller
                 // dump($id_curso,$dmgr);
             }
         }
-
+        // dd($incluir_mgr_assinatura,$dc);
         return $dc;
     }
 	/**
@@ -5644,6 +5643,7 @@ class MatriculasController extends Controller
 	}
     /**
      * para listar todos os contrato de um curso
+     * @uso (new MatriculasController)->lista_contratos();
      */
     public function lista_contratos($id_curso,$tm=false,$dm=false){
         if($tm && !$dm){
@@ -5700,6 +5700,7 @@ class MatriculasController extends Controller
         }else{
             $lista_contratos = false;
         }
+        // dd($lista_contratos);
         //Gerar a propostas estatica por aqui...
         // $ret = (new MatriculasController)->orcamento_pdf_estatico($token_matricula);
         // if(!$ret['exec']){
