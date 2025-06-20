@@ -230,7 +230,7 @@ class PdfGenerateController extends Controller
         $pdf = SnappyPdf::loadHTML($html)
                 ->setPaper('a4')
                 ->setOption('header-html', $headerHtml)
-                ->setOption('margin-top', 23)
+                ->setOption('margin-top', 25)
                 ->setOption('margin-bottom', 13)
                 ->setOption('margin-left', 0)
                 ->setOption('margin-right', 0)
