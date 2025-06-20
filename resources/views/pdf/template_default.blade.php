@@ -3,8 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- <title>@yield('title', 'PDF')</title> --}}
     <title>{!! $titulo !!}</title>
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            /* background-color: #f1f1f1; */
+        }
+        .page-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color: #f1f1f1; */
+            background-color: #ffffff;
+            z-index: -1;
+        }
         body{
             margin: 0;
             /* font-family: "Source Sans Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
@@ -13,8 +29,6 @@
             line-height: 1.5;
             color: #212529; */
             text-align: left;
-            background-color: #f1f1f1;
-
             font-family: "Open Sans", Arial, Helvetica, Sans-Serif;
             font-size: 13px;
             line-height: 1.42857143;
@@ -25,6 +39,8 @@
             widows: 100%;
             /* margin: 0 25px ; */
             padding: 10px 30px ;
+            position: relative;
+            z-index: 1;
 
         }
         h2 {
@@ -56,9 +72,10 @@
     </style>
 </head>
 <body>
-    {{-- <h1>{{ $titulo }}</h1> --}}
+    <div class="page-background"></div>
     <div class="conteudo">
         {!! $conteudo !!}
+         {{-- @yield('content') --}}
     </div>
 </body>
 </html>

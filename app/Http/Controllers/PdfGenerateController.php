@@ -231,11 +231,13 @@ class PdfGenerateController extends Controller
                 ->setPaper('a4')
                 ->setOption('header-html', $headerHtml)
                 ->setOption('margin-top', 23)
-                ->setOption('margin-bottom', 15)
+                ->setOption('margin-bottom', 13)
                 ->setOption('margin-left', 0)
                 ->setOption('margin-right', 0)
                 ->setOption('disable-smart-shrinking', true)
                 ->setOption('footer-spacing', '0')
+                ->setOption('print-media-type', true)
+                ->setOption('background', true)
                 ->setOption('replace', [
                     '{PAGE_NUM}' => '{PAGE_NUM}',
                     '{PAGE_COUNT}' => '{PAGE_COUNT}'

@@ -5,13 +5,14 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #f1f1f1;
+            /* background-color: #f1f1f1; */
+            background-color: #ffffff;
         }
         .footer-container {
             width: 100%;
             margin: 0;
             padding: 5px 0 5px 0;
-            border-top: 1px solid #ddd;
+            /* border-top: 1px solid #ddd; */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -43,10 +44,9 @@
             <img src="{{ public_path('images/left-footer-logo.png') }}" class="footer-logo">
         </div> --}}
 
-        <div class="footer-right">
+        {{-- <div class="footer-right">
             Documento gerado em: {{ now()->format('d/m/Y H:i') }} pelo CRM Aeroclubejf<br>
-            {{-- {PAGE_NUM} de {PAGE_COUNT} --}}
-        </div>
+        </div> --}}
         <img src="https://crm.aeroclubejf.com.br/enviaImg/uploads/ead/67f8242bbaf7a/67fd80f044fb2.png" class="footer-logo">
     </div>
 </body>
