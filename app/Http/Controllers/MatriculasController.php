@@ -5651,9 +5651,16 @@ class MatriculasController extends Controller
         }
         $tipo_curso = isset($dm['tipo_curso']) ? $dm['tipo_curso'] : null;
 
+        //plano de formação
+        $orc = isset($dm['orc']) ? $dm['orc'] : false;
+        $modulos = isset($orc['modulos']) ? $orc['modulos'] : false;
+        $combustivel = isset($orc['sele_pag_combustivel']) ? $orc['sele_pag_combustivel'] : false;
+        $compleSql = false;
+        if($combustivel=='por_voo'){
+            //Remover os contratos de combustivel quando o combustivel for por voo
+            $compleSql = " AND short_code !='contrato_combustivel' AND short_code !='termo_antecipacao_combustivel' ";
+        }
         if($tipo_curso==4){
-            //plano de formação
-            $modulos = isset($dm['orc']['modulos']) ? $dm['orc']['modulos'] : false;
             // dump($modulos);
             if(is_array($modulos)){
                 //o numero do periodo é igula ao numero de modulos gravados na proposta
@@ -5664,16 +5671,17 @@ class MatriculasController extends Controller
                     $periodo = isset($tit_periodo[0]) ? $tit_periodo[0] : '';
                     $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
                     if($periodo=='1'){
-                        $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND tag='$short_code_periodo' ORDER BY ordenar ASC";
+                        $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." $compleSql AND tag='$short_code_periodo' ORDER BY ordenar ASC";
                     }else{
                         $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND (short_code='$short_code_periodo' OR short_code='contrato1') ORDER BY ordenar ASC";
                     }
                 }
             }
         }else{
-            $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." ORDER BY ordenar ASC";
+            $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' $compleSql AND ".Qlib::compleDelete()." ORDER BY ordenar ASC";
         }
         $dtermo = Qlib::dados_tab('conteudo_site',['where'=>$where]);
+        // dd($compleSql,$dtermo);
         $ret = $dtermo;
         // dd($ret);
         return $ret;
