@@ -462,7 +462,8 @@ class MatriculasController extends Controller
 							$espacoTable = false;
 						}
 						if(isset($dados['modulos']) && !empty($dados['modulos'])){
-							if(is_array($dados['modulos'])){
+                            $valor_matricula = isset($dados['matricula']) ? $dados['matricula'] : null;
+                            if(is_array($dados['modulos'])){
 								$arr_modu = $dados['modulos'];
 							}else{
 								$arr_modu = json_decode($dados['modulos'],true);
@@ -927,11 +928,14 @@ class MatriculasController extends Controller
 									// $subtotal2 = $subtotal1;
 									$totalOrcamento = $subtotal2;
 									$labelSub = 'Etapa 2';
-									$tr2 .= '
-										<tr class="matri">
-											<th style="width:80%"><div align="left"> Matrícula</div></th>
-											<th style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></th>
-										</tr>';
+                                    if($valor_matricula){
+
+                                        $tr2 .= '
+                                            <tr class="matri">
+                                                <th style="width:80%"><div align="left"> Matrícula</div></th>
+                                                <th style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></th>
+                                            </tr>';
+                                    }
 									$tr2 .= '
 										<tr class="matri">
 											<th style="width:80%">Etapa 1</div></th>
@@ -1025,8 +1029,11 @@ class MatriculasController extends Controller
 							}*/
 							///Incluir matricula
 							$incluir_matricula_parcelamento = Qlib::qoption('incluir_matricula_parcelamento')?Qlib::qoption('incluir_matricula_parcelamento'):'n';
-							if($incluir_matricula_parcelamento=='s')
-								$ret['total'] = ($ret['total']) + ($dados['inscricao_curso']);
+							if($incluir_matricula_parcelamento=='s'){
+                                if($valor_matricula){
+                                    $ret['total'] = ($ret['total']) + ($dados['inscricao_curso']);
+                                }
+                            }
 							$totalCurso = isset($totalCurso) ? $totalCurso:$ret['total'];
 							//fim incluir matricula
 							if($taxasValor>0){
@@ -1373,7 +1380,9 @@ class MatriculasController extends Controller
 						// $tr = str_replace('{valor}',number_format($dados['valor_curso'],2,',','.'),$tr);
 						$tr = str_replace('{valor}',number_format($ret['totalCurso'],2,',','.'),$tr);
 						$i++;
-						if(isset($dados['inscricao_curso'])&&$dados['inscricao_curso']>0){
+                        $valor_matricula = isset($dados['matricula']) ? $dados['matricula'] : null;
+						// if(isset($dados['inscricao_curso'])&&$dados['inscricao_curso']>0 && $valor_matricula){
+						if($valor_matricula){
 							$tr .= str_replace('{num}',$i,$tema2);
 							$tr = str_replace('{descricao}','Matrícula '.$dados['titulo_curso'],$tr);
 							$tr = str_replace('{valor}',number_format($dados['inscricao_curso'],2,',','.'),$tr);
