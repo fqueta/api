@@ -10,6 +10,7 @@
             margin: 0;
             padding: 0;
             /* background-color: #f1f1f1; */
+            background-color: #ffffff;
         }
         .page-background {
             position: fixed;
@@ -38,9 +39,9 @@
             /* text-align: justify; */
             widows: 100%;
             /* margin: 0 25px ; */
-            padding: 10px 30px ;
-            position: relative;
-            z-index: 1;
+            padding: 20px 30px ;
+            /* position: relative;
+            z-index: 1; */
 
         }
         h2 {
@@ -72,7 +73,7 @@
     </style>
 </head>
 <body>
-    <div class="page-background"></div>
+    {{-- <div class="page-background"></div> --}}
     <div class="conteudo">
         {!! $conteudo !!}
          {{-- @yield('content') --}}

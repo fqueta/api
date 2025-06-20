@@ -7,10 +7,10 @@
             margin: 0;
             /* padding: 0; */
             padding-bottom: 7px;
-            background-color: #f1f1f1;
+            /* background-color: #f1f1f1; */
         }
         .header {
-            margin: 0;
+            margin: 0 0 10px 0;
             padding: 0;
             width: 100%;
         }
