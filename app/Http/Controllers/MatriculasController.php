@@ -924,19 +924,22 @@ class MatriculasController extends Controller
 								$subtotal2 = $subtotal1;
                                 $tr_resumo_etapa3 = '';
                                 if($dados['status']==1){
-									$subtotal2 = $subtotal1+$dados['inscricao_curso'];
-                                    $total_etapa2 = $subtotal1;
-									// $subtotal2 = $subtotal1;
-									$totalOrcamento = $subtotal2;
-									$labelSub = 'Etapa 2';
+                                    // $labelSub = 'Etapa 2';
                                     if($valor_matricula){
+                                        // $subtotal2 = $subtotal1+$dados['inscricao_curso'];
+                                        $subtotal2 = $subtotal1+$valor_matricula;
 
                                         $tr2 .= '
-                                            <tr class="matri">
-                                                <th style="width:80%"><div align="left"> Matrícula</div></th>
-                                                <th style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></th>
-                                            </tr>';
+                                        <tr class="matri">
+                                        <th style="width:80%"><div align="left"> Matrícula</div></th>
+                                        <th style="width:'.$arr_wid2[3].'"><div align="right"> '.Qlib::valor_moeda($dados['inscricao_curso'],Qlib::qoption('sigla_moeda').' ').'</div></th>
+                                        </tr>';
+                                    }else{
+                                        $subtotal2 = $subtotal1;
+
                                     }
+                                    $totalOrcamento = $subtotal2;
+                                    $total_etapa2 = $subtotal1;
 									$tr2 .= '
 										<tr class="matri">
 											<th style="width:80%">Etapa 1</div></th>
