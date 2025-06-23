@@ -462,7 +462,8 @@ class MatriculasController extends Controller
 							$espacoTable = false;
 						}
 						if(isset($dados['modulos']) && !empty($dados['modulos'])){
-                            $valor_matricula = isset($dados['matricula']) ? $dados['matricula'] : @$dados['inscricao_curso'];
+                            $valor_matricula = isset($dados['orc']['matricula']) ? $dados['orc']['matricula'] : null;
+                            // dd($dados['orc'],$valor_matricula);
                             if(is_array($dados['modulos'])){
 								$arr_modu = $dados['modulos'];
 							}else{
@@ -1381,8 +1382,8 @@ class MatriculasController extends Controller
 						$tr = str_replace('{valor}',number_format($ret['totalCurso'],2,',','.'),$tr);
 						$i++;
 						// if(isset($dados['inscricao_curso'])&&$dados['inscricao_curso']>0 && $valor_matricula){
-                        $valor_matricula = isset($dados['matricula']) ? $dados['matricula'] : @$dados['inscricao_curso'];
-						if($valor_matricula){
+                        $valor_matricula = isset($dados['matricula']) ? $dados['matricula'] : null;
+                        if($valor_matricula){
 							$tr .= str_replace('{num}',$i,$tema2);
 							$tr = str_replace('{descricao}','Matrícula '.$dados['titulo_curso'],$tr);
 							$tr = str_replace('{valor}',number_format($dados['inscricao_curso'],2,',','.'),$tr);
