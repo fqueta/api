@@ -169,6 +169,16 @@ class ZapguruController extends Controller
                         }
                     }
                 }
+                if($telefonezap){
+                    //Casa ja tenha um telefonezap verificar se o lead ja virou cliente
+                    $where = "WHERE telefonezap='$telefonezap'";
+                    //checar para ver se o cadastro está com o esse telefone caso não encontrar use a consulta pelo nome
+                    if(Qlib::totalReg('clientes',$where)>0){
+                        $cl = Qlib::update_tab('clientes',$dadd,$where);
+                        $ret['clientes'] = $cl;
+                        // dd($ret,$where,$add_cliente,$telefonezap,$dadd);
+                    }
+                }
                 if($add_cliente){
                     //adiciona o cliente na tabela de clientes
                     $cl = Qlib::update_tab('clientes',$dadd,$where);
@@ -1853,4 +1863,15 @@ class ZapguruController extends Controller
 		}
 		return $ret;
 	}
+    /**
+     * Verifica se o cliente ou o lead ja tem ja tem o um link chatguru atravez do campo verificador da tabela dele
+     *
+     */
+    public function client_link_chat($tab='',$campo_bus='',$valor_bus='',$campo_enc='zapguru')
+    {
+        $json = Qlib::buscaValorDb0($tab,$campo_bus,$valor_bus,$campo_enc);
+        //Verificar se o cadastro de cliente ja tem um link chat
+        $link_chat = $this->link_chat($json);
+        return $link_chat;
+    }
 }

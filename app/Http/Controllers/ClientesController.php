@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClientesController extends Controller
 {
@@ -182,10 +184,28 @@ class ClientesController extends Controller
     	return $ret;
 
 	}
-    public function index()
-    {
-        //
+    public function CorrigeDuplicidadeTabela($tab=''){
+        if($tab=='capta_lead'){
+
+            $d = DB::table($tab)->all();
+            dd($d);
+        }
     }
+    public function removerDuplicadosPorEmail()
+    {
+        $duplicados =  Cliente::select('email', DB::raw('COUNT(*) as total'))
+            ->groupBy('email')
+            ->having('total', '>', 1)
+            ->pluck('email');
+
+        foreach ($duplicados as $email) {
+            $usuarios = Cliente::where('email', $email)->get();
+
+            // Mantém o primeiro e deleta o resto
+            $usuarios->slice(1)->each->delete();
+        }
+    }
+
 
     /**
      * Show the form for creating a new resource.
