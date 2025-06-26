@@ -175,8 +175,16 @@ class ZapguruController extends Controller
                     $ret['clientes'] = $cl;
                 }
                 //verificar se no nome tem o ID do registro no nesse caso o nome seria: Vinícius Rodrigues |36098
-                $a_nome=explode('|',$nome);
-                $id_cliente = isset($a_nome[1]) ? $a_nome[1] : null;
+                $a_nome=explode('-',$nome);
+                if(isset($a_nome[1])){
+                    $arr_cli = explode('|',trim($a_nome[1]));
+                    $id_cliente = isset($arr_cli[0]) ? $arr_cli[0] : null;
+                    if(!is_null($id_cliente)){
+                        $id_cliente = trim($id_cliente);
+                    }
+                }else{
+                    $id_cliente = isset($a_nome[1]) ? $a_nome[1] : null;
+                }
                 $whereLead = "WHERE id='$id_cliente'";
                 $whereLead2 = "WHERE nome='$nome'";
                 $tabLead = 'capta_lead';
