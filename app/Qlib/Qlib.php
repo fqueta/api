@@ -2425,7 +2425,7 @@ class Qlib
                     $d = DB::select("SELECT id FROM $tab $where");
                     $id = isset($d[0]->id) ? $d[0]->id : null;
                     if($id){
-                        if($edit){
+                        if($edit==='edit_all'){
                             foreach ($d as $k => $v) {
                                 $id = $d[$k]->id;
                                 $salva = DB::table($tab)->where('id', $id)->update($filteredData);
@@ -2442,6 +2442,21 @@ class Qlib
                                     $ret['data'][$id]['color'] = 'success';
                                     $ret['data'][$id]['mens'] = 'Registro sem necessidade de atualização!';
                                 }
+                            }
+                        }elseif($edit===true){
+                            $salva = DB::table($tab)->where('id', $id)->update($filteredData);
+                            if($salva){
+                                $ret['exec'] = true;
+                                $ret['idCad'] = $id;
+                                $ret['dados'] = $filteredData;
+                                $ret['color'] = 'success';
+                                $ret['mens'] = 'Registro atualizado com sucesso!';
+                            }else{
+                                $ret['exec'] = true;
+                                $ret['idCad'] = $id;
+                                $ret['dados'] = $filteredData;
+                                $ret['color'] = 'success';
+                                $ret['mens'] = 'Registro sem necessidade de atualização!';
                             }
                         }else{
                             $ret['exec'] = false;

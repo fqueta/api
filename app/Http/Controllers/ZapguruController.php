@@ -174,9 +174,10 @@ class ZapguruController extends Controller
                     $where = "WHERE telefonezap='$telefonezap'";
                     //checar para ver se o cadastro está com o esse telefone caso não encontrar use a consulta pelo nome
                     if(Qlib::totalReg('clientes',$where)>0){
-                        $cl = Qlib::update_tab('clientes',$dadd,$where);
+                        $cl = Qlib::update_tab('clientes',$dadd,$where,'edit_all');
                         $ret['clientes'] = $cl;
                         // dd($ret,$where,$add_cliente,$telefonezap,$dadd);
+                        return $ret;
                     }
                 }
                 if($add_cliente){
