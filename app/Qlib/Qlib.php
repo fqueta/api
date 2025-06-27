@@ -2435,7 +2435,11 @@ class Qlib
                                     $ret['data'][$id]['dados'] = $filteredData;
                                     $ret['data'][$id]['color'] = 'success';
                                     $ret['data'][$id]['mens'] = 'Registro atualizado com sucesso!';
+                                    $ret['mens'] = $ret['data'][$id]['mens'];
+                                    $ret['color'] = $ret['data'][$id]['color'];
                                 }else{
+                                    $ret['mens'] = $ret['data'][$id]['mens'];
+                                    $ret['color'] = $ret['data'][$id]['color'];
                                     $ret['data'][$id]['exec'] = true;
                                     $ret['data'][$id]['idCad'] = $id;
                                     $ret['data'][$id]['dados'] = $filteredData;
