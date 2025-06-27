@@ -866,7 +866,9 @@ class ZapguruController extends Controller
 				$ret['exec'] = true;
                 //gravar o status no usuario encotrado no CRM do Aero
                 $ret['id_cliente'] = $id_cliente;
-                if($cadastrado && $id_cliente){
+                //Controlar a gravação da respota ao usar essa função para não apagar o que ja está gravado
+                $gravar_resposta = isset($config['gravar_resposta']) ? $config['gravar_resposta'] : true;
+                if($gravar_resposta && $cadastrado && $id_cliente){
                     $ret['salvar'] = DB::table($GLOBALS['tab15'])->where('id',$id_cliente)->update(['zapguru' => $response]);
                 }
 			}

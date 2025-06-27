@@ -94,9 +94,9 @@ class ZapsingController extends Controller
                     $ret['signer'][$k]['link'] = $link;
                     if($k==0){
                         $telefonezap = $zgc->get_telefonezap_by_token_proposta($external_id);
-                        $conf_link_zap = ['telefonezap'=>$telefonezap,'text'=>$mens];
+                        $conf_link_zap = ['telefonezap'=>$telefonezap,'text'=>$mens,'gravar_resposta'=>false];
                     }else{
-                        $conf_link_zap = ['email'=>$email,'text'=>$mens,'tab'=>'usuarios_sistemas'];
+                        $conf_link_zap = ['email'=>$email,'text'=>$mens,'tab'=>'usuarios_sistemas','gravar_resposta'=>false];
                     }
                     if($status=='signed'){
                         $ret['signer'][$k]['status'] = $status;
