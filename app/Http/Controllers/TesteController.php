@@ -21,11 +21,11 @@ class TesteController extends Controller
         // $ret = Qlib::dados_tab('cursos',['id' => 97]);
         // $rd = new RdstationController;
         // dd($rd->token_api);
-        $ret = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
 
-        // $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
+        $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret = Qlib::saveEditJson($data);
         // $ret = Qlib::update_tab('clientes',$dados,"WHERE Email='".$dados['Email']."'");
         // $zg = new ZapguruController;

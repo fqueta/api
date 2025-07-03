@@ -173,7 +173,7 @@ class ClientesController extends Controller
     							'tab'=>$tab_c,
     							'campo_id'=>'id',
     							'id'=>$id,
-    							'nomePost'=>'Cliente rebeixado a lead',
+    							'nomePost'=>'Cliente rebaixado a lead',
     							'campo_bus'=>'id',
     						]);
     					}
