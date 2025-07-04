@@ -1425,9 +1425,11 @@ class Qlib
         $dia = isset($novadata[0]) ? $novadata[0] : null;
         $mes = isset($novadata[1]) ? $novadata[1] : null;
         $ano = isset($novadata[2]) ? $novadata[2] : null;
-        if(!$dia || $mes || $ano){
+
+        if(!$dia || !$mes || !$ano){
             return '';
         }
+// dump($dia,$mes);
         if ($dias==0)
         {
             $data1 = date('d/m/Y',mktime(0,0,0,$mes,$dia,$ano));
