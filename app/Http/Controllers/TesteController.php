@@ -25,7 +25,13 @@ class TesteController extends Controller
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
 
-        $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
+        if($opc=$request->get('opc')){
+            if($opc==1){
+                $ret = (new MatriculasController)->verifica_atualiza_validade_matricula();
+            }
+        }else{
+            $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
+        }
         // $ret = Qlib::saveEditJson($data);
         // $ret = Qlib::update_tab('clientes',$dados,"WHERE Email='".$dados['Email']."'");
         // $zg = new ZapguruController;

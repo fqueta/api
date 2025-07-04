@@ -5983,5 +5983,40 @@ class MatriculasController extends Controller
         }
         return $ret;
     }
+    /**
+     * Atualiza o campo data_validade de acordo com a data de inicio do curso acrescido ao campo validade da tabela matricula
+     */
+    public function verifica_atualiza_validade_matricula(){
+        $dm = Matricula::where('excluido','n')
+        ->where('contrato','!=','')
+        ->orderBy('id','desc')
+        // ->limit('100')
+        ->get();
+        $ret['total'] = $dm->count();
+        if($dm->count() > 0){
+            // $ret['dm'] = $dm;
+            foreach ($dm as $k => $v) {
+                if(isset($v['contrato']) && $contrato=$v['contrato'] && isset($v['validade'])){
+                    $arr_contrato = json_decode($v['contrato'],true);
+                    // dump($arr_contrato);
+                    // $ret['arr_contrado'][$k] = $arr_contrato;
+                    $data_aceito = isset($arr_contrato['data_aceito_contrato']) ? $arr_contrato['data_aceito_contrato'] : null;
+                    if($data_aceito){
+                        $data = explode('-',Qlib::dataExibe($data_aceito))[0];
+                        $dias = $v['validade'] ? $v['validade'] : 365;
+                        $n_data = Qlib::CalcularVencimento($data,$dias);
+                        if($n_data){
+                            $ret['resumo'][$k]['salv'] = Matricula::where('id',$v['id'])->update([
+                                'data_validade'=>$n_data,
+                            ]);
+                            $ret['resumo'][$k]['d'] = $v;
+                        }
+                        // dump($data,$dias,$n_data);
+                    }
+                }
+            }
+        }
+        return $ret;
+    }
 
 }

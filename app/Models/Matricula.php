@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Matricula extends Model
 {
     use HasFactory;
+    const CREATED_AT = 'data';
+    const UPDATED_AT = 'atualizado';
     protected $casts = [
         'orc' => 'array',
     ];
