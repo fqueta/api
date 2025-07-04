@@ -1422,9 +1422,12 @@ class Qlib
     static function CalcularVencimento($data,$dias,$formato = 'd/m/Y')
     {
         $novadata = explode("/",$data);
-        $dia = $novadata[0];
-        $mes = $novadata[1];
-        $ano = $novadata[2];
+        $dia = isset($novadata[0]) ? $novadata[0] : null;
+        $mes = isset($novadata[1]) ? $novadata[1] : null;
+        $ano = isset($novadata[2]) ? $novadata[2] : null;
+        if(!$dia || $mes || $ano){
+            return '';
+        }
         if ($dias==0)
         {
             $data1 = date('d/m/Y',mktime(0,0,0,$mes,$dia,$ano));

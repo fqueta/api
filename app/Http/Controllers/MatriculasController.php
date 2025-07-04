@@ -445,8 +445,17 @@ class MatriculasController extends Controller
                             $dias = 7;
                         }
                         $dadosD = explode(' ',$dados['atualizado']);
-                        $validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dadosD[0]),$dias);
-                        $validade = Qlib::dataExibe($validade);
+                        $dat = isset($dadosD[0]) ? $dadosD[0] : null;
+                        if(isset($dadosD[0])){
+                            $dadosD1 = explode('T',$dadosD[0]);
+                            $dat = isset($dadosD1[0]) ? $dadosD1[0] : null;
+                        }
+                        if($dat){
+                            $validade =  Qlib::CalcularVencimento(Qlib::dataExibe($dat),$dias);
+                            $validade = Qlib::dataExibe($validade);
+                        }else{
+                            $validade = false;
+                        }
                         $dadosCli = $this->tag_apresentacao_orcamento($dados);
                         if($this->is_pdf()){
                             $dadosCli .= $btn_aceito_aceitar;
