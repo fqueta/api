@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\admin\ZapsingController;
+use App\Http\Controllers\api\OrcamentoController;
 use App\Jobs\GeraPdfContratoJoub;
+use App\Jobs\GeraPdfcontratosPnlJob;
 use App\Jobs\GeraPdfPropostaJoub;
+use App\Jobs\GeraPdfPropostasPnlJob;
 use App\Jobs\SendZapsingJoub;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
@@ -21,17 +24,21 @@ class TesteController extends Controller
         // $ret = Qlib::dados_tab('cursos',['id' => 97]);
         // $rd = new RdstationController;
         // dd($rd->token_api);
-        // $ret = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='686d1e7a2e445');
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
-
-        if($opc=$request->get('opc')){
-            if($opc==1){
-                $ret = (new MatriculasController)->verifica_atualiza_validade_matricula();
-            }
-        }else{
-            $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
-        }
+        // $ret = (new OrcamentoController)->resumo_proposta_periodos($token);
+        // $ret = (new OrcamentoController)->proposta_periodos_estatica($token,$periodo='686d1e7a2e445');
+        // // dd($ret);
+        // if($opc=$request->get('opc')){
+        //     if($opc==1){
+        //         $ret = (new MatriculasController)->verifica_atualiza_validade_matricula();
+        //     }
+        // }else{
+        //     $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
+        // }
+        // GeraPdfPropostasPnlJob::dispatch($token,'686d1e7a2e445');
+        // GeraPdfcontratosPnlJob::dispatch($token,'686d1e7a2e445');
         // $ret = Qlib::saveEditJson($data);
         // $ret = Qlib::update_tab('clientes',$dados,"WHERE Email='".$dados['Email']."'");
         // $zg = new ZapguruController;
@@ -131,7 +138,7 @@ class TesteController extends Controller
         // dd();
         //  GeraPdfPropostaJoub::dispatch($token);
 
-        // $ret = (new MatriculasController)->send_to_zapSing($token);
+        $ret = (new MatriculasController)->send_to_zapSing($token,false,'686d1e7a2e445');
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);
         // SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));

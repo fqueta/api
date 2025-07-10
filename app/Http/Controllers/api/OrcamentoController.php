@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\CursosController;
 use App\Http\Controllers\MatriculasController;
+use App\Http\Controllers\PdfGenerateController;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -97,6 +98,183 @@ class OrcamentoController extends Controller
         return $ret;
     }
     /**
+	 * Metodo que resume informações inportates de uma proposta de periodos do plano de formação
+	 * @param string $tk tokem da matricula
+     * @return string $ret
+     * @uso $ret = (new OrcamentoController)->resumo_proposta_periodos($tk);
+	 */
+	public function resumo_proposta_periodos($tk,$d=false,$periodo=false,$type='html'){
+		$mc = new MatriculasController;
+		if(!$d && $tk){
+            $d = $mc->dm($tk);
+		}
+		$ret = false;
+		if($d){
+			$arr_periodo = [];
+			if($periodo){
+				//Verifica o peridodo
+				$arr_periodo = $mc->get_periodo_array($d['token'],'token',$periodo);
+			}
+			//Verficar se ja existe um lancamento de ganho para este periodo...
+			ob_start();
+			$ali = 'text-right';
+			$nome_turma = Qlib::buscaValorDb0('turmas','id',$d['id_turma'],'nome');
+			$link_proposta = $d['link_orcamento'];
+			$forma_pagamento = false;
+			$meta_proposta = Qlib::get_matriculameta($d['id'],'proposta');
+			if($meta_proposta){
+				$arr_m_p = Qlib::lib_json_array($meta_proposta);
+				$forma_pagamento = isset($arr_m_p['forma_pagamento']) ? $arr_m_p['forma_pagamento'] : false;
+			}
+			$totalProposta = Qlib::valor_moeda($d['total'],'R$');
+			if($d['tipo_curso']!=4){
+
+				$infoPag = Qlib::infoPagCurso([
+					'token'=>$tk,
+				]);
+				if(isset($infoPag['valores']['forma_pagamento']) && !empty($infoPag['valores']['forma_pagamento'])){
+					$forma_pagamento = $infoPag['valores']['forma_pagamento'];
+				}
+				$parcelas = false;
+				if(isset($infoPag['valores']['parcelas']) && !empty($infoPag['valores']['parcelas'])){
+					$parcelas = $infoPag['valores']['parcelas'].'X ';
+				}
+				if(isset($infoPag['valores']['total']) && !empty($infoPag['valores']['total'])){
+					$totalProposta = $parcelas. '<b>'. Qlib::valor_moeda($infoPag['valores']['total'],'R$ ').'</b>';
+				}
+				if(isset($infoPag['valores']['total_parcelado']) && !empty($infoPag['valores']['total_parcelado'])){
+					$totalProposta .= ' Total: '.Qlib::valor_moeda($infoPag['valores']['total_parcelado'],'R$ ');
+				}
+			}
+			if(Qlib::is_admin_area()){
+				if($type=='html'){
+					$forma_pagamento = '<input type="text" class="form-control" name="meta[proposta][forma_pagamento]" value="'.$forma_pagamento.'" />';
+				}
+			}
+			$nome_completo = isset($d['nome_completo']) ? $d['nome_completo'] :$d['nome'].' '.$d['sobrenome'];
+			if(isset($_GET['fp'])){
+				dump($arr_periodo);
+			}
+			$arr = [
+				'Nome completo' => '<a href="'.Qlib::raiz().'/cad_clientes/?sec=Y2FkX2NsaWVudGVz&acao=alt&id='.base64_encode($d['id_cliente']).'&redirect_base='.base64_encode(Qlib::UrlAtual()).'" style="text-decoration:underline">'.$nome_completo.' </a>',
+				'Curso adquirido' => $d['nome_curso'],
+				'Quantidade de horas' => isset($arr_periodo['horas'])?$arr_periodo['horas']:false,//$this->horas_proposta($d['token']),
+				'Turma' => $nome_turma,
+				'Periodo' => isset($arr_periodo['periodo'])?$arr_periodo['periodo']:false,
+				'Valor da proposta' => isset($arr_periodo['valor'])?$arr_periodo['valor']:false,
+				'Link da proposta' => $link_proposta,
+				'Link para assinatura' => $d['link_assinatura'],
+				'ID cliente' => $d['id_cliente'],
+				'ID matrícula' => $d['id'],
+				'Forma de pagamento' => $forma_pagamento,
+			];
+			$meta_lead = isset($arr_m_p['lead_prospectado']) ? $arr_m_p['lead_prospectado'] : false;;
+			if(Qlib::is_admin_area()){
+				$arr['Lead prospectado por SDR'] = '<input type="text" class="form-control" name="meta[proposta][lead_prospectado]" value="'.$meta_lead.'" />';
+			}else{
+				unset($arr['Nome completo'],$arr['Link para assinatura'],$arr['Link da proposta']);
+			}
+			if($type=='zap' && Qlib::is_admin_area()){
+				$vendedor = Qlib::buscaValorDb_SERVER('usuarios_sistemas','id',$d['seguido_por'],'nome');
+				$arr['Nome completo'] = isset($d['nome_completo']) ? $d['nome_completo'] : $nome_completo;
+				unset($arr['Link para assinatura']);
+				$arr['Vendedor']=$vendedor;
+				$arr['Data da venda'] = Qlib::dataExibe($d['data_situacao']);
+				$arr['Link do guru']=isset($d['link_guru']) ? $d['link_guru'] : '';
+				$arr['Lead prospectado por SDR']= $meta_lead;
+			}
+			$title = 'Informações da proposta';
+
+			if($type=='html'){
+			?>
+			<div class="table-responsive">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th colspan="2" class="text-center">
+								<h5>
+									<?=$title?>
+								</h5>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?
+						foreach ($arr as $kt => $vt) {
+						?>
+						<tr>
+							<th><?=$kt?>:</th>
+							<td class="<?=$ali?>"><?=$vt?></td>
+						</tr>
+						<?
+						}
+						?>
+					</tbody>
+				</table>
+			</div>
+			<?
+				$ret = ob_get_clean();
+			}elseif($type=='zap'){
+				$ret = '*'.$title.'*%0A--------%0A';
+				foreach ($arr as $kt => $vt) {
+					$ret .= '*'.$kt.':* '.$vt.'%0A';
+				}
+			}
+		}
+		return $ret;
+	}
+    /**
+     * Gerar uma proposta em PDF do periodo especifico de uma matricula do plano de foramção
+     */
+    public function proposta_periodos_estatica($token,$periodo){
+        $dm = (new MatriculasController)->dm($token);
+        $ret = false;
+        if($dm){
+            $id = isset($dm['id']) ? $dm['id'] : null;
+            $conteudo = $this->resumo_proposta_periodos($token,$dm,$periodo);
+            $titulo = 'proposta_periodo';
+            // dd($dm);
+            $dados = [
+                'html'=>$conteudo,
+                'nome_aquivo_savo'=>$titulo,
+                'titulo'=>'Proposta',
+                'id_matricula'=>$id,
+                'token'=>$token,
+                'short_code'=>$titulo.'_'.$periodo,
+                'pasta'=>'periodos/'.$periodo,
+                'f_exibe'=>'server',
+            ];
+            $ret = (new PdfGenerateController)->convert_html($dados);
+        }
+        return $ret;
+    }
+    /**
+     * Gera os dados para montar todas as paginas HMTL de propostas dos cliente, que ficam disponivel no site
+     */
+    public function pagina_orcamentos_site(Request $request,$sec,$token){
+        // $dr = $request->all();
+        // $token = $request->get('token');
+        $token2 = $request->segment(4);
+        $conteudo = '';
+        if($sec=='orcamentos'){
+            $do = ( new MatriculasController )->gerar_orcamento($token);
+            $conteudo = isset($do['table']) ? $do['table'] : false;
+            $table2 = isset($do['table2']) ? $do['table2'] : false;
+            $conteudo .= $table2;
+            // $conteudo = (new MatriculasController)->orcamento_html($tk);
+        }elseif($sec=='proposta-pnl-periodos'){
+            $periodo=$token2; //token do periodo
+            $type=$request->get('type'); //token do periodo
+            $d = (new MatriculasController)->dm($token);
+            $conteudo = $this->resumo_proposta_periodos($token,$d,$periodo);
+        }
+        $ret = [
+            'conteudo'=>$conteudo,
+            'sec'=>$sec,
+        ];
+        return view('site.index',$ret);
+    }
+    /**
      * Display a listing of the resource.
      */
     public function index()
@@ -165,6 +343,17 @@ class OrcamentoController extends Controller
             $d['token_matricula'] = $token;
         }
         $ret = (new MatriculasController)->assinar_proposta($d);
+        return $ret;
+    }
+    /**
+     * Para diparar a assinatura de uma proposta mediante o token da matricula
+     */
+    public function assinar_proposta_periodos(string $token){
+        $d = request()->all();
+        if(!isset($d['token_matricula'])){
+            $d['token_matricula'] = $token;
+        }
+        $ret = (new MatriculasController)->assinar_proposta_periodo($d);
         return $ret;
     }
 

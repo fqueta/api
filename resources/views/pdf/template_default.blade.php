@@ -70,6 +70,24 @@
             font-weight: 700;
             line-height: normal;
         }
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+        }
+        .table {
+            border-collapse: collapse;
+        }
+        .table > :not(caption) > * > * {
+            padding: .5rem .5rem;
+            /* background-color: transparent; */
+            border-bottom-width: 1px;
+            /* box-shadow: inset 0 0 0 9999px #212529; */
+        }
+        .table th,.table td{
+            border: 1px solid #ccc;
+        }
+
     </style>
 </head>
 <body>

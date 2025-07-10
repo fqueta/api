@@ -7,7 +7,9 @@ use App\Models\Matricula;
 use App\Qlib\Qlib;
 use App\Http\Controllers\api\ZapsingController;
 use App\Jobs\GeraPdfContratoJoub;
+use App\Jobs\GeraPdfcontratosPnlJob;
 use App\Jobs\GeraPdfPropostaJoub;
+use App\Jobs\GeraPdfPropostasPnlJob;
 use App\Jobs\SendZapsingJoub;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -328,7 +330,7 @@ class MatriculasController extends Controller
      * Metodo para gerar uma apresentação do oraçmento em uma página Html dinamico
      * @param string $token token do orçamento
      */
-    public function orcamento_html($token){
+    public function orcamento_html($token,$sec=false){
         $do = $this->gerar_orcamento($token);
         // dd($do);
         $orcamento = isset($do['table']) ? $do['table'] : false;
@@ -336,6 +338,7 @@ class MatriculasController extends Controller
         $orcamento .= $table2;
         $ret = [
             'orcamento'=>$orcamento,
+            'sec'=>$sec,
         ];
         return view('site.index',$ret);
     }
@@ -1673,7 +1676,14 @@ class MatriculasController extends Controller
                         if($client){
                             $curso = @$v['curso'];
                         }else{
-                            $curso = Qlib::buscaValorDb0($GLOBALS['tab10'],'id',@$v['curso_id'],'titulo');
+                            $id_curso = $v['curso_id'][0] ? $v['curso_id'][0] : null;
+                            if(!$id_curso)
+                            $id_curso = $v['curso_id'] ? $v['curso_id'] : null;
+                            if($id_curso){
+                                $curso = Qlib::buscaValorDb0($GLOBALS['tab10'],'id',$id_curso,'titulo');
+                            }else{
+                                $curso = 'Não definido';
+                            }
                         }
                         $titulo = $v['titulo'];
                         if(Qlib::isAdmin(6) && Qlib::is_admin_area() && !$is_pdf){
@@ -5431,7 +5441,7 @@ class MatriculasController extends Controller
 	 */
 	public function sava_meta_fields($config){
 		$id_matricula = isset($config['id'])?$config['id']:null;
-		$meta = isset($config['meta'])?$config['meta']:null;
+        $meta = isset($config['meta'])?$config['meta']:null;
 		$ret['exec'] = false;
     	if($id_matricula && $meta){
 			if(!isset($meta['instrutores'])){
@@ -5504,7 +5514,7 @@ class MatriculasController extends Controller
      * @params $tm $token da matricula
      * @usu $ret = (new MatriculaController)->send_to_zapSing('token_matricula');
      */
-    public function send_to_zapSing($tm,$dm=false){
+    public function send_to_zapSing($tm,$dm=false,$tk_periodo=false){
         if(!$dm && $tm){
             $dm = $this->dm($tm);
         }
@@ -5518,23 +5528,38 @@ class MatriculasController extends Controller
         }
         $id = isset($dm['id']) ? $dm['id'] : '';
         if($id){
-            $contratos = $this->contatos_estaticos_pdf($id,true,$dm);
+            $contratos = $this->contatos_estaticos_pdf($id,true,$dm,$tk_periodo);
         }else{
             $contratos = false;
         }
+        // dd($contratos);
         $enviar = false;
         if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
             //link od ontrato de prestação ou seja o principal contrato
             $enviar = $this->enviar_envelope($tm,$dm,$link_c);
-            if($enviar['exec'] == true){
-                $ret['exec'] = true;
-                //gravar o processamento em campo
-                $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope',Qlib::lib_array_json($enviar));
-                //removendo o primiero contrato da lista
-                $n_cont = array_shift($contratos);
-                $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
-                if($token_doc && is_array($n_cont)){
-                    $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm);
+            if($tk_periodo){
+                if($enviar['exec'] == true){
+                    $ret['exec'] = true;
+                    //gravar o processamento em campo
+                    $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope_'.$tk_periodo,Qlib::lib_array_json($enviar));
+                    //removendo o primiero contrato da lista
+                    $n_cont = array_shift($contratos);
+                    $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
+                    if($token_doc && is_array($n_cont)){
+                        $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm,$tk_periodo);
+                    }
+                }
+            }else{
+                if($enviar['exec'] == true){
+                    $ret['exec'] = true;
+                    //gravar o processamento em campo
+                    $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope',Qlib::lib_array_json($enviar));
+                    //removendo o primiero contrato da lista
+                    $n_cont = array_shift($contratos);
+                    $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
+                    if($token_doc && is_array($n_cont)){
+                        $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm);
+                    }
                 }
             }
         }
@@ -5544,7 +5569,11 @@ class MatriculasController extends Controller
         if(isset($ret['exec'])){
             $post_id = isset($dm['id']) ? $dm['id'] : null;
             if($post_id){
-                $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
+                if($tk_periodo){
+                    $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,'processo_assinatura_'.$tk_periodo,Qlib::lib_array_json($ret));
+                }else{
+                    $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
+                }
                 //Envia o link de assinatura para o whatsapp atrave do zapguru
                 $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm);
             }
@@ -5555,7 +5584,7 @@ class MatriculasController extends Controller
     /**
      * gera um array com os link dos contratos
      */
-    public function enviar_contratos_anexos($contatos_anexos=false,$tm=false,$dm=false){
+    public function enviar_contratos_anexos($contatos_anexos=false,$tm=false,$dm=false,$tk_periodo=false){
         if(!$dm && $tm){
             $dm = (new MatriculasController)->dm($tm);
         }
@@ -5569,14 +5598,18 @@ class MatriculasController extends Controller
         }
         $id = isset($dm['id']) ? $dm['id'] : '';
         if($id && !$contatos_anexos){
-            $contatos_anexos = $this->contatos_estaticos_pdf($id,false,$dm);
+            $contatos_anexos = $this->contatos_estaticos_pdf($id,false,$dm,$tk_periodo);
         }else{
             $contatos_anexos = false;
         }
         // dd($contatos_anexos);
         if($contatos_anexos){
             //conseguir o token do contrato principal
-            $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');
+            if($tk_periodo){
+                $denv_p = Qlib::get_matriculameta($id,'enviar_envelope_'.$tk_periodo);
+            }else{
+                $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');
+            }
             $ret['exec'] = false;
             $arr = [];
             if($denv_p){
@@ -5614,8 +5647,14 @@ class MatriculasController extends Controller
      * @param bool $todos true para listar todos e false para remover o primeiro item que é o contrato de prestação de serviços que é o principal
      *
      */
-    public function contatos_estaticos_pdf($id,$todos=true,$dm=false){
-        $dc = Qlib::dados_tab('matriculameta',['where'=>"WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC"]);
+    public function contatos_estaticos_pdf($id,$todos=true,$dm=false,$tk_periodo=false){
+        if($tk_periodo){
+            $where = "WHERE matricula_id='$id' AND meta_key LIKE '%".$tk_periodo."_pdf%' ORDER BY id ASC";
+        }else{
+            $where = "WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC";
+        }
+        $dc = Qlib::dados_tab('matriculameta',['where'=>$where]);
+        // dd($dc);
         if(!$todos && isset($dc[0])){
             unset($dc[0]);
         }
@@ -5651,16 +5690,25 @@ class MatriculasController extends Controller
 			//11 o id da etapa 'Proposta aprovada' do flow de atendimento
 			$config['id'] = $this->get_id_by_token($config['token_matricula']);
 			// $ret['validar'] = $this->valida_respostas_assinatura_periodo($config['token_matricula'],'token');
-			$ret['save'] = $this->sava_meta_fields($config);
+            $ret['save'] = $this->sava_meta_fields($config);
 			if($ret['save']['exec']){
 				if(isset($config['arr_periodo'])){
 					$ret['exec'] = true;
 					//variavel que grava uma strig contendo o codigo que array do periodo proveniente do formulario gerando no metodo $this->formAceitoPropostaPeriodo
 					$arr_periodo = Qlib::decodeArray($config['arr_periodo']);
 					$token_periodo = isset($arr_periodo['token']) ? $arr_periodo['token'] : '';
+                    $token = $config['token_matricula'];
 					//gravar contrato estatico...
-					$ret['gravar_copia'] = $this->grava_contrato_statico_periodo($config['token_matricula'],$token_periodo);
-					$ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a/'.$token_periodo;
+                    GeraPdfPropostasPnlJob::dispatch($token,$token_periodo);
+                    GeraPdfcontratosPnlJob::dispatch($token,$token_periodo)->delay(now()->addSeconds(5));;
+					// $ret['gravar_copia'] = $this->grava_contrato_statico_periodo($config['token_matricula'],$token_periodo);
+
+                    // GeraPdfPropostaJoub::dispatch($config['token_matricula']);
+                    // GeraPdfContratoJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
+                    // SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
+
+
+                    $ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a/'.$token_periodo;
 					//Enviar para zapsing
                     // lib_print($arr_periodo);
 					// lib_print($ret);
@@ -5893,17 +5941,16 @@ class MatriculasController extends Controller
 		$configCn['periodo'] = $token_periodo;
 		// $token_periodo = isset($arr_periodo['token'])?$arr_periodo['token']:'';
 		$arr_periodo = $this->get_periodo_array($token_matricula,'token',$token_periodo);
+        $periodo = $token_periodo;
 		$ret['exec']=false;
 		if(!isset($arr_periodo['periodo'])){
-			return $ret;
+            return $ret;
 		}
 		$link_periodo = isset($arr_periodo['periodo']) ? $arr_periodo['periodo'] : '1° periodo';
 		$link_periodo = str_replace(' ','_',$link_periodo);
 		$dm = $this->dm($token_matricula);
-		if($dm){
-			$dm=$dm[0];
-		}else{
-			return $ret;
+		if(!$dm){
+            return $ret;
 		}
 		$cont = 'contrato_' . $token_periodo;
 		$id_matricula = $this->get_id_by_token($token_matricula);
@@ -5911,8 +5958,10 @@ class MatriculasController extends Controller
 		$arr_cont = Qlib::lib_json_array($json_contrato);
 		$arr_salv = [];
 		if(isset($arr_cont['aceito'])){
-			$arr_salv = $arr_cont['aceito'];
+            $arr_salv = $arr_cont['aceito'];
 		}
+        // dd($id_matricula,$cont);
+        // dd($arr_salv);
 		foreach ($arr_salv as $km => $vm) {
 			$vm=trim($vm);
 			$meta_key = $km.'_'.$token_periodo;
@@ -5930,19 +5979,60 @@ class MatriculasController extends Controller
 					$configCn['type'] = $contrato;
 					$contr = $this->termo_concordancia($configCn,$dm);
 				}
-				// if(is_sandbox()){
-				// 	lib_print(var_dump($vm)) ."<br>";
-				// }
-				// lib_print($contr);
 				if(isset($contr['contrato']) && !empty($contr['contrato']) && ($c=$contr['contrato'])){
-					$salv = Qlib::update_matriculameta($dm['id'],$meta_key,base64_encode($c));
-					$ret['ds'][$km]=$salv;
-					if($salv){
-						$ret['exec']=true;
+					// $salv = Qlib::update_matriculameta($dm['id'],$meta_key,base64_encode($c));
+					// $ret['ds'][$km]=$salv;
+					// if($salv){
+					// 	$ret['exec']=true;
 
+					// }
+                    //
+                    $titulo = isset($contr['nome_arquivo']) ? $contr['nome_arquivo'] : '';
+                    // dump($contr);
+                    $dados = [
+                        'html'=>$c,
+                        'nome_aquivo_savo'=>$titulo,
+                        'titulo'=>'Proposta',
+                        'id_matricula'=>$id_matricula,
+                        'token'=>$token_matricula,
+                        'short_code'=>$titulo.'_'.$periodo,
+                        'pasta'=>'periodos/'.$periodo,
+                        'f_exibe'=>'server',
+                    ];
+                    $ret[$km]['PdfGenerateController'] = (new PdfGenerateController)->convert_html($dados);
+				}
+			}
+		}
+		return $ret;
+	}
+    /**
+	 * retorna um array com as informações do periodo informando o token da matricul e o nome do periodo cadastrado durante o ganho dele no painel do administrador
+	 * uso: (new Orcamentos)->get_periodo_array
+	 */
+	public function get_periodo_array($token_matricula='',$campo='periodo',$periodo='1° periodo'){
+		$ret = [];
+		$dm = $this->dm($token_matricula);
+		if($dm){
+            $ganhos  = $this->ganhos_plano($dm['id']);
+            if(count($ganhos)>0 && is_array($ganhos)){
+				foreach ($ganhos as $k => $v) {
+					if(isset($ganhos[$k][$campo]) && $ganhos[$k][$campo] == $periodo){
+						$ret = $ganhos[$k];
+						break;
 					}
 				}
 			}
+		}
+		return $ret;
+	}
+    /**
+	 * retorna um array com lista de todos os ganhos...
+	 */
+	public function ganhos_plano($id_matricula){
+		$json = Qlib::get_matriculameta($id_matricula,'ganhos_plano');
+		$ret = [];
+		if($json){
+			$ret = Qlib::lib_json_array($json);
 		}
 		return $ret;
 	}

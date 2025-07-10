@@ -7,6 +7,6 @@
     }
 </style>
 <div class="container">
-    <h2>Proposta</h2>
-    {!! $conteudo !!}
+    <h2>Página não encontrada</h2>
+    {{-- {!! $conte !!} --}}
 </div>

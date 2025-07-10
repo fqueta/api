@@ -642,6 +642,20 @@ class Qlib
             return false;
         }
     }
+    static function buscaValorDb_SERVER($tab,$campo_bus,$valor,$select,$compleSql=false,$debug=false,$conx='mysql2'){
+        //instrução extremamente necessária   buscaValorDb('valor_frete', 'sessao', session_id(), 'valor_frete')
+        // global $conn_server;
+        if($tab && $campo_bus && $valor && $select){
+            $sql = "SELECT $select FROM $tab WHERE $campo_bus='$valor' $compleSql";
+            if(isset($debug)&&$debug){
+                dump($sql);
+            }
+            $d = DB::connection($conx)->select($sql);
+            if($d)
+                $ret = $d[0]->$select;
+        }
+        return $ret;
+    }
     /**
      * Consultar registro em outro banco de dados
      */

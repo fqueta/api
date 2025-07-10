@@ -220,6 +220,7 @@ class PdfGenerateController extends Controller
         $id_matricula = isset($config['id_matricula']) ? $config['id_matricula'] : null;
         $short_code = isset($config['short_code']) ? $config['short_code'] : false;
         // $nome_aquivo_savo='arquivo',$titulo='Arquivo'
+        // dd($config);
         $ret['exec'] = '';
         $html = view('pdf.template_default', ['titulo'=>$titulo,'conteudo'=>trim($html)])->render();
         $headerHtml = View::make('pdf.header')->render();
@@ -251,6 +252,7 @@ class PdfGenerateController extends Controller
                 //grava statico no servidor
                 $pdfbin = $pdf->output();
                 $ret['ger_arquivo'] = Storage::put($fileName, $pdfbin);
+                // dd(Storage::exists($fileName),$short_code,$id_matricula);
                 if (Storage::exists($fileName) && $short_code && $id_matricula) {
                     $url = Storage::url($fileName);
                     $ret['salvo'] = Qlib::update_matriculameta($id_matricula,$short_code.'_pdf',$url);

@@ -44,6 +44,7 @@ Route::prefix('v1')->group(function(){
     Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
     Route::post('/gerar-orcamento',[OrcamentoController::class,'gerar_orcamento'])->middleware('auth:sanctum');
     Route::post('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
+    Route::post('/assinar_proposta_periodos/{token}',[OrcamentoController::class,'assinar_proposta_periodos'])->middleware('auth:sanctum');
     //painel de assinaturas
     Route::get('/painel/assinaturas/{token}',[ ZapsingController::class,'painel_assinaturas'])->middleware('auth:sanctum');
     // Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing'])->middleware('auth:sanctum');
