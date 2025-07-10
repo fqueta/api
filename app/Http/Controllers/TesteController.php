@@ -138,7 +138,7 @@ class TesteController extends Controller
         // dd();
         //  GeraPdfPropostaJoub::dispatch($token);
 
-        $ret = (new MatriculasController)->send_to_zapSing($token,false,'686d1e7a2e445');
+        $ret = (new MatriculasController)->send_to_zapSing($token,false,'686f6d9181250');
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);
         // SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));

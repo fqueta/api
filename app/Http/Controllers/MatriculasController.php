@@ -5532,7 +5532,6 @@ class MatriculasController extends Controller
         }else{
             $contratos = false;
         }
-        // dd($contratos);
         $enviar = false;
         if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
             //link od ontrato de prestação ou seja o principal contrato
@@ -5543,10 +5542,17 @@ class MatriculasController extends Controller
                     //gravar o processamento em campo
                     $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope_'.$tk_periodo,Qlib::lib_array_json($enviar));
                     //removendo o primiero contrato da lista
-                    $n_cont = array_shift($contratos);
-                    $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
-                    if($token_doc && is_array($n_cont)){
-                        $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm,$tk_periodo);
+                    if(is_array($contratos)){
+                        $n_cont = array_shift($contratos);
+                        $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
+                        if($token_doc && is_array($n_cont)){
+                            $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm,$tk_periodo);
+                        }
+                    }else{
+                        $ret['exec'] = false;
+                        $ret['mens'] = 'Lista de contratos inválidos';
+                        $ret['color'] = 'danger';
+
                     }
                 }
             }else{
@@ -5570,12 +5576,14 @@ class MatriculasController extends Controller
             $post_id = isset($dm['id']) ? $dm['id'] : null;
             if($post_id){
                 if($tk_periodo){
-                    $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,'processo_assinatura_'.$tk_periodo,Qlib::lib_array_json($ret));
+                    if(isset($ret['enviar']) && ($res_process=$ret['enviar'])){
+                        $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,'processo_assinatura_'.$tk_periodo,Qlib::lib_array_json($res_process));
+                    }
                 }else{
                     $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
+                    //Envia o link de assinatura para o whatsapp atrave do zapguru
+                    $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm);
                 }
-                //Envia o link de assinatura para o whatsapp atrave do zapguru
-                $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm);
             }
         }
         // Log::info('send_to_zapSing:', $ret);
@@ -5654,7 +5662,7 @@ class MatriculasController extends Controller
             $where = "WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC";
         }
         $dc = Qlib::dados_tab('matriculameta',['where'=>$where]);
-        // dd($dc);
+        // dd($dc,$where);
         if(!$todos && isset($dc[0])){
             unset($dc[0]);
         }
