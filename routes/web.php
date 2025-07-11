@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\ZapsingController;
 use App\Http\Controllers\api\OrcamentoController;
 use App\Http\Controllers\MatriculasController;
 use App\Http\Controllers\PdfGenerateController;
@@ -29,5 +30,9 @@ Route::get('/youtube', [YoutubeController::class,'envia'])->name('yt.send');
 Route::get('/teste', [TesteController::class,'index'])->name('teste');
 Route::get('/contratos/{token}/{type}', [MatriculasController::class,'contratos'])->name('contratos');
 Route::get('/pdf-com-imagem', [PdfGenerateController::class, 'gerarPdfComImagemDeFundo'])->name('pdf.image');
+Route::get('/d/{sec}/{token}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('docs');
+Route::get('/d/{sec}/{token}/{token2}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('docs2');
 Route::get('/orc/{sec}/{token}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('orc');
 Route::get('/orc/{sec}/{token}/{token2}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('orc2');
+// Route::get('/ass/{token}', [ZapsingController::class,'painel_assinaturas'])->name('ass');
+// Route::get('/ass/{token}/{tk_periodos}', [ZapsingController::class,'painel_assinaturas'])->name('ass2');

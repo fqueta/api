@@ -121,13 +121,23 @@ class ZapsingController extends Controller
         Log::info('Webhook zapsing:', $d);
         $ret['exec'] = false;
         $token = isset($d['external_id']) ? $d['external_id'] : false;
+        $tk_periodo = false;
+        if($token){
+            $arr_token = explode('_',$token);
+            $token = isset($arr_token[0]) ? $arr_token[0] : false;
+            $tk_periodo = isset($arr_token[1]) ? $arr_token[1] : false;
+        }
         $signed_file = isset($d['signed_file']) ? $d['signed_file'] : false;
         if($token && $signed_file){
             //baixar e salver
-            $ret = $this->baixar_assinados($d);
+            $ret = $this->baixar_assinados($d,$tk_periodo);
             //salvar hisorico do webhook
             $post_id = Qlib::get_matricula_id_by_token($token);
-            $ret['salvar_webhook'] = Qlib::update_matriculameta($post_id, $this->campo_processo,$json);
+            if($tk_periodo){
+                $ret['salvar_webhook'] = Qlib::update_matriculameta($post_id, 'processo_assinatura_'.$tk_periodo,$json);
+            }else{
+                $ret['salvar_webhook'] = Qlib::update_matriculameta($post_id, $this->campo_processo,$json);
+            }
         }
         return $ret;
     }
@@ -160,14 +170,22 @@ class ZapsingController extends Controller
     /**
      * metodo para baixar todos documentos assinados atravez da webhook
      */
-    public function baixar_assinados($config=[]){
+    public function baixar_assinados($config=[],$tk_periodo=false){
         $token = isset($config['external_id']) ? $config['external_id'] : false;
+        $tk_periodo = false;
         $signed_file = isset($config['signed_file']) ? $config['signed_file'] : false;
         $name = isset($config['name']) ? $config['name'] : false;
         $extra_docs = isset($config['extra_docs']) ? $config['extra_docs'] : [];
+        $arr_token = explode('_',$token);
+        if(isset($arr_token[0])){
+            $token = $arr_token[0];
+        }
+        if(isset($arr_token[1])){
+            $tk_periodo = $arr_token[1];
+        }
         $mc = new MatriculasController;
         $name = str_replace('.pdf', '', $name);
-        $ret = $mc->baixar_arquivo($token, $signed_file,$name);
+        $ret = $mc->baixar_arquivo($token, $signed_file,$name,false,$tk_periodo);
         if(isset($ret['link'])){
             $arr = [
                 'principal' => ['nome'=>$name,'link'=>$ret['link']],
@@ -175,8 +193,9 @@ class ZapsingController extends Controller
             if(is_array($extra_docs)){
                 foreach ($extra_docs as $k => $v) {
                     $name = isset($v['name']) ? $v['name'] : false;
+                    $name = str_replace('.pdf', '', $name);
                     $signed_file = isset($v['signed_file']) ? $v['signed_file'] : false;
-                    $ba = $mc->baixar_arquivo($token, $signed_file,$name);
+                    $ba = $mc->baixar_arquivo($token, $signed_file,$name,false,$tk_periodo);
                     if(isset($ba['link'])){
                         $open_id = isset($v['open_id']) ? $v['open_id'] : 0;
                         $arr['extra'][$open_id] = ['nome'=>$name, 'link'=>$ba['link']];
@@ -185,7 +204,16 @@ class ZapsingController extends Controller
             }
             $post_id = Qlib::get_matricula_id_by_token($token);
             //salvar o array com todos o links dos contratos assinados..
-            $ret['salvar_links_assinados'] = Qlib::update_matriculameta($post_id,$this->campo_links,Qlib::lib_array_json($arr));
+            // dd($tk_periodo);
+            $ret['arr'] = $arr;
+            if($tk_periodo){
+                $slug = $this->campo_links.'_'.$tk_periodo;
+                $ret['salvar_links_assinados'] = Qlib::update_matriculameta($post_id,$slug,Qlib::lib_array_json($arr));
+                $ret['slug'] = $slug;
+
+            }else{
+                $ret['salvar_links_assinados'] = Qlib::update_matriculameta($post_id,$this->campo_links,Qlib::lib_array_json($arr));
+            }
         }
         return $ret;
     }

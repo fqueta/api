@@ -10,6 +10,7 @@ use App\Jobs\GeraPdfContratoJoub;
 use App\Jobs\GeraPdfcontratosPnlJob;
 use App\Jobs\GeraPdfPropostaJoub;
 use App\Jobs\GeraPdfPropostasPnlJob;
+use App\Jobs\SendPeriodosZapsingJob;
 use App\Jobs\SendZapsingJoub;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -5471,7 +5472,7 @@ class MatriculasController extends Controller
      * @param string $tm token da matricula
      * @param string $dm dados da matricula para evitar uma nova consulta
      */
-    public function enviar_envelope($tm,$dm=false,$url_pdf=''){
+    public function enviar_envelope($tm,$dm=false,$url_pdf='',$tk_periodo=false){
         if(!$dm && $tm){
             $dm = $this->dm($tm);
         }
@@ -5493,13 +5494,18 @@ class MatriculasController extends Controller
             $signers = $zpc->signers_matricula($signers);
             //Criar o nome
             $name = $nome. ' * '.@$dm['nome_curso'].' - '.@$dm['id'];
+            $externar_id = $tm;
+            if($tk_periodo){
+                $externar_id = $tm.'_'.$tk_periodo;
+            }
             $body = [
                 "name" => trim($name),// 'Assinatura da proposta',
                 "url_pdf" => $url_pdf,
-                "external_id" => $tm,
+                "external_id" => $externar_id,
                 "folder_path" => '/CRM',
                 "signers" =>$signers,
                 ];
+            // dd($body);
             //eviar
             $ret = (new ZapsingController)->post([
                 // "endpoint" => 'docs',
@@ -5535,7 +5541,7 @@ class MatriculasController extends Controller
         $enviar = false;
         if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
             //link od ontrato de prestação ou seja o principal contrato
-            $enviar = $this->enviar_envelope($tm,$dm,$link_c);
+            $enviar = $this->enviar_envelope($tm,$dm,$link_c,$tk_periodo);
             if($tk_periodo){
                 if($enviar['exec'] == true){
                     $ret['exec'] = true;
@@ -5577,13 +5583,13 @@ class MatriculasController extends Controller
             if($post_id){
                 if($tk_periodo){
                     if(isset($ret['enviar']) && ($res_process=$ret['enviar'])){
-                        $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,'processo_assinatura_'.$tk_periodo,Qlib::lib_array_json($res_process));
+                        $ret['salv_hist'] = Qlib::update_matriculameta($post_id,'processo_assinatura_'.$tk_periodo,Qlib::lib_array_json($res_process));
                     }
                 }else{
-                    $ret['salv_hist'] = Qlib::update_matriculameta ($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
-                    //Envia o link de assinatura para o whatsapp atrave do zapguru
-                    $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm);
+                    $ret['salv_hist'] = Qlib::update_matriculameta($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
                 }
+                //Envia o link de assinatura para o whatsapp atrave do zapguru
+                $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm,$tk_periodo);
             }
         }
         // Log::info('send_to_zapSing:', $ret);
@@ -5708,12 +5714,12 @@ class MatriculasController extends Controller
                     $token = $config['token_matricula'];
 					//gravar contrato estatico...
                     GeraPdfPropostasPnlJob::dispatch($token,$token_periodo);
-                    GeraPdfcontratosPnlJob::dispatch($token,$token_periodo)->delay(now()->addSeconds(5));;
+                    GeraPdfcontratosPnlJob::dispatch($token,$token_periodo)->delay(now()->addSeconds(5));
+                    SendPeriodosZapsingJob::dispatch($token,$token_periodo)->delay(now()->addSeconds(5));
 					// $ret['gravar_copia'] = $this->grava_contrato_statico_periodo($config['token_matricula'],$token_periodo);
 
                     // GeraPdfPropostaJoub::dispatch($config['token_matricula']);
                     // GeraPdfContratoJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
-                    // SendZapsingJoub::dispatch($config['token_matricula'])->delay(now()->addSeconds(5));
 
 
                     $ret['nextPage'] = Qlib::qoption('dominio').'/solicitar-orcamento/proposta/'.$config['token_matricula'].'/a/'.$token_periodo;
@@ -5945,13 +5951,13 @@ class MatriculasController extends Controller
 	 * @param string $token_matricula, strim $token_periodo
 	 */
 	public function grava_contrato_statico_periodo($token_matricula,$token_periodo=false){
-		$configCn['token'] = base64_encode($token_matricula);
+        $configCn['token'] = base64_encode($token_matricula);
 		$configCn['periodo'] = $token_periodo;
 		// $token_periodo = isset($arr_periodo['token'])?$arr_periodo['token']:'';
 		$arr_periodo = $this->get_periodo_array($token_matricula,'token',$token_periodo);
         $periodo = $token_periodo;
 		$ret['exec']=false;
-		if(!isset($arr_periodo['periodo'])){
+        if(!isset($arr_periodo['periodo'])){
             return $ret;
 		}
 		$link_periodo = isset($arr_periodo['periodo']) ? $arr_periodo['periodo'] : '1° periodo';
@@ -5983,9 +5989,15 @@ class MatriculasController extends Controller
 				// echo $contrato.'<br> ';
 				if($km=='contrato_combustivel'){
 					$contr = $this->contratoAero($configCn,$dm,$km);
+                    if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
+                        $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                    }
 				}else{
-					$configCn['type'] = $contrato;
-					$contr = $this->termo_concordancia($configCn,$dm);
+                    $configCn['type'] = $contrato;
+                    $contr = $this->termo_concordancia($configCn,$dm);
+                    if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
+                        $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                    }
 				}
 				if(isset($contr['contrato']) && !empty($contr['contrato']) && ($c=$contr['contrato'])){
 					// $salv = Qlib::update_matriculameta($dm['id'],$meta_key,base64_encode($c));
@@ -6067,16 +6079,22 @@ class MatriculasController extends Controller
      * Metodo para baixar o arquivo assinado de um oraçmento baixar em um diretorio padrão de oraçamento
      * @param string $token
      */
-    public function baixar_arquivo($token,$url,$nome_arquivo=false,$slug=false){
+    public function baixar_arquivo($token,$url,$nome_arquivo=false,$slug=false,$pasta=false){
         // $url = "https://zapsign.s3.amazonaws.com/sandbox/dev/2024/12/pdf/72d30d89-da1f-4e10-9025-3689b03ef3d4/7a773057-05d3-4843-be1d-0fe6bffdb730.pdf?AWSAccessKeyId=AKIASUFZJ7JCTI2ZRGWX&Signature=oRLj2PALoDs1JEkx%2FHm4TV1ZM%2BQ%3D&Expires=1734026017";
         $num=null;
         $nome_arquivo = $nome_arquivo?$nome_arquivo:'assinado';
         $nome_arquivo = Qlib::createSlug($nome_arquivo);
         $caminhoSalvar = 'pdfs/termos/'.$token.'/'.$nome_arquivo.'.pdf';
+        if($pasta){
+            $caminhoSalvar = 'pdfs/termos/'.$token.'/'.$pasta.'/'.$nome_arquivo.'.pdf';
+        }
         if(Storage::exists($caminhoSalvar)){
             $num='-'.time();
         }
         $caminhoSalvar = 'pdfs/termos/'.$token.'/'.$nome_arquivo.$num.'.pdf';
+        if($pasta){
+            $caminhoSalvar = 'pdfs/termos/'.$token.'/'.$pasta.'/'.$nome_arquivo.$num.'.pdf';
+        }
         $ret = Qlib::download_file($url,$caminhoSalvar);
         $ret['url'] = $url;
         $ret['token'] = $token;

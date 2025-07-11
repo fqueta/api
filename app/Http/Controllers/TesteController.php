@@ -139,6 +139,7 @@ class TesteController extends Controller
         //  GeraPdfPropostaJoub::dispatch($token);
 
         $ret = (new MatriculasController)->send_to_zapSing($token,false,'686f6d9181250');
+        // $ret = (new ZapsingController)->enviar_link_assinatura($token,'686f6d9181250');
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);
         // SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));

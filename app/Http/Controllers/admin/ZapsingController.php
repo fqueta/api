@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class ZapsingController extends Controller
 {
-    public function painel_assinaturas($token){
+    public function painel_assinaturas($token,$tk_periodo=false){
         if($token){
             $ret = ['exec'=>false];
             $dm = (new MatriculasController)->dm($token);
@@ -23,11 +23,18 @@ class ZapsingController extends Controller
                 $campo_meta0 = $zc->campo_envio;
                 $campo_meta1 = $zc->campo_processo;
                 $campo_meta2 = $zc->campo_links;
-                $processo = Qlib::get_matriculameta($id_matricula,$campo_meta1,true);
+                if($tk_periodo){
+                    $processo = Qlib::get_matriculameta($id_matricula,'processo_assinatura_'.$tk_periodo,true);
+                }else{
+                    $processo = Qlib::get_matriculameta($id_matricula,$campo_meta1,true);
+                }
                 $ret['arr_processo'] = [];
                 $ret['arr_link'] = [];
                 if($processo){
                     $links = Qlib::get_matriculameta($id_matricula,$campo_meta2,true);
+                    if($tk_periodo){
+                        $links = Qlib::get_matriculameta($id_matricula,$campo_meta2.'_'.$tk_periodo,true);
+                    }
                     $arr_processo = Qlib::lib_json_array($processo);
                     if(!isset($arr_processo['signers']) && isset($arr_processo['enviar']['response']['signers'])){
                         $arr_processo['signers'] = $arr_processo['enviar']['response']['signers'];
@@ -41,7 +48,11 @@ class ZapsingController extends Controller
                     $ret['arr_processo'] = $arr_processo;
                     $ret['arr_links'] = $arr_links;
                 }else{
-                    $envio = Qlib::get_matriculameta($id_matricula,$campo_meta0,true);
+                    if($tk_periodo){
+                        $envio = Qlib::get_matriculameta($id_matricula,$campo_meta0.'_'.$tk_periodo,true);
+                    }else{
+                        $envio = Qlib::get_matriculameta($id_matricula,$campo_meta0,true);
+                    }
                     if($envio){
                         $arr_envio = Qlib::lib_json_array($envio);
                         $ret['envio'] = isset($arr_envio['response']) ? $arr_envio['response'] : false;
@@ -60,20 +71,36 @@ class ZapsingController extends Controller
      * Metodo para adiminstrar um envio de mensagem do zapsing
      * @param string $token
      */
-    public function enviar_link_assinatura($token_orcamento=null){
+    public function enviar_link_assinatura($token_orcamento=null,$tk_periodo=false){
         $d = (new MatriculasController)->dm($token_orcamento);
-        // dd($d);
+        $processo = [];
+        if($tk_periodo && isset($d['id']) && ($id_matricula = $d['id'])){
+            $json_processo = Qlib::get_matriculameta($id_matricula,'processo_assinatura_'.$tk_periodo);
+            if($json_processo){
+                $processo = Qlib::lib_json_array($json_processo);
+            }
+        }
         $ret['exec'] = false;
-        $webhook_zapsing = isset($d['webhook_zapsing']['enviar']['response']) ? $d['webhook_zapsing']['enviar']['response'] : false;
-        if(!$webhook_zapsing){
-            $webhook_zapsing = isset($d['webhook_zapsing']) ? $d['webhook_zapsing'] : [];
+        if(isset($processo['response']['signers']) && isset($processo['response']['external_id'])){
+            $webhook_zapsing = $processo['response'];
+        }else{
+            $webhook_zapsing = isset($d['webhook_zapsing']['enviar']['response']) ? $d['webhook_zapsing']['enviar']['response'] : false;
+            if(!$webhook_zapsing){
+                $webhook_zapsing = isset($d['webhook_zapsing']) ? $d['webhook_zapsing'] : [];
+            }
         }
         $email = isset($d['email']) ? $d['email'] : false;
         $app = config('app.name');
         $temm = 'Olá *{nome}* sua assinatura foi solicitada, pelo *{app}*, para o documento, *{nome_doc}* segue o link de assinatura {link}';
         $i = 0;
         $zgc = new ZapguruController;
-        $external_id = isset($webhook_zapsing['external_id']) ? $webhook_zapsing['external_id'] : false;
+        if($tk_periodo){
+            $tk = isset($webhook_zapsing['external_id']) ? $webhook_zapsing['external_id'] : false;
+            $arr_tk = explode('_',$tk);
+            $external_id = isset($arr_tk[0]) ? $arr_tk[0] : false;
+        }else{
+            $external_id = isset($webhook_zapsing['external_id']) ? $webhook_zapsing['external_id'] : false;
+        }
         $nome_doc = isset($webhook_zapsing['name']) ? $webhook_zapsing['name'] : '';
         if(isset($webhook_zapsing['signers'][$i]['sign_url']) && is_string($webhook_zapsing['signers'][$i]['sign_url']) && ($signers=$webhook_zapsing['signers'])){
             if(is_array($signers)){

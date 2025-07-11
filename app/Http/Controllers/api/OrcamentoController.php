@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Http\Controllers\admin\ZapsingController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\CursosController;
 use App\Http\Controllers\MatriculasController;
@@ -256,6 +257,7 @@ class OrcamentoController extends Controller
         // $token = $request->get('token');
         $token2 = $request->segment(4);
         $conteudo = '';
+        $type=$request->get('type'); //token do periodo
         if($sec=='orcamentos'){
             $do = ( new MatriculasController )->gerar_orcamento($token);
             $conteudo = isset($do['table']) ? $do['table'] : false;
@@ -264,9 +266,15 @@ class OrcamentoController extends Controller
             // $conteudo = (new MatriculasController)->orcamento_html($tk);
         }elseif($sec=='proposta-pnl-periodos'){
             $periodo=$token2; //token do periodo
-            $type=$request->get('type'); //token do periodo
             $d = (new MatriculasController)->dm($token);
             $conteudo = $this->resumo_proposta_periodos($token,$d,$periodo);
+        }elseif($sec=='ass'){
+            $periodo=$token2; //token do periodo
+            // $d = (new MatriculasController)->dm($token);
+            $c = (new ZapsingController)->painel_assinaturas($token,$periodo);
+            $conteudo = $c;
+            // dd($c,$c->getData(),$c->getPath());
+            // $conteudo = view('crm.painel.assinaturas',$c->getData());
         }
         $ret = [
             'conteudo'=>$conteudo,

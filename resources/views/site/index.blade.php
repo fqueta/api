@@ -48,6 +48,8 @@
         @include('site.orcamento')
     @elseif ($seg2=='proposta-pnl-periodos')
         @include('site.orcamento')
+    @elseif ($seg2=='ass')
+        @include('site.orcamento')
     @endif
     {{-- @can('is_admin')
         <section>
