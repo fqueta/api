@@ -33,10 +33,10 @@ class SendPeriodosZapsingJob implements ShouldQueue
 
         try {
             // Lógica do Job
-            $ret = (new MatriculasController)->send_to_zapSing($this->tm,$this->tp);
-            $jobLogger->info('EnvioZapsingJob token matricula: '.$this->tm.', e periodo '.$this->tp.' está processando...',$ret);
+            $ret = (new MatriculasController)->send_to_zapSing($this->tm,false,$this->tp);
+            $jobLogger->info('SendPeriodosZapsingJob token matricula: '.$this->tm.', e periodo '.$this->tp.' está processando...',$ret);
         } catch (\Exception $e) {
-            $jobLogger->error('Erro no EnvioZapsingJob: ' . $e->getMessage());
+            $jobLogger->error('Erro no SendPeriodosZapsingJob: ' . $e->getMessage());
         }
     }
 }
