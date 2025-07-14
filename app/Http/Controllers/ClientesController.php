@@ -195,11 +195,9 @@ class ClientesController extends Controller
         $ret = ['exec'=>false];
         if(isset($dl['celular']) && ($cel=$dl['celular'])){
             //Adicionnar contatos
-            // return $cel;
             if(is_array($dl['config'])){
                 $dl['config'] = Qlib::lib_array_json($dl['config']);
             }
-            // return $dl['config'];
             $ret = $this->add_lead_update($dl,"WHERE celular='$cel'");
         }
         return $ret;
