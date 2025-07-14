@@ -6,7 +6,14 @@ $assinantes = isset($arr_processo['signers']) ? $arr_processo['signers'] : false
 if(!$assinantes){
     $assinantes = isset($envio['signers']) ? $envio['signers'] : false;
 }
+if(!$assinantes){
+    $assinantes = isset($arr_processo['response']['signers']) ? $arr_processo['response']['signers'] : false;
+}
 $token_zapsing = isset($envio['token']) ? $envio['token'] : false;
+// dump($arr_processo,$token_zapsing);
+if(!$token_zapsing && isset($arr_processo['response']['token']) && ($token_zapsing=$arr_processo['response']['token'])){
+    $envio = $arr_processo['response'];
+}
 $status = isset($envio['status']) ? $envio['status'] : false;
 $nome = isset($envio['name']) ? $envio['name'] : false;
 if($token_zapsing){
