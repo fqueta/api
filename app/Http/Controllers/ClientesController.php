@@ -41,9 +41,12 @@ class ClientesController extends Controller
         $tab = 'capta_lead';
         //tornar unico pelo email por padrão
         $where = $where ? $where : false;
-        if(empty($where) && isset($dados['email']) && !empty($dados['email'])){
+        if(empty($where) && isset($dados['celular']) && !empty($dados['celular'])){
+            $where = "WHERE celular='".$dados['celular']."'";
+        }elseif(empty($where) && isset($dados['email']) && !empty($dados['email'])){
             $where = "WHERE email='".$dados['email']."'";
         }
+        // return $where;
         $ret = Qlib::update_tab($tab,$dados,$where);
         return $ret;
     }
@@ -184,6 +187,23 @@ class ClientesController extends Controller
     	return $ret;
 
 	}
+    /**
+     * Metodo para adicionar um lead pela API
+     */
+    public function add_api_leads(Request $request){
+        $dl = $request->all(); //dados do formulario do Lead
+        $ret = ['exec'=>false];
+        if(isset($dl['celular']) && ($cel=$dl['celular'])){
+            //Adicionnar contatos
+            // return $cel;
+            if(is_array($dl['config'])){
+                $dl['config'] = Qlib::lib_array_json($dl['config']);
+            }
+            // return $dl['config'];
+            $ret = $this->add_lead_update($dl,"WHERE celular='$cel'");
+        }
+        return $ret;
+    }
     public function CorrigeDuplicidadeTabela($tab=''){
         if($tab=='capta_lead'){
 

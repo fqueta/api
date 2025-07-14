@@ -6,6 +6,7 @@ use App\Http\Controllers\api\RabController;
 use App\Http\Controllers\api\WebhookController;
 use App\Http\Controllers\api\ZapsingController as ApiZapsingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\ddiController;
 use App\Http\Controllers\MatriculasController;
 use App\Http\Controllers\RdstationController;
@@ -42,6 +43,7 @@ Route::prefix('v1')->group(function(){
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
     Route::get('/rab',[RabController::class,'index']);
     Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
+    Route::post('/leads',[ClientesController::class,'add_api_leads'])->middleware('auth:sanctum');
     Route::post('/gerar-orcamento',[OrcamentoController::class,'gerar_orcamento'])->middleware('auth:sanctum');
     Route::post('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');
     Route::post('/assinar_proposta_periodos/{token}',[OrcamentoController::class,'assinar_proposta_periodos'])->middleware('auth:sanctum');
