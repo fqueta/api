@@ -5963,11 +5963,13 @@ class MatriculasController extends Controller
             return $ret;
 		}
 		$link_periodo = isset($arr_periodo['periodo']) ? $arr_periodo['periodo'] : '1° periodo';
+		$horas = isset($arr_periodo['horas']) ? $arr_periodo['horas'] : 0;
 		$link_periodo = str_replace(' ','_',$link_periodo);
 		$dm = $this->dm($token_matricula);
 		if(!$dm){
             return $ret;
 		}
+        // dd($arr_periodo);
 		$cont = 'contrato_' . $token_periodo;
 		$id_matricula = $this->get_id_by_token($token_matricula);
 		$json_contrato = Qlib::get_matriculameta($id_matricula,$cont);
@@ -5990,15 +5992,31 @@ class MatriculasController extends Controller
 				}
 				// echo $contrato.'<br> ';
 				if($km=='contrato_combustivel'){
-					$contr = $this->contratoAero($configCn,$dm,$km);
-                    if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
-                        $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                    if($horas>0){
+                        //Somente temos o termo de combustivel se tivermos horas adiquiridas
+                        $contr = $this->contratoAero($configCn,$dm,$km);
+                        if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
+                            $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                        }
                     }
 				}else{
-                    $configCn['type'] = $contrato;
-                    $contr = $this->termo_concordancia($configCn,$dm);
-                    if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
-                        $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                    if($km=='termo_escola_voo'){
+                        if($horas>0){
+                            //Somente temos o termo de combustivel se tivermos horas adiquiridas
+
+                            $configCn['type'] = $contrato;
+                            $contr = $this->termo_concordancia($configCn,$dm);
+                            if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
+                                $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                            }
+                        }
+                    }else{
+
+                        $configCn['type'] = $contrato;
+                        $contr = $this->termo_concordancia($configCn,$dm);
+                        if(isset($contr['contrato']) && ($texto=$contr['contrato'])){
+                            $contr['contrato'] = $this->contrato_matricula(false,$dm,$texto);
+                        }
                     }
 				}
 				if(isset($contr['contrato']) && !empty($contr['contrato']) && ($c=$contr['contrato'])){

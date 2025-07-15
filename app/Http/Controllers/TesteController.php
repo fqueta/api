@@ -24,7 +24,7 @@ class TesteController extends Controller
         // $ret = Qlib::dados_tab('cursos',['id' => 97]);
         // $rd = new RdstationController;
         // dd($rd->token_api);
-        // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='686d1e7a2e445');
+        $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='68758c8e76cfb');
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
         // $ret = (new OrcamentoController)->resumo_proposta_periodos($token);
@@ -138,7 +138,7 @@ class TesteController extends Controller
         // dd();
         //  GeraPdfPropostaJoub::dispatch($token);
 
-        $ret = (new MatriculasController)->send_to_zapSing($token,false,'686f6d9181250');
+        // $ret = (new MatriculasController)->send_to_zapSing($token,false,'686f6d9181250');
         // $ret = (new ZapsingController)->enviar_link_assinatura($token,'686f6d9181250');
         // SendZapsingJoub::dispatch($token);
         // GeraPdfContratoJoub::dispatch($token);
