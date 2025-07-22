@@ -6163,5 +6163,23 @@ class MatriculasController extends Controller
         }
         return $ret;
     }
+    /**
+     * Metodo para listar as matriculas vencendo
+     */
+    public function listar_contratos_vencendo(){
+        $dm = Matricula::select('contrato')
+        ->where('status','>','1')
+        ->where('status','<','5')
+        ->where('excluido','n')
+        ->where('deletado','n')
+        // ->limit(500)
+        ->get()
+        ->toArray();
+        foreach ($dm as $k => $value) {
+            # code...
+        }
+        dd($dm);
+
+    }
 
 }
