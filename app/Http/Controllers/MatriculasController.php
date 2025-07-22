@@ -5540,6 +5540,7 @@ class MatriculasController extends Controller
         }else{
             $contratos = false;
         }
+        // dd($contratos);
         $enviar = false;
         if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
             //link od ontrato de prestação ou seja o principal contrato

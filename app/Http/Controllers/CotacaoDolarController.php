@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class CotacaoDolarController extends Controller
 {
@@ -42,7 +43,7 @@ class CotacaoDolarController extends Controller
 
 		 * $fin = new lcf_gerenteFinanceiro;
 
-		 * $ret = $fin->cotacaoDolar();
+		 * $ret = (new CotacaoDolarController)->cotacaoDolar();
 
 		 * lib_print($ret);
 
@@ -53,14 +54,14 @@ class CotacaoDolarController extends Controller
 		$urlApi = 'https://economia.awesomeapi.com.br/json/last/USD-BRL';
 
 		// $api = file_get_contents($urlApi);
-		$arrContextOptions=array(
-			"ssl"=>array(
-				"verify_peer"=>false,
-				"verify_peer_name"=>false,
-			),
-		);
-
-		$api = file_get_contents($urlApi, false, stream_context_create($arrContextOptions));
+		// $arrContextOptions=array(
+		// 	"ssl"=>array(
+		// 		"verify_peer"=>false,
+		// 		"verify_peer_name"=>false,
+		// 	),
+		// );
+        $api = Http::get($urlApi);
+		// $api = file_get_contents($urlApi, false, stream_context_create($arrContextOptions));
 
 		if(isset($_GET['fq'])){
 			dd($api);
