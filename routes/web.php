@@ -30,6 +30,7 @@ Route::get('/youtube', [YoutubeController::class,'envia'])->name('yt.send');
 Route::get('/teste', [TesteController::class,'index'])->name('teste');
 Route::get('/contratos/{token}/{type}', [MatriculasController::class,'contratos'])->name('contratos');
 Route::get('/pdf-com-imagem', [PdfGenerateController::class, 'gerarPdfComImagemDeFundo'])->name('pdf.image');
+// Route::get('/d/{sec}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('paginas');
 Route::get('/d/{sec}/{token}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('docs');
 Route::get('/d/{sec}/{token}/{token2}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('docs2');
 Route::get('/orc/{sec}/{token}', [OrcamentoController ::class,'pagina_orcamentos_site'])->name('orc');

@@ -2731,4 +2731,12 @@ class Qlib
             return view('qlib.formulario',$config);
         }
     }
+    /**
+     * Metodo para retornar um array contendo os dados de todos consultores ativos. Conltores validos aqueles na equipe de consultores do CRM
+     *
+     */
+    static function consultoresAtivos(){
+        $sql = "";
+        $dc = self::buscaValoresDb_SERVER($sql);
+    }
 }

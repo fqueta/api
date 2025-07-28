@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DataHelper;
 use App\Http\Controllers\admin\ZapsingController as AdminZapsingController;
 use App\Models\Matricula;
 use App\Qlib\Qlib;
@@ -14,6 +15,7 @@ use App\Jobs\SendPeriodosZapsingJob;
 use App\Jobs\SendZapsingJoub;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Storage;
 
 class MatriculasController extends Controller
@@ -6167,20 +6169,92 @@ class MatriculasController extends Controller
     /**
      * Metodo para listar as matriculas vencendo
      */
-    public function listar_contratos_vencendo(){
-        $dm = Matricula::select('contrato')
-        ->where('status','>','1')
-        ->where('status','<','5')
-        ->where('excluido','n')
-        ->where('deletado','n')
+    public function listar_contratos_vencendo($tipo=null){
+        $dm = Matricula::select(
+            'matriculas.aluno',
+            'clientes.Nome',
+            'matriculas.id',
+            'matriculas.contrato',
+            'matriculas.validade',
+            'matriculas.seguido_por',
+            'clientes.telefonezap',
+            'clientes.Email',
+            'clientes.zapguru',
+            'clientes.zapguru',
+            'cursos.nome as nome_curso',
+            'cursos.tipo as tipo_curso',
+        )
+        ->join('clientes','clientes.id','=','matriculas.id_cliente')
+        ->join('cursos','cursos.id','=','matriculas.id_curso')
+        ->where('matriculas.status','>','1')
+        ->where('matriculas.status','<','5')
+        ->where('matriculas.excluido','n')
+        ->where('matriculas.deletado','n')
+        ->where('matriculas.contrato','!=','')
+        ->where('clientes.telefonezap','!=','');
         // ->limit(500)
+        if($tipo){
+            $dm = $dm
+            ->where('cursos.tipo','=',$tipo);
+        }
+        $dm = $dm
+        ->orderBy('matriculas.id','asc')
         ->get()
         ->toArray();
-        foreach ($dm as $k => $value) {
-            # code...
+        $ret['exec'] = false;
+        $ret['total'] = 0;
+        $ret['total_vencidos'] = 0;
+        $ret['tipo'] = $tipo;
+        $dv = [];
+        // $vencimento = DataHelper::calcularVencimento('2025-07-23',-2,'meses');
+        // dd(count());
+        if(count($dm)>0){
+            $ret['exec'] = true;
+            $ret['total'] = count($dm);
+            foreach ($dm as $k => $dc) {
+                $arr_contrato = Qlib::lib_json_array($dc['contrato']);
+                $arr_zapguru = Qlib::lib_json_array($dc['zapguru']);
+                // $ret['arr_contrato'][$k] = $arr_contrato;
+                $validade = $dc['validade'];
+                if(empty($validade) || is_null($validade) || $validade==0){
+                    $validade = 365;
+                    $dm[$k]['validade'] = $validade;
+                    // $dm[$k]['vencimento'] = DataHelper::calcularVencimento($vencimento);
+                }
+                $dm[$k]['link_contrato'] = 'https://crm.aeroclubejf.com.br/admin/cursos?sec=bWF0cmljdWxhcw==&list=false&acao=alt&id='.base64_encode($dc['id']).'&etp=ZXRwMg==';
+                $dm[$k]['contrato'] = $arr_contrato;
+                $dm[$k]['zapguru'] = $arr_zapguru;
+                if(isset($arr_contrato['data_aceito_contrato'])){
+                    $data_aceito_contrato = explode(' ',$arr_contrato['data_aceito_contrato'])[0];
+                    $data_validade = DataHelper::calcularVencimento($data_aceito_contrato,$validade);
+                    $dm[$k]['data_validade'] = $data_validade;
+                    //verificar se está vencido
+                    $vencido = DataHelper::estaVencido($data_validade);
+                    $dm[$k]['vencido'] = $vencido;
+                    if($vencido){
+                        $ret['total_vencidos'] ++;
+                        $dv[$k] = $dm[$k];
+                    }
+                    //se estiver vencido enviar uma notificação
+                }
+            }
         }
-        dd($dm);
-
+        $ret['dm'] = $dv;
+        $ret['dt'] = $dm;
+        // dd($dm);
+        return $ret;
+    }
+    /**
+     * Metodo para publicar os dados dos contratos vencidos na API
+     */
+    public function publica_contratos_vencidos($tipo){
+        return $this->listar_contratos_vencendo($tipo);
+    }
+    /**
+     * Metodo para publicar os dados dos contratos vencidos na API
+     */
+    public function publica_contratos_vencidos_html($tipo){
+        return $this->listar_contratos_vencendo($tipo);
     }
 
 }

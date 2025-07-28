@@ -3,6 +3,7 @@
     $post_id = isset($dados['ID']) ? $dados['ID'] : false;
     $seg1 = request()->segment(1); //link da página em questão
     $seg2 = request()->segment(2); //link da página em questão
+    $seg3 = request()->segment(3); //link da página em questão
     // $slug = isset($dados['post_name']) ? $dados['post_name'] : $seg1;
     // $slug2 = isset($dados['slug2']) ? $dados['slug2'] : $seg2;
     $title = isset($dados['post_title']) ? $dados['post_title'] : false;
@@ -48,6 +49,8 @@
         @include('site.orcamento')
     @elseif ($seg2=='proposta-pnl-periodos')
         @include('site.orcamento')
+    @elseif ($seg2=='contratos' && $seg3=='vencidos')
+        @include('site.contratos_vencidos')
     @elseif ($seg2=='ass')
         @include('site.orcamento')
     @endif

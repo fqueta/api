@@ -49,6 +49,7 @@ Route::prefix('v1')->group(function(){
     Route::post('/assinar_proposta_periodos/{token}',[OrcamentoController::class,'assinar_proposta_periodos'])->middleware('auth:sanctum');
     //painel de assinaturas
     Route::get('/painel/assinaturas/{token}',[ ZapsingController::class,'painel_assinaturas'])->middleware('auth:sanctum');
+    Route::get('/contratos/vencidos/{tipo}',[ MatriculasController::class,'publica_contratos_vencidos'])->middleware('auth:sanctum');
     Route::get('/painel/assinaturas/{token}/{tk_periodo}',[ ZapsingController::class,'painel_assinaturas'])->middleware('auth:sanctum');
     // Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing'])->middleware('auth:sanctum');
     Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing']);

@@ -257,6 +257,7 @@ class OrcamentoController extends Controller
         // $token = $request->get('token');
         $token2 = $request->segment(4);
         $conteudo = '';
+        $dados = [];
         $type=$request->get('type'); //token do periodo
         if($sec=='orcamentos'){
             $do = ( new MatriculasController )->gerar_orcamento($token);
@@ -268,6 +269,9 @@ class OrcamentoController extends Controller
             $periodo=$token2; //token do periodo
             $d = (new MatriculasController)->dm($token);
             $conteudo = $this->resumo_proposta_periodos($token,$d,$periodo);
+        }elseif($sec=='contratos' && $token=='vencidos'){
+            $conteudo = 'Contratos vencidos';
+            $dados = (new MatriculasController)->listar_contratos_vencendo(2);
         }elseif($sec=='ass'){
             $periodo=$token2; //token do periodo
             // $d = (new MatriculasController)->dm($token);
@@ -279,6 +283,7 @@ class OrcamentoController extends Controller
         $ret = [
             'conteudo'=>$conteudo,
             'sec'=>$sec,
+            'dados'=>$dados,
         ];
         return view('site.index',$ret);
     }
