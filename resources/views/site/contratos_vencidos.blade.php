@@ -1,18 +1,13 @@
-<style>
-    .vermelho{
-        color:red;
-    }
-    .verde{
-        color:green;
-    }
-</style>
-<div class="container mt-4 pt-4 mb-3">
-    <h2>
-        {!! $conteudo !!}
-    </h2>
+<div class="col-md-12 mt-4 pt-4 mb-3">
     {{-- {{ dd($dados) }} --}}
     @if (is_array($dados) && isset($dados['dm']) && is_array($dados['dm']))
-        <div class="row">
+        <div class="row mx-0">
+            <div class="col-md-12">
+            <h2>
+                {!! $conteudo !!}
+            </h2>
+
+            </div>
             <div class="col-md-6">
                 <b>Data da consulta:</b>
                 <span>
@@ -27,7 +22,7 @@
 
             </div>
         </div>
-        <div class="row">
+        <div class="row mx-0">
             <div class="col-md-12">
                 <table class="table table-striped table-hover dataTable">
                     <thead>
@@ -37,7 +32,7 @@
                             <th>Curso</th>
                             <th>Validade</th>
                             <th>Telefone</th>
-                            <th>Ação</th>
+                            <th class="d-print-none">Ação</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,7 +54,7 @@
                                 <td>{{ $v['nome_curso'] }}</td>
                                 <td>{{ App\Qlib\Qlib::dataExibe($v['data_validade']) }}</td>
                                 <td>{!! $telefone !!}</td>
-                                <td class="">
+                                <td class="d-print-none">
                                     <div class="d-flex">
                                         {!! $acao !!}
                                     </div>
@@ -72,3 +67,8 @@
         </div>
     @endif
 </div>
+{{-- <script>
+    $(function(){
+        $('.dataTable').dataTable();
+    });
+</script> --}}
