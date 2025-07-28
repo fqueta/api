@@ -1,4 +1,4 @@
-<footer class="theme-bg-primary py-5 text-light">
+<footer class="theme-bg-primary py-5 text-light d-print-none">
     <section class="container mb-5">
         <div class="row">
             <div class="col-12 col-lg-3 text-center mb-4 order-1">

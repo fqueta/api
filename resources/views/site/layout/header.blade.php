@@ -23,7 +23,11 @@
         width: 10%;
     }
 </style>
-    <div class="container d-flex justify-content-between align-items-center">
+<div class="logo d-none d-print-block">
+  {{-- <img src="{{url('/vendor/adminlte/dist/img/logo-h.png')}}" alt="" class="img-fluid"> --}}
+  <img src="{{url('/vendor/site/logo/logo.png')}}" alt="" class="img-fluid">
+</div>
+<div class="container d-flex justify-content-between align-items-center d-print-none">
 
       <div class="logo">
         {{-- <a href="{{url('/'.App\Qlib\Qlib::get_slug_post_by_id(37))}}"><img src="{{url('/vendor/adminlte/dist/img/logo-h.png')}}" alt="" class="img-fluid"></a> --}}

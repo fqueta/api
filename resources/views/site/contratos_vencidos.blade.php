@@ -13,7 +13,7 @@
                 <span>
                     {{ date('d/m/Y') }}
             </div>
-            <div class="col-md-6 text-right">
+            <div class="col-md-6 text-end">
                 </span>
                 <b>Total vencidos:</b>
                 <span>
@@ -26,6 +26,15 @@
             <div class="col-md-12">
                 <table class="table table-striped table-hover dataTable">
                     <thead>
+                        <tr class="d-print-none">
+                            <th colspan="6" class="text-end">
+                                <div>
+                                    <button onclick="window.print()" type="button" class="btn btn-default">
+                                        <i class="fa fa-print"></i> Imprimir
+                                    </button>
+                                </div>
+                            </th>
+                        </tr>
                         <tr>
                             <th>#</th>
                             <th>Aluno</th>
