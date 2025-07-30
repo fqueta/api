@@ -13,7 +13,7 @@
                 <span>
                     {{ date('d/m/Y') }}
             </div>
-            <div class="col-md-6 text-end">
+            <div class="col-md-6 text-end text-right">
                 </span>
                 <b>Total vencidos:</b>
                 <span>
@@ -27,7 +27,7 @@
                 <table class="table table-striped table-hover dataTable">
                     <thead>
                         <tr class="d-print-none">
-                            <th colspan="6" class="text-end">
+                            <th colspan="6" class="text-end text-right">
                                 <div>
                                     <button onclick="window.print()" type="button" class="btn btn-default">
                                         <i class="fa fa-print"></i> Imprimir
@@ -51,8 +51,9 @@
                                 $link_zap = isset($v['zapguru']['link_chat']) ? $v['zapguru']['link_chat'] : false;
                                 // dump($link_zap);
                                 if($link_zap){
-                                    $telefone = '<a href="'.$link_zap.'" target="_blank" title="Acessar Whatsapp">'.$telefone.'</a>';
-                                    $acao .= '<a href="'.$link_zap.'" target="_blank" title="Acessar Whatsapp" class="btn btn-success"><i class="fab fa-whatsapp"></i></a>';
+                                    // $telefone = '<a href="'.$link_zap.'" target="_blank" title="Acessar Whatsapp">'.$telefone.'</a>';
+                                    $telefone = $v['telefonezap'];
+                                    $acao .= '<a href="'.$link_zap.'" target="_blank" title="Acessar Whatsapp" class="btn btn-success"><i class="fa fab fa-whatsapp"></i></a>';
                                 }else{
                                     $telefone = $v['telefonezap'];
                                 }
