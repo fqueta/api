@@ -26,7 +26,7 @@
             <div class="col-md-12">
                 <table class="table table-striped table-hover dataTable">
                     <thead>
-                        <tr class="d-print-none">
+                        <tr class="d-print-none hidden-print">
                             <th colspan="6" class="text-end text-right">
                                 <div>
                                     <button onclick="window.print()" type="button" class="btn btn-default">
@@ -41,7 +41,7 @@
                             <th>Curso</th>
                             <th>Validade</th>
                             <th>Telefone</th>
-                            <th class="d-print-none">Ação</th>
+                            <th class="d-print-none hidden-print">Ação</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,7 +64,7 @@
                                 <td>{{ $v['nome_curso'] }}</td>
                                 <td>{{ App\Qlib\Qlib::dataExibe($v['data_validade']) }}</td>
                                 <td>{!! $telefone !!}</td>
-                                <td class="d-print-none">
+                                <td class="d-print-none hidden-print">
                                     <div class="d-flex">
                                         {!! $acao !!}
                                     </div>
