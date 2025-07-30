@@ -6211,6 +6211,7 @@ class MatriculasController extends Controller
         if(count($dm)>0){
             $ret['exec'] = true;
             $ret['total'] = count($dm);
+            $iv = 0;
             foreach ($dm as $k => $dc) {
                 $arr_contrato = Qlib::lib_json_array($dc['contrato']);
                 $arr_zapguru = Qlib::lib_json_array($dc['zapguru']);
@@ -6233,7 +6234,8 @@ class MatriculasController extends Controller
                     $dm[$k]['vencido'] = $vencido;
                     if($vencido){
                         $ret['total_vencidos'] ++;
-                        $dv[$k] = $dm[$k];
+                        $dv[$iv] = $dm[$k];
+                        $iv++;
                     }
                     //se estiver vencido enviar uma notificação
                 }
@@ -6246,15 +6248,31 @@ class MatriculasController extends Controller
     }
     /**
      * Metodo para publicar os dados dos contratos vencidos na API
+     * @param string $tipo=tipo de cursos Ex: 2 para praticos ou  4 para plano de formação
+     * @param string $tipo_doc=tipo de documento html ou json
+     * @uso (new MatriculasController)->publica_contratos_vencidos_html(2);
      */
-    public function publica_contratos_vencidos($tipo){
-        return $this->listar_contratos_vencendo($tipo);
+    public function publica_contratos_vencidos($tipo,$type_doc=''){
+        if($type_doc=='html'){
+            return $this->publica_contratos_vencidos_html($tipo);
+        }else{
+            return $this->listar_contratos_vencendo($tipo);
+        }
     }
     /**
-     * Metodo para publicar os dados dos contratos vencidos na API
+     * Metodo para publicar dados html da pagina com os contratos vencidos
+     * @param string $tipo=tipo de cursos Ex: 2 para praticos ou  4 para plano de formação
+     * @uso (new MatriculasController)->publica_contratos_vencidos_html(2);
      */
     public function publica_contratos_vencidos_html($tipo){
-        return $this->listar_contratos_vencendo($tipo);
+        $d = $this->listar_contratos_vencendo($tipo);
+        $title = request()->get('title') ? request()->get('title') : 'Contratos vencidos';
+        $ret = [
+            'conteudo'=>$title,
+            'dados'=>$d,
+        ];
+        return view('site.contratos_vencidos',$ret);
+
     }
 
 }

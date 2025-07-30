@@ -38,7 +38,8 @@ class TesteController extends Controller
         //     if($opc==1){
         //         $ret = (new MatriculasController)->verifica_atualiza_validade_matricula();
         //     }
-        $ret = (new MatriculasController)->listar_contratos_vencendo(2);
+        $ret = (new MatriculasController)->publica_contratos_vencidos_html(2);
+
         // }else{
         //     $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
         // }

@@ -27,6 +27,8 @@ class WebhookController extends Controller
             $ret = (new RdstationController)->webhook($request->all());
         }elseif($seg3=='zapguru'){
             $ret = (new ZapguruController)->webhook($request->all());
+        }elseif($seg3=='interajai'){
+            $ret = (new InterajaiController )->webhook($request->all());
         }elseif($seg3=='zapsing'){
             $ret = (new ApiZapsingController)->webhook($request->all());
         }elseif($seg3=='crm'){
