@@ -6274,5 +6274,47 @@ class MatriculasController extends Controller
         return view('site.contratos_vencidos',$ret);
 
     }
+    /**
+     * Dispara envio do link da lista dos contratos vencidos para os consultores e administradores....
+     * @param Array $contatos
+     * @return Array $ret;
+     * @uso $ret = (new MatriculasController)->envia_lista_contratos_vencidos([]);
+     */
+    public function envia_lista_contratos_vencidos($contatos=[]){
+        $ret = ['exec'=>false];
+        //Verifica se tem contratos vencidos
+        $tipo = 2;
+        $c = $this->listar_contratos_vencendo($tipo);
+        if(isset($c['total_vencidos']) && $c['total_vencidos']==0){
+            $ret['mens'] = 'Nehum contrato vencido';
+            return $ret;
+        }
+        $contatos = [
+            // ['nome'=>'Queta','telefone'=>'553291648202'],
+            // ['nome'=>'Patricia','telefone'=>'553284748644'],
+            ['nome'=>'Leandro','telefone'=>'55(32)91480920'],
+            ['nome'=>'Renan','telefone'=>'55(32)88552280'],
+            ['nome'=>'Monique','telefone'=>'55(21)995729494'],
+        ];
+        if(is_array($contatos)){
+            $data = Qlib::dataLocal();
+            $link = 'https://crm.aeroclubejf.com.br/admin/relatorios?sec=Y29udHJhdG9zX3ZlbmNpZG9z';
+            $tm = 'Olá *{nome}* segue a lista dos contatos vencidos até a data de hoje *{data}*. Lista: {link}';
+            foreach ($contatos as $k => $dc) {
+                if(isset($dc['nome']) && isset($dc['telefone'])){
+                    $mensagem = str_replace('{nome}',$dc['nome'],$tm);
+                    $mensagem = str_replace('{data}',$data,$mensagem);
+                    $mensagem = str_replace('{link}',$link,$mensagem);
+                    $ret['envio'][$k] = (new ZapguruController)->enviar_mensagem([
+                        'celular_completo'=>$dc['telefone'],
+                        'nome'=>$dc['nome'],
+                        'text'=>$mensagem,
+                        'dialog_id'=>'',
+                    ]);
+                }
+            }
+        }
+        return $ret;
+    }
 
 }

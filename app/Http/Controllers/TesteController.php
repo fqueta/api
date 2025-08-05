@@ -38,7 +38,14 @@ class TesteController extends Controller
         //     if($opc==1){
         //         $ret = (new MatriculasController)->verifica_atualiza_validade_matricula();
         //     }
-        $ret = (new MatriculasController)->publica_contratos_vencidos_html(2);
+        $ret = (new MatriculasController)->envia_lista_contratos_vencidos([]);
+        // $ret = (new ZapguruController)->enviar_mensagem([
+        //     'celular_completo'=>'553291648202',
+        //     'nome'=>'Queta',
+        //     'text'=>'Olá *{nome}* como podemos ajudá-lo teste ',
+        //     'dialog_id'=>'',
+        // ]);
+        // $ret = (new MatriculasController)->publica_contratos_vencidos_html(2);
 
         // }else{
         //     $ret = (new MatriculasController)->orcamento_pdf_estatico($token);

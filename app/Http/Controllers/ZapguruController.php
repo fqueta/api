@@ -1010,7 +1010,7 @@ class ZapguruController extends Controller
 
 			curl_close($curl);
 
-			$ret['response'] = lib_json_array($response,true);
+			$ret['response'] = Qlib::lib_json_array($response,true);
 			$ret['url'] = $url;
 			/*if(isset($ret['response']['code']) && $ret['response']['code'] != 201){
 
@@ -1036,7 +1036,7 @@ class ZapguruController extends Controller
 
 				}
 
-				$ret['mens'] = formatMensagem($ret['response']['description'],$css);
+				$ret['mens'] = Qlib::formatMensagem0($ret['response']['description'],$css);
 
 			}
 
