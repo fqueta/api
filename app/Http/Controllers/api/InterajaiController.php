@@ -67,14 +67,16 @@ class InterajaiController extends Controller
             $whereLead = "WHERE celular='$telefonezap'";
             $whereLead2 = "WHERE nome='$nome'";
             $tabLead = 'capta_lead';
-            if(Qlib::totalReg($tabLead,$whereLead)>0){
+            $busc = Qlib::totalReg($tabLead,$whereLead);
+            // dd($whereLead2);
+            if($busc>0){
                 $ddlead = [
                     'interajai' => $json,
                 ];
-            }elseif(Qlib::totalReg($tabLead,$whereLead2)>0){
-                $ddlead = [
-                    'interajai' => $json,
-                ];
+            // }elseif(Qlib::totalReg($tabLead,$whereLead2)>0){
+            //     $ddlead = [
+            //         'interajai' => $json,
+            //     ];
             }else{
                 $ddlead = [
                     'nome' => $nome,
@@ -89,6 +91,7 @@ class InterajaiController extends Controller
                     // 'EscolhaDoc' => 'CPF',
                 ];
             }
+            // dd($ddlead);
             $lead = Qlib::update_tab($tabLead,$ddlead,$whereLead);
             if(isset($lead['exec']) && !$lead['exec'] && $telefonezap){
                 $whereLead = "WHERE celular='$telefonezap'";
