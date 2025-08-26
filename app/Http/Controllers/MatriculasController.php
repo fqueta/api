@@ -3892,6 +3892,9 @@ class MatriculasController extends Controller
                 'Uf'=>'4',
                 'cep'=>'11',
                 'comple'=>'11',
+                'profissao'=>'30',
+                'estado_civil'=>'30',
+                'data_nascimento'=>'19',
             ];
             foreach ($arr_campos as $k => $v) {
                 $dm[$k] = Qlib::gerarLinhas($v);
