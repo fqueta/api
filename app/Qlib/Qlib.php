@@ -2739,4 +2739,17 @@ class Qlib
         $sql = "";
         $dc = self::buscaValoresDb_SERVER($sql);
     }
+    /**
+     * Gera uma string com '_' repetido conforme o parâmetro $numeros.
+     * Exemplo: gerarLinhasUnderscore(3) retorna '___'
+     * @param int $numeros
+     * @return string
+     */
+    static public function gerarLinhas($numeros) {
+        $ret = '';
+        for ($i=0; $i <=$numeros  ; $i++) {
+            $ret .= '_';
+        }
+        return $ret;
+    }
 }

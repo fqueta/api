@@ -3876,7 +3876,27 @@ class MatriculasController extends Controller
         }
         $ret = str_replace('{curso}','{nome_curso}',$texto_contrato);
         $ret = str_replace('{aluno}','{nome_completo}',$ret);
+        $cv = false;
         // dd($dm);
+        if($cv=request()->get('cv')==true){
+            /**Para imprimir um contrato vazio */
+            $arr_campos = [
+                'nome_completo'=>'50',
+                'nacionalidade'=>'20',
+                'cpf_aluno'=>'11',
+                'identidade'=>'11',
+                'Endereco'=>'30',
+                'Numero'=>'10',
+                'Bairro'=>'20',
+                'Cidade'=>'15',
+                'Uf'=>'4',
+                'cep'=>'11',
+                'comple'=>'11',
+            ];
+            foreach ($arr_campos as $k => $v) {
+                $dm[$k] = Qlib::gerarLinhas($v);
+            }
+        }
         $clausula_tipo_pagamento = false;
         $tipo_contrato_combustivel = false;
         $data_contrato_aceito = '';
