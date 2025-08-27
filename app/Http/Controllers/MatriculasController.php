@@ -5294,11 +5294,11 @@ class MatriculasController extends Controller
 		$ret['exec'] = false;
 		$ret['config'] = $config;
 		$ret['valida']['mens'] = false;
+        // if(isset($config['teste'])){
+            // dd($config);
+        // }
         if(isset($config['pagina']) && $config['pagina']==2){
             //salvar conteudo da página 2
-            // if(isset($config['teste'])){
-            //     dd($config);
-            // }
             if(isset($config['token_matricula']) && isset($config['contrato']) && is_array($config['contrato'])){
                 //11 o id da etapa 'Proposta aprovada' do flow de atendimento
 				// $sql = "UPDATE IGNORE ".$GLOBALS['tab12']." SET contrato='".Qlib::lib_array_json($config['contrato'])."',etapa_atual='11' WHERE token='".$config['token_matricula']."'";
@@ -5793,6 +5793,7 @@ class MatriculasController extends Controller
                     $tit_periodo = trim($tit_periodo);
                     $periodo = isset($tit_periodo[0]) ? $tit_periodo[0] : '';
                     $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
+                    $short_code_periodo = str_replace('°_','_',$short_code_periodo);
                     if($periodo=='1'){
                         $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." $compleSql AND tag='$short_code_periodo' ORDER BY ordenar ASC";
                     }else{
@@ -5804,7 +5805,7 @@ class MatriculasController extends Controller
             $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' $compleSql AND ".Qlib::compleDelete()." ORDER BY ordenar ASC";
         }
         $dtermo = Qlib::dados_tab('conteudo_site',['where'=>$where]);
-        // dd($compleSql,$dtermo);
+        // dd($compleSql,$dtermo,$periodo);
         $ret = $dtermo;
         // dd($ret);
         return $ret;
@@ -5826,6 +5827,7 @@ class MatriculasController extends Controller
             $ret['mens'] = 'Matrícula não encontrada!';
             return $ret;
         }
+        // dd($dm);
         if($type==1){
             $lista_contratos = $this->lista_contratos($id_curso,$token_matricula,$dm);
         }else{

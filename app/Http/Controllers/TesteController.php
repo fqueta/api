@@ -26,6 +26,8 @@ class TesteController extends Controller
         // dd($rd->token_api);
         // $ret = (new CotacaoDolarController)->cotacaoDolar();
         // return $ret;
+        // dd($token);
+        $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='68758c8e76cfb');
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token,false);
@@ -38,7 +40,7 @@ class TesteController extends Controller
         //     if($opc==1){
         //         $ret = (new MatriculasController)->verifica_atualiza_validade_matricula();
         //     }
-        $ret = (new MatriculasController)->envia_lista_contratos_vencidos([]);
+        // $ret = (new MatriculasController)->envia_lista_contratos_vencidos([]);
         // $ret = (new ZapguruController)->enviar_mensagem([
         //     'celular_completo'=>'553291648202',
         //     'nome'=>'Queta',
