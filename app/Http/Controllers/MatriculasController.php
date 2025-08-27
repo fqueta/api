@@ -5808,7 +5808,7 @@ class MatriculasController extends Controller
         // dd($compleSql,$dtermo,$periodo);
         $ret = $dtermo;
         if(request()->get('test')==true)
-            dd($ret);
+            dd($ret,$where,$periodo);
         return $ret;
     }
     /**
