@@ -5765,6 +5765,22 @@ class MatriculasController extends Controller
 		return $ret;
 	}
     /**
+     * Metodo para entrar o perido
+     */
+    public function encontrarTituloSelecionado(array $data): ?string {
+        if (!isset($data['modulos']) || !is_array($data['modulos'])) {
+            return null; // se não tiver 'modulos'
+        }
+
+        foreach ($data['modulos'] as $index => $modulo) {
+            if (isset($modulo['sele']) && $modulo['sele'] === 'on') {
+                return $modulo['titulo']; // retorna o titulo encontrado
+            }
+        }
+
+        return null; // se não encontrar nenhum 'sele' => 'on'
+    }
+    /**
      * para listar todos os contrato de um curso
      * @uso (new MatriculasController)->lista_contratos();
      */
@@ -5787,13 +5803,19 @@ class MatriculasController extends Controller
             // dump($modulos);
             if(is_array($modulos)){
                 //o numero do periodo é igula ao numero de modulos gravados na proposta
-                $arr_periodo = end($modulos);
-                $tit_periodo = isset($arr_periodo['titulo']) ? $arr_periodo['titulo'] : '';
+                if(count($modulos)>1){
+                    $tit_periodo = $this->encontrarTituloSelecionado($orc);
+                    // dd($tit_periodo,$modulos,count($modulos));
+                }else{
+                    $arr_periodo = end($modulos);
+                    $tit_periodo = isset($arr_periodo['titulo']) ? $arr_periodo['titulo'] : '';
+                }
                 if($tit_periodo){
                     $tit_periodo = trim($tit_periodo);
                     $periodo = isset($tit_periodo[0]) ? $tit_periodo[0] : '';
                     $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
                     $short_code_periodo = str_replace('°_','_',$short_code_periodo);
+                    // dd($short_code_periodo);
                     $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." $compleSql AND tag='$short_code_periodo' ORDER BY ordenar ASC";
                     // if($periodo=='1'){
                     // }else{
@@ -5808,7 +5830,7 @@ class MatriculasController extends Controller
         // dd($compleSql,$dtermo,$periodo);
         $ret = $dtermo;
         if(request()->get('test')==true)
-            dd($ret,$where,$periodo);
+            dd($ret,$where);
         return $ret;
     }
     /**
