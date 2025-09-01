@@ -5813,6 +5813,10 @@ class MatriculasController extends Controller
                 if($tit_periodo){
                     $tit_periodo = trim($tit_periodo);
                     $periodo = isset($tit_periodo[0]) ? $tit_periodo[0] : '';
+                    //Incluir excessão para o curso de mecanica de ID = 132;
+                    if($id_curso==132){
+                        $periodo = 1;
+                    }
                     $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
                     $short_code_periodo = str_replace('°_','_',$short_code_periodo);
                     // dd($short_code_periodo);
