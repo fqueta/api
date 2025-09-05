@@ -12,7 +12,6 @@ use App\Http\Controllers\MatriculasController;
 use App\Http\Controllers\RdstationController;
 use App\Http\Controllers\ZapguruController;
 use App\Http\Controllers\ZenviaController;
-use App\Http\Controllers\api\MetricasController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -43,7 +42,8 @@ Route::prefix('v1')->group(function(){
     Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
     Route::get('/rab',[RabController::class,'index']);
-    Route::get('/metricas',[MetricasController::class,'total_metricas'])->middleware('auth:sanctum');
+    Route::get('/orcamentos/{id}',[OrcamentoController::class,'show'])->middleware('auth:sanctum');
+    Route::get('/metricas/{id}',[MetricasController::class,'show'])->middleware('auth:sanctum');
     Route::post('/leads',[ClientesController::class,'add_api_leads'])->middleware('auth:sanctum');
     Route::post('/gerar-orcamento',[OrcamentoController::class,'gerar_orcamento'])->middleware('auth:sanctum');
     Route::post('/assinar_proposta/{token}',[OrcamentoController::class,'assinar_proposta'])->middleware('auth:sanctum');

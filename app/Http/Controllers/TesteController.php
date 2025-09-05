@@ -29,7 +29,7 @@ class TesteController extends Controller
         // return $ret;
         // dd($token);
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
-        $ret = (new MetricasController)->total_metricas($request);
+        // $ret = (new MetricasController)->total_metricas($request);
         // $ret = (new MetricasController)->intervaloPeriodo(2025, 36, 'semana', 'Y-m-d');
         // dd($ret);
         // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='68758c8e76cfb');
