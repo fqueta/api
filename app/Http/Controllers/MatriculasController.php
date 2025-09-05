@@ -343,6 +343,7 @@ class MatriculasController extends Controller
             'orcamento'=>$orcamento,
             'sec'=>$sec,
         ];
+        // dd($ret);
         return view('site.index',$ret);
     }
     /**
