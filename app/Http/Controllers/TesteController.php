@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\admin\ZapsingController;
+use App\Http\Controllers\api\MetricasController;
 use App\Http\Controllers\api\OrcamentoController;
 use App\Jobs\GeraPdfContratoJoub;
 use App\Jobs\GeraPdfcontratosPnlJob;
@@ -27,7 +28,10 @@ class TesteController extends Controller
         // $ret = (new CotacaoDolarController)->cotacaoDolar();
         // return $ret;
         // dd($token);
-        $ret = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret = (new MatriculasController)->grava_contrato_statico($token);
+        $ret = (new MetricasController)->total_metricas($request);
+        // $ret = (new MetricasController)->intervaloPeriodo(2025, 36, 'semana', 'Y-m-d');
+        // dd($ret);
         // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='68758c8e76cfb');
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MatriculasController)->send_to_zapSing($token,false);

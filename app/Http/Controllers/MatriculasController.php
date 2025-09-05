@@ -2278,7 +2278,7 @@ class MatriculasController extends Controller
             dd($numePrevTurma);
             foreach($arr_pacotoes As $kei=>$val){
                 if($todosModulos){
-                    $horas = somaHoraAviao($todosModulos,$config['aviao']);
+                    $horas = Qlib::somaHoraAviao($todosModulos,$config['aviao']);
                 }else{
                     $horas = $config['horas'];
                 }
@@ -2305,12 +2305,12 @@ class MatriculasController extends Controller
 
             if($valor){
                 $valor = str_replace('R$','',$valor);
-                $valor = ($config['horas']) * (precoDbdase($valor));
+                $valor = ($config['horas']) * (Qlib::precoDbdase($valor));
                 $ret['valor'] = $valor;
             }
             if($custo){
                 $custo = str_replace('R$','',$custo);
-                $custo = ($config['horas']) * (precoDbdase($custo));
+                $custo = ($config['horas']) * (Qlib::precoDbdase($custo));
                 $ret['custo'] = Qlib::precoDbdase($custo);
             }
         }else{
