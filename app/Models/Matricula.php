@@ -12,6 +12,7 @@ class Matricula extends Model
     const UPDATED_AT = 'atualizado';
     protected $casts = [
         'orc' => 'array',
+        'data' => 'date:Y-m-d',
     ];
     protected $fillable = [
         'id',

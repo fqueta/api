@@ -60,13 +60,16 @@ class MetricasController extends Controller
     public function get_metricas($inicio,$fim)
     {
         $ret = [
-            'propostas'=>0,
-            'ganhos'=>0,
+            'resumo'=>[
+                'propostas'=>0,
+                'ganhos'=>0,
+            ],
             'periodo_consulta'=>[
                 'data_inicio'=>$inicio,
                 'data_fim'=>$fim,
             ]
         ];
+
         if($inicio && $fim){
             $query = Matricula::join('clientes','clientes.id','=','matriculas.id_cliente');
             $propostas = $query
@@ -89,13 +92,100 @@ class MetricasController extends Controller
                 ->where('clientes.interajai','!=','false')
                 ->count();
             if($propostas){
-                $ret['propostas'] = $propostas;
+                $ret['resumo']['propostas'] = $propostas;
             }
             if($ganhos){
-                $ret['ganhos'] = $ganhos;
+                $ret['resumo']['ganhos'] = $ganhos;
+            }
+
+            // Adiciona lista detalhada por data quando o período for diferente
+            if($inicio !== $fim) {
+                $ret['detalhado_por_data'] = $this->getDetalhamentoPorData($inicio, $fim);
             }
         }
         return $ret;
+    }
+
+    /**
+     * Retorna detalhamento de propostas e ganhos por data no período
+     *
+     * @param string $inicio
+     * @param string $fim
+     * @return array
+     */
+    private function getDetalhamentoPorData($inicio, $fim)
+    {
+        $detalhamento = [];
+
+        // Busca propostas agrupadas por data
+        $propostas = Matricula::join('clientes','clientes.id','=','matriculas.id_cliente')
+            ->selectRaw('DATE(matriculas.data) as data, COUNT(*) as total')
+            ->whereBetween('matriculas.data',[$inicio,$fim])
+            ->where('matriculas.excluido','=','n')
+            ->where('matriculas.deletado','=','n')
+            ->where('clientes.interajai','!=','')
+            ->where('clientes.interajai','!=','null')
+            ->where('clientes.interajai','!=','0')
+            ->where('clientes.interajai','!=','false')
+            ->whereNotNull('matriculas.data') // Adiciona verificação para data não nula
+            ->groupBy('data')
+            ->orderBy('data')
+            ->get();
+
+        // Busca ganhos agrupados por data
+        $ganhos = Matricula::join('clientes','clientes.id','=','matriculas.id_cliente')
+            ->selectRaw('DATE(matriculas.data_situacao) as data, COUNT(*) as total')
+            ->whereBetween('matriculas.data_situacao',[$inicio,$fim])
+            ->where('matriculas.situacao','=','g')
+            ->where('matriculas.excluido','=','n')
+            ->where('matriculas.deletado','=','n')
+            ->where('clientes.interajai','!=','')
+            ->where('clientes.interajai','!=','null')
+            ->where('clientes.interajai','!=','0')
+            ->where('clientes.interajai','!=','false')
+            ->whereNotNull('matriculas.data_situacao') // Adiciona verificação para data não nula
+            ->groupBy('data')
+            ->orderBy('data')
+            ->get();
+
+        // Cria array com todas as datas do período
+        $dataInicio = new \DateTime($inicio);
+        $dataFim = new \DateTime($fim);
+        $periodo = new \DatePeriod(
+            $dataInicio,
+            new \DateInterval('P1D'),
+            $dataFim->modify('+1 day')
+        );
+
+        // Inicializa array com zeros para todas as datas
+        foreach ($periodo as $data) {
+            $dataFormatada = $data->format('Y-m-d');
+            $detalhamento[$dataFormatada] = [
+                'data' => $dataFormatada,
+                'propostas' => 0,
+                'ganhos' => 0
+            ];
+        }
+        // Preenche propostas
+        $arr_propostas = $propostas->toArray();
+        foreach ($arr_propostas as $proposta) {
+            // Verifica se a data é uma string válida antes de usar como chave
+            if (!empty($proposta['total'])) {
+                $detalhamento[$proposta['data']]['propostas'] = $proposta['total'];
+            }
+        }
+
+        // Preenche ganhos
+        $arr_ganhos = $ganhos->toArray();
+        foreach ($arr_ganhos as $ganho) {
+            // Verifica se a data é uma string válida antes de usar como chave
+            if (!empty($ganho['total'])) {
+                $detalhamento[$ganho['data']]['ganhos'] = $ganho['total'];
+            }
+        }
+
+        // Retorna apenas as datas que têm dados ou converte para array indexado
+        return array_values($detalhamento);
     }
     /**
      * Retorna o periodo de consulta quando informado o ano e a semana | mes
