@@ -28,7 +28,7 @@ class TesteController extends Controller
         // $ret = (new CotacaoDolarController)->cotacaoDolar();
         // return $ret;
         // dd($token);
-        // $ret = (new MatriculasController)->grava_contrato_statico($token);
+        $ret = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MetricasController)->total_metricas($request);
         // $ret = (new MetricasController)->intervaloPeriodo(2025, 36, 'semana', 'Y-m-d');
         // dd($ret);
