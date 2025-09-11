@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\DataHelper;
 use App\Http\Controllers\admin\ZapsingController as AdminZapsingController;
+use App\Http\Controllers\api\OrcamentoController;
 use App\Models\Matricula;
 use App\Qlib\Qlib;
 use App\Http\Controllers\api\ZapsingController;
@@ -6367,6 +6368,12 @@ class MatriculasController extends Controller
                 }
             }
         }
+        return $ret;
+    }
+    public function documentos_estaticos($token){
+        $ret['orcamento'] = $this->orcamento_pdf_estatico($token);
+        $ret['proposta'] = (new OrcamentoController)->proposta_periodos_estatica($token,'');
+        $ret['contrato'] = $this->grava_contrato_statico($token);
         return $ret;
     }
 

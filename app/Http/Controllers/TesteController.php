@@ -28,6 +28,7 @@ class TesteController extends Controller
         // $ret = (new CotacaoDolarController)->cotacaoDolar();
         // return $ret;
         // dd($token);
+        $ret['orcamento'] = (new MatriculasController)->orcamento_pdf_estatico($token);
         $ret['proposta'] = (new OrcamentoController)->proposta_periodos_estatica($token,'');
         $ret['contrato'] = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MetricasController)->total_metricas($request);
