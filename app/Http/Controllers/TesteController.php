@@ -28,9 +28,9 @@ class TesteController extends Controller
         // $ret = (new CotacaoDolarController)->cotacaoDolar();
         // return $ret;
         // dd($token);
-        $ret['orcamento'] = (new MatriculasController)->orcamento_pdf_estatico($token);
-        $ret['proposta'] = (new OrcamentoController)->proposta_periodos_estatica($token,'');
-        $ret['contrato'] = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret['orcamento'] = (new MatriculasController)->orcamento_pdf_estatico($token);
+        // $ret['proposta'] = (new OrcamentoController)->proposta_periodos_estatica($token,'');
+        // $ret['contrato'] = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MetricasController)->total_metricas($request);
         // $ret = (new MetricasController)->intervaloPeriodo(2025, 36, 'semana', 'Y-m-d');
         // dd($ret);
@@ -168,11 +168,12 @@ class TesteController extends Controller
         // $url_pdf = 'https://doc.aeroclubejf.com.br/storage/contratos/67bcad6a2228c/termo-concordancia-fernando-programandor-2-piloto-privado-aviao-7202.pdf';
         // $ret = (new ZapsingController)->enviar_anexo($token_envelope,$url_pdf,$nome_arquivo='Termo concordancia');
         // $ret = (new MatriculasController)->link_contratos_anexos($token);
-        // $dm = (new MatriculasController)->dm($token);
-        // $id = isset($dm['id']) ? $dm['id'] : 0;
+        //*teste de documentos gerados para a assinatura
+        $dm = (new MatriculasController)->dm($token);
+        $id = isset($dm['id']) ? $dm['id'] : 0;
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,false,$dm);
         // dd($token);
-        // $ret = (new MatriculasController)->contatos_estaticos_pdf($id,true,$dm);
+        $ret = (new MatriculasController)->contatos_estaticos_pdf($id,true,$dm);
         // $signed_file = 'https://zapsign.s3.amazonaws.com/sandbox/dev/2025/2/pdf/f787046f-616b-4d0d-9924-769862f0d13f/63d6a30f-b5ac-4c00-ac5d-f230c95ea0ff.pdf?AWSAccessKeyId=AKIASUFZJ7JCTI2ZRGWX&Signature=RGvYrlWIkuwzB1YwQ49RLNkGhM0%3D&Expires=1741026569';
         // $ret = (new MatriculasController)->baixar_arquivo($token, $signed_file);
         // dd(count($ret));
