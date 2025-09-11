@@ -5513,7 +5513,7 @@ class MatriculasController extends Controller
                 "name" => $nome,
                 "email" => $email,
                 "cpf" => $cpf,
-                "send_automatic_email" => true,
+                "send_automatic_email" => false,
                 "send_automatic_whatsapp" => false,
                 "auth_mode" => "CPF", //tokenEmail,assinaturaTela-tokenEmail,tokenSms,assinaturaTela-tokenSms,tokenWhatsapp,assinaturaTela-tokenWhatsapp,CPF,assinaturaTela-cpf,assinaturaTela
                 "order_group" => 1,
@@ -5619,7 +5619,9 @@ class MatriculasController extends Controller
                     $ret['salv_hist'] = Qlib::update_matriculameta($post_id,(new ZapsingController)->campo_processo,Qlib::lib_array_json($ret));
                 }
                 //Envia o link de assinatura para o whatsapp atrave do zapguru
-                $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm,$tk_periodo);
+                if(Qlib::qoption('enviar_link_assinatura_zap')=='s'){
+                    $ret['enviar_link_assinatura'] = (new AdminZapsingController)->enviar_link_assinatura($tm,$tk_periodo);
+                }
             }
         }
         // Log::info('send_to_zapSing:', $ret);
