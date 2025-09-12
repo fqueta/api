@@ -36,7 +36,7 @@ class TesteController extends Controller
         // dd($ret);
         // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='68758c8e76cfb');
         // $ret = (new MatriculasController)->grava_contrato_statico($token);
-        $ret = (new MatriculasController)->send_to_zapSing($token,false);
+        // $ret = (new MatriculasController)->send_to_zapSing($token,false);
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
         // $ret = (new OrcamentoController)->resumo_proposta_periodos($token);
