@@ -1243,8 +1243,10 @@ class Qlib
         // return $horas;
     }
     static function valor_moeda($val,$sig=false){
-
-        return $sig.number_format($val,2,',','.');
+        if(is_numeric($val)){
+            return $sig.number_format($val,2,',','.');
+        }
+        return $val;
     }
     static function criptToken($token){
         $ret = false;
