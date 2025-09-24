@@ -5329,14 +5329,22 @@ class MatriculasController extends Controller
 			return $ret;
 		}
 		if(isset($config['Cpf']) && !empty($config['Cpf'])){
-			$validaCpf = Qlib::validaCpf($config['Cpf']);
-			if($validaCpf){
-				$ret['valida']['cpf'] = true;
+            if(isset($config['pais']) && $config['pais']=='Brasil'){
+                $validaCpf = Qlib::validaCpf($config['Cpf']);
+                if($validaCpf){
+                    $ret['valida']['cpf'] = true;
+                }else{
+                    $ret['valida']['mens'] = 'CPF inválido';
+                    $ret['valida']['cpf'] = 'error';
+                    return $ret;
+                }
 			}else{
-				$ret['valida']['mens'] = 'CPF inválido';
-				$ret['valida']['cpf'] = 'error';
-				return $ret;
-			}
+                if(empty($config['Cpf'])){
+                    $ret['valida']['cpf'] = false;
+                }else{
+                    $ret['valida']['cpf'] = true;
+                }
+            }
 			$tabUser=$GLOBALS['tab15'];
 			if(isset($config['Nome']) && !empty($config['Nome'])){
 				//verificar se esta com o nome completo
@@ -5421,7 +5429,11 @@ class MatriculasController extends Controller
 		    }
 
 		}else{
-            $ret['valida']['mens'] = 'Informe o CPF';
+            if(isset($config['pais']) && $config['pais']=='Brasil'){
+                $ret['valida']['mens'] = 'Informe o CPF';
+            }else{
+                $ret['valida']['mens'] = 'Informe o Documento Nacional de Identidade';
+            }
 			$ret['valida']['cpf'] = 'error';
 			return $ret;
         }
