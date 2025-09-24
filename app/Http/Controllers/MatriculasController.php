@@ -5328,6 +5328,9 @@ class MatriculasController extends Controller
 			}
 			return $ret;
 		}
+        if(isset($_GET['test'])){
+            dump($config);
+        }
 		if(isset($config['Cpf']) && !empty($config['Cpf'])){
             if(isset($config['pais']) && $config['pais']=='Brasil'){
                 $validaCpf = Qlib::validaCpf($config['Cpf']);
