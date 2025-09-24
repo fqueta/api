@@ -5328,10 +5328,10 @@ class MatriculasController extends Controller
 			}
 			return $ret;
 		}
-        if(isset($_GET['test'])){
-            dump($config);
-        }
+        // dump($config['Cpf'],isset($config['Cpf']),empty($config['Cpf']));
 		if(isset($config['Cpf']) && !empty($config['Cpf'])){
+            if(isset($_GET['test'])){
+            }
             if(isset($config['pais']) && $config['pais']=='Brasil'){
                 $validaCpf = Qlib::validaCpf($config['Cpf']);
                 if($validaCpf){
@@ -5434,10 +5434,16 @@ class MatriculasController extends Controller
 		}else{
             if(isset($config['pais']) && $config['pais']=='Brasil'){
                 $ret['valida']['mens'] = 'Informe o CPF';
+                $ret['valida']['cpf'] = 'error';
             }else{
+                return $config;
+                if(empty($config['Cpf'])){
+                    $ret['valida']['cpf'] = false;
+                }else{
+                    $ret['valida']['cpf'] = true;
+                }
                 $ret['valida']['mens'] = 'Informe o Documento Nacional de Identidade';
             }
-			$ret['valida']['cpf'] = 'error';
 			return $ret;
         }
 		// dd($ret);
