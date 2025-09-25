@@ -5328,8 +5328,7 @@ class MatriculasController extends Controller
 			}
 			return $ret;
 		}
-        // dump($config['Cpf'],isset($config['Cpf']),empty($config['Cpf']));
-		if(isset($config['Cpf']) && !empty($config['Cpf'])){
+		if((isset($config['Cpf']) && !empty($config['Cpf'])) || (isset($config['Ident']) && !empty($config['Ident']))){
             // if(isset($_GET['test'])){
             // }
             if(isset($config['pais']) && $config['pais']=='Brasil'){
@@ -5342,7 +5341,7 @@ class MatriculasController extends Controller
                     return $ret;
                 }
 			}else{
-                if(empty($config['Cpf'])){
+                if(empty($config['Ident'])){
                     $ret['valida']['cpf'] = false;
                 }else{
                     $ret['valida']['cpf'] = true;
@@ -5381,15 +5380,7 @@ class MatriculasController extends Controller
 				$type_alt = 2;
 				// $config['conf'] = 's';//confirmação para salvar
 				$config['id'] = Qlib::buscaValorDb0($GLOBALS['tab15'],'token',$config['token'],'id');
-				// $config2 = array(
-				// 	'tab'=>$tabUser,
-				// 	'valida'=>true,
-				// 	'condicao_validar'=>$cond_valid,
-				// 	'sqlAux'=>false,
-				// 	'ac'=>'alt',
-				// 	'type_alt'=>$type_alt,
-				// 	'dadosForm' => $config
-				// );
+
                 $dsc = $config;
                 // dump($tabUser);
                 unset(
@@ -5436,8 +5427,7 @@ class MatriculasController extends Controller
                 $ret['valida']['mens'] = 'Informe o CPF';
                 $ret['valida']['cpf'] = 'error';
             }else{
-                return $config;
-                if(empty($config['Cpf'])){
+                if(empty($config['Ident'])){
                     $ret['valida']['cpf'] = false;
                 }else{
                     $ret['valida']['cpf'] = true;
@@ -5470,6 +5460,11 @@ class MatriculasController extends Controller
             "profissao" => "Informe a profissão",
             "sexo" => "Informe o sexo",
         ];
+        $pais = isset($config['pais'])?$config['pais']:'';
+        if($pais!='Brasil'){
+            unset($arr_campos['Cpf']);
+        }
+        // dd($config);
         $ret = false;
         foreach ($arr_campos as $kc => $vc) {
             if(isset($config[$kc]) || is_null($config[$kc])){
