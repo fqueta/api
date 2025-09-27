@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Matricula;
+use Illuminate\Support\Facades\DB;
 
 class MetricasController extends Controller
 {
@@ -63,12 +64,14 @@ class MetricasController extends Controller
             'resumo'=>[
                 'propostas'=>0,
                 'ganhos'=>0,
+                'conversas_com_humanos'=>0,
             ],
             'periodo_consulta'=>[
                 'data_inicio'=>$inicio,
                 'data_fim'=>$fim,
             ]
         ];
+
 
         if($inicio && $fim){
             $query = Matricula::join('clientes','clientes.id','=','matriculas.id_cliente');
@@ -96,6 +99,19 @@ class MetricasController extends Controller
             }
             if($ganhos){
                 $ret['resumo']['ganhos'] = $ganhos;
+            }
+            
+            // Contagem de conversas com humanos da tabela capta_lead
+            $conversas_com_humanos = DB::table('capta_lead')
+                ->whereBetween('atualizado', [$inicio, $fim])
+                ->whereNotNull('interajai')
+                ->where('interajai', '!=', '')
+                ->where('excluido', '=', 'n')
+                ->where('deletado', '=', 'n')
+                ->count();
+            
+            if($conversas_com_humanos){
+                $ret['resumo']['conversas_com_humanos'] = $conversas_com_humanos;
             }
 
             // Adiciona lista detalhada por data quando o período for diferente
