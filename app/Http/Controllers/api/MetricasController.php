@@ -100,7 +100,7 @@ class MetricasController extends Controller
             if($ganhos){
                 $ret['resumo']['ganhos'] = $ganhos;
             }
-            
+
             // Contagem de conversas com humanos da tabela capta_lead
             $conversas_com_humanos = DB::table('capta_lead')
                 ->whereBetween('atualizado', [$inicio, $fim])
@@ -109,7 +109,7 @@ class MetricasController extends Controller
                 ->where('excluido', '=', 'n')
                 ->where('deletado', '=', 'n')
                 ->count();
-            
+
             if($conversas_com_humanos){
                 $ret['resumo']['conversas_com_humanos'] = $conversas_com_humanos;
             }
@@ -164,6 +164,19 @@ class MetricasController extends Controller
             ->orderBy('data')
             ->get();
 
+        // Busca conversas com humanos agrupadas por data
+        $conversas_com_humanos = DB::table('capta_lead')
+            ->selectRaw('DATE(atualizado) as data, COUNT(*) as total')
+            ->whereBetween('atualizado', [$inicio, $fim])
+            ->whereNotNull('interajai')
+            ->where('interajai', '!=', '')
+            ->where('excluido', '=', 'n')
+            ->where('deletado', '=', 'n')
+            ->whereNotNull('atualizado') // Adiciona verificação para data não nula
+            ->groupBy('data')
+            ->orderBy('data')
+            ->get();
+
         // Cria array com todas as datas do período
         $dataInicio = new \DateTime($inicio);
         $dataFim = new \DateTime($fim);
@@ -179,7 +192,8 @@ class MetricasController extends Controller
             $detalhamento[$dataFormatada] = [
                 'data' => $dataFormatada,
                 'propostas' => 0,
-                'ganhos' => 0
+                'ganhos' => 0,
+                'conversas_com_humanos' => 0
             ];
         }
         // Preenche propostas
@@ -197,6 +211,15 @@ class MetricasController extends Controller
             // Verifica se a data é uma string válida antes de usar como chave
             if (!empty($ganho['total'])) {
                 $detalhamento[$ganho['data']]['ganhos'] = $ganho['total'];
+            }
+        }
+
+        // Preenche conversas com humanos
+        $arr_conversas = $conversas_com_humanos->toArray();
+        foreach ($arr_conversas as $conversa) {
+            // Verifica se a data é uma string válida antes de usar como chave
+            if (!empty($conversa->total)) {
+                $detalhamento[$conversa->data]['conversas_com_humanos'] = $conversa->total;
             }
         }
 
