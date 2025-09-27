@@ -173,8 +173,8 @@ class MetricasController extends Controller
             ->where('excluido', '=', 'n')
             ->where('deletado', '=', 'n')
             ->whereNotNull('atualizado') // Adiciona verificação para data não nula
-            ->groupBy('data')
-            ->orderBy('data')
+            ->groupByRaw('DATE(atualizado)')
+            ->orderByRaw('DATE(atualizado)')
             ->get();
 
         // Cria array com todas as datas do período
