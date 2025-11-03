@@ -633,7 +633,7 @@ class MatriculasController extends Controller
                                 //inicio do conteudo da tabela da etapa1
                                 $tr_etapa1='';
                                 $table_etapa1 = '';
-                                $label_desconto_especial = Qlib::qoption('label_desconto_especial') ?? 'Desconto Especial..';
+                                $label_desconto_especial = Qlib::qoption('label_desconto') ?? 'Desconto Especial';
 
                                 $tem_etp1 = '
                                 <table class="table">
