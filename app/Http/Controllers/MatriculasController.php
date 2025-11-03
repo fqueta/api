@@ -633,6 +633,8 @@ class MatriculasController extends Controller
                                 //inicio do conteudo da tabela da etapa1
                                 $tr_etapa1='';
                                 $table_etapa1 = '';
+                                $label_desconto_especial = Qlib::qoption('label_desconto_especial') ?? 'Desconto Especial..';
+
                                 $tem_etp1 = '
                                 <table class="table">
                                     <thead>
@@ -678,7 +680,7 @@ class MatriculasController extends Controller
                                         <tr style="color:red">
                                             <th colspan="3">
                                                 <div align="right">
-                                                    Desconto especial:
+                                                    '.$label_desconto_especial.':
                                                 </div>
                                             </th>
                                             <th>
@@ -845,10 +847,11 @@ class MatriculasController extends Controller
                                         //$totalOrcamento = ($totalCurso) - ($dados['desconto_especial']);
                                         $totalOrcamento = ($totalCurso);
                                         $ret['desconto_especial'] = $dados['desconto_especial'];
+                                        $label_desconto_especial = Qlib::qoption('label_desconto_especial') ?? 'Desconto Especial';
                                         $descontoFooter .= '
                                         <tr class="vermelho">
                                             <td colspan="4">
-                                                <div align="right"><strong>Desconto Especial</strong></div>
+                                                <div align="right"><strong>'.$label_desconto_especial.'</strong></div>
                                             </td>
                                             <td>
                                                 <div align="right"><b> '.Qlib::valor_moeda($dados['desconto_especial'],Qlib::qoption('sigla_moeda').' ').'</b></div>
