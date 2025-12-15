@@ -371,7 +371,7 @@ class MatriculasController extends Controller
                     break;
                 }
             }
-            dd($id_aronve_principal,$arr_modu);
+            // dd($id_aronve_principal,$arr_modu);
         }
         return $id_aronve_principal;
     }
