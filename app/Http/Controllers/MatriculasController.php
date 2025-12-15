@@ -355,6 +355,7 @@ class MatriculasController extends Controller
      */
     public function valor_hora_rescisao($id_aronve){
         $valor = Qlib::buscaValorDb0('aeronaves','id',$id_aronve,'hora_rescisao');
+        dump($valor);
         return $valor;
     }
     /**
