@@ -1516,6 +1516,14 @@ class MatriculasController extends Controller
 						$ret['table'] = str_replace('{{table2}}',$tr,$ret['table']);
 						$ret['table2'] = str_replace('{{footer}}',$footer,$ret['table2']);
 						$ret['table2'] = str_replace('{{table2}}',$tr,$ret['table2']);
+                        $id_aronve_principal = $arr_modu[0]['aviao'] ?? 0;
+                        $valor_hora_rescisao = $this->valor_hora_rescisao($id_aronve_principal);
+                        //coloca mascara
+                        $valor_hora_rescisao = Qlib::valor_moeda($valor_hora_rescisao,'R$');
+                        //registrar um short code para o valor da hora avulsa
+                        $info_proposta = str_replace('{valor_hora_rescisao}',$valor_hora_rescisao,$info_proposta);
+                        // dump($info_proposta);
+                        $ret['info_proposta'] = $info_proposta;
 						//$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
 					}
 				}
