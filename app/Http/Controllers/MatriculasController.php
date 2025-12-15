@@ -366,11 +366,12 @@ class MatriculasController extends Controller
         $id_aronve_principal = 0;
         if(is_array($arr_modu)){
             foreach($arr_modu as $key => $value){
-                if(isset($value['aviao'][$key]) && !empty($value['aviao'][$key])){
-                    $id_aronve_principal = $value['aviao'][$key];
+                if(isset($value['aviao']) && !empty($value['aviao'])){
+                    $id_aronve_principal = $value['aviao'];
                     break;
                 }
             }
+            dd($id_aronve_principal,$arr_modu);
         }
         return $id_aronve_principal;
     }
