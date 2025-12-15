@@ -19,6 +19,7 @@ class PdfGenerateController extends Controller
         $ret = $this->gera_orcamento($token,'pdf',[
             'verificar_assinatura'=>true,
         ]);
+        // dd($ret);
         return $ret;
     }
     public function gera_orcamento($token=false,$type='pdf',$config=[]){
@@ -63,11 +64,12 @@ class PdfGenerateController extends Controller
                 if($tipo_curso==4 && isset($res_orc['listMod']['html'])){
                     $orcamento .= $res_orc['listMod']['html'];
                 }
-                // dd($d);
+                // dd($res_orc);
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
-                        $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
+                        $info_proposta = isset($res_orc['info_proposta']) ? $res_orc['info_proposta'] : (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
+                        // $info_proposta = str_replace('{validade}',$validade,$info_proposta);
                         foreach ($fundo as $k => $v) {
                             $pagina = ($k+1);
                             $title = '';//'<h1>Title pagina '.$pagina.'.</h1>';

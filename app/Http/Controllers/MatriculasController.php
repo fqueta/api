@@ -340,12 +340,22 @@ class MatriculasController extends Controller
         $orcamento = isset($do['table']) ? $do['table'] : false;
         $table2 = isset($do['table2']) ? $do['table2'] : false;
         $orcamento .= $table2;
+        // dd($do,$orcamento);
         $ret = [
             'orcamento'=>$orcamento,
+            'conteudo'=>$orcamento,
             'sec'=>$sec,
         ];
         // dd($ret);
         return view('site.index',$ret);
+    }
+    /**
+     * Metodo para retora o valor da hora de rescisao informado o id
+     * @return float valor da hora de rescisao
+     */
+    public function valor_hora_rescisao($id_aronve){
+        $valor = Qlib::buscaValorDb0('aeronaves','id',$id_aronve,'hora_rescisao');
+        return $valor;
     }
     /**
      * Metodo para gerar um orçamento atualizado
@@ -365,8 +375,7 @@ class MatriculasController extends Controller
 			$arr_tabelas = Qlib::sql_array("SELECT * FROM $tab50 WHERE ativo = 's' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','url');
 			$dados = $this->dm($tokenOrc);
             $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
-
-			$dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
+            $dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
             if($dados){
                 // dd($dados);
 				$dadosOrc = false;
@@ -614,7 +623,7 @@ class MatriculasController extends Controller
 							$totalCurso = NULL;
 							$total_com_desconto = NULL;
 							$descontoFooter = NULL;
-							if(is_array($arr_modu)){
+                            if(is_array($arr_modu)){
 								$ret['total'] = NULL;
 								$ret['total_com_desconto'] = NULL;
 								$salvaTotais = [];
@@ -1321,7 +1330,15 @@ class MatriculasController extends Controller
 								<td><div align="right"> <b>'.number_format($subtotal1,'2',',','.').'</b></div></td>
 							</tr>';
 							$footer .= $descontoFooter;
-							$ret['table'] = str_replace('{{footer}}',$footer,$ret['table']);
+                            $id_aronve_principal = $arr_modu[0]['aviao'] ?? 0;
+                            $valor_hora_rescisao = $this->valor_hora_rescisao($id_aronve_principal);
+                            //coloca mascara
+                            $valor_hora_rescisao = Qlib::valor_moeda($valor_hora_rescisao,'R$');
+                            //registrar um short code para o valor da hora avulsa
+                            $info_proposta = str_replace('{valor_hora_rescisao}',$valor_hora_rescisao,$info_proposta);
+                            // dump($info_proposta);
+                            $ret['info_proposta'] = $info_proposta;
+                            $ret['table'] = str_replace('{{footer}}',$footer,$ret['table']);
 							$ret['table'] = str_replace('{{table2}}',$tr2,$ret['table']);
 							$ret['table'] = str_replace('{{table3}}',$tr3,$ret['table']);
 							$ret['table'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table']);
@@ -1329,6 +1346,7 @@ class MatriculasController extends Controller
 							$ret['table'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table']);
                             $ret['table'] = str_replace('{valor_combustivel}',$dados['combustivel'],$ret['table']);
 							$ret['table'] = str_replace('{tr_resumo_etapa3}',$tr_resumo_etapa3,$ret['table']);
+							$ret['table'] = str_replace('{valor_hora_rescisao}',$valor_hora_rescisao,$ret['table']);
 
                             $ret['table_adm'] = str_replace('{{table}}',$tr_adm,$tema_admn);
 							$ret['table_adm'] = str_replace('{table_etapa1}',$table_etapa1,$ret['table_adm']);
@@ -1337,6 +1355,7 @@ class MatriculasController extends Controller
 							$ret['table_adm'] = str_replace('{{table3}}',$tr3_adm,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{combustivelHtml}',$combustivelHtml,$ret['table_adm']);
 							$ret['table_adm'] = str_replace('{info_proposta}',$info_proposta,$ret['table_adm']);
+							$ret['table_adm'] = str_replace('{valor_hora_rescisao}',$valor_hora_rescisao,$ret['table_adm']);
 							$url_prop = Qlib::qoption('dominio_site').'/area-do-aluno/meus-pedidos/p/'.$dados['id'];
 							// $link_proposta = queta_formfield4('input-group-text', 12, 'link_proposta-', $url_prop, '', @$val['event'], @$val['clrw'], @$val['obs'], 'Link da proposta', '','','sm');
 							$link_proposta = $url_prop;
@@ -1525,6 +1544,7 @@ class MatriculasController extends Controller
 			// if($dados){
 			// 	$ret['dados_gravados'] = @$dados;
 			// }
+            // dd($ret);
             return $ret;
 	    }
     }

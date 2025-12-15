@@ -45,6 +45,7 @@
     @else
         @include('site.layout.main')
     @endif --}}
+    {{-- {{ dd($seg1); }} --}}
     @if ($seg2=='orcamentos')
         @include('site.orcamento')
     @elseif ($seg2=='proposta-pnl-periodos')
@@ -52,6 +53,8 @@
     @elseif ($seg2=='contratos' && $seg3=='vencidos')
         @include('site.contratos_vencidos')
     @elseif ($seg2=='ass')
+        @include('site.orcamento')
+    @else
         @include('site.orcamento')
     @endif
     {{-- @can('is_admin')
