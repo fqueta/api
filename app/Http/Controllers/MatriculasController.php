@@ -379,7 +379,7 @@ class MatriculasController extends Controller
             if($dados){
                 // if(Qlib::isAdmin(2)){
                     // dd($arr_modu,$id_aronve_principal);
-                    dd($dados);
+                    // dd($dados);
 
                 // }
 				$dadosOrc = false;
