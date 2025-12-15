@@ -355,8 +355,6 @@ class MatriculasController extends Controller
      */
     public function valor_hora_rescisao($id_aronve){
         $valor = Qlib::buscaValorDb0('aeronaves','id',$id_aronve,'hora_rescisao');
-        if(Qlib::isAdmin(1))
-        dd($valor,$id_aronve);
         return $valor;
     }
     /**
@@ -1333,6 +1331,9 @@ class MatriculasController extends Controller
 							</tr>';
 							$footer .= $descontoFooter;
                             $id_aronve_principal = $arr_modu[0]['aviao'] ?? 0;
+                            if(Qlib::isAdmin(1))
+                                dd($arr_modu,$id_aronve_principal);
+
                             $valor_hora_rescisao = $this->valor_hora_rescisao($id_aronve_principal);
                             //coloca mascara
                             $valor_hora_rescisao = Qlib::valor_moeda($valor_hora_rescisao,'R$');
