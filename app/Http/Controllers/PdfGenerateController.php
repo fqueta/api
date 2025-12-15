@@ -68,7 +68,7 @@ class PdfGenerateController extends Controller
                 if($type=='pdf'){
                     if(is_array($fundo)){
                         //Montar as paginas do PDF
-                        $info_proposta = isset($res_orc['info_proposta']) ? $res_orc['info_proposta'] : (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
+                        $info_proposta = isset($res_orc['info_proposta']) ? $res_orc['info_proposta'] : 'PdfGenerateController:71';
                         // $info_proposta = str_replace('{validade}',$validade,$info_proposta);
                         foreach ($fundo as $k => $v) {
                             $pagina = ($k+1);
