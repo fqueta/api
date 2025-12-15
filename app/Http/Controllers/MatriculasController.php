@@ -377,7 +377,11 @@ class MatriculasController extends Controller
             $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
             $dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
             if($dados){
-                // dd($dados);
+                if(Qlib::isAdmin(2)){
+                    // dd($arr_modu,$id_aronve_principal);
+                    dd($dados);
+
+                }
 				$dadosOrc = false;
 				$tipo_curso = $dados['tipo_curso'];
 				$valor_combustivel = 0;
@@ -1371,8 +1375,7 @@ class MatriculasController extends Controller
 					}else{
 						$ret['table'] = Qlib::formatMensagem0('Erro: Cliente ou curso não encontrado(s)!!','danger',10000);
 					}
-                    if(Qlib::isAdmin(1))
-                                dd($arr_modu,$id_aronve_principal);
+
 
 				}elseif($dados['tipo_curso']==1 || $dados['tipo_curso']==3 || $dados['tipo_curso']==4){
 					$arr_wid2 = array('5%','80%','15%');
