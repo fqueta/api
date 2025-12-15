@@ -392,7 +392,6 @@ class MatriculasController extends Controller
 			$is_signed = $this->verificaDataAssinatura(['campo_bus'=>'token','token'=>$tokenOrc]);
 			$arr_tabelas = Qlib::sql_array("SELECT * FROM $tab50 WHERE ativo = 's' AND ".Qlib::compleDelete()." ORDER BY nome ASC",'nome','url');
 			$dados = $this->dm($tokenOrc);
-            $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
             $dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
             if($dados){
                 // if(Qlib::isAdmin(2)){
@@ -463,8 +462,9 @@ class MatriculasController extends Controller
 					$dados['entrada'] = Qlib::precoDbdase($dados['entrada']);
 				}
 				$ret['nome_arquivo'] = 'Proposta '.$dados['id'];
+                $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
 				if($dados['tipo_curso']==2){
-					$configMet=$dados;
+                    $configMet=$dados;
 					$configMet['email'] = $dados['Email'];
 					// metricasOrcamento($configMet);//para salvar as estatisticas do orçamento;
 					$arr_wid = array('7%','50%','25%','5%','15%');
@@ -1396,6 +1396,10 @@ class MatriculasController extends Controller
 
 
 				}elseif($dados['tipo_curso']==1 || $dados['tipo_curso']==3 || $dados['tipo_curso']==4){
+                    if($dados['tipo_curso']==4){
+                        $info_proposta = (new SiteController)->short_code('info_proposta_plano',false,@$_GET['edit']);
+                    }
+
 					$arr_wid2 = array('5%','80%','15%');
 					if(isset($dados['Nome']) && isset($dados['nome_curso'])){
 						$ret['id_curso'] = $dados['id_curso'];
