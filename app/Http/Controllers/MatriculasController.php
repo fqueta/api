@@ -377,11 +377,11 @@ class MatriculasController extends Controller
             $info_proposta = (new SiteController)->short_code('info_proposta',false,@$_GET['edit']);
             $dias = isset($dias)?$dias: Qlib::qoption('validade_orcamento');
             if($dados){
-                if(Qlib::isAdmin(2)){
+                // if(Qlib::isAdmin(2)){
                     // dd($arr_modu,$id_aronve_principal);
                     dd($dados);
 
-                }
+                // }
 				$dadosOrc = false;
 				$tipo_curso = $dados['tipo_curso'];
 				$valor_combustivel = 0;
