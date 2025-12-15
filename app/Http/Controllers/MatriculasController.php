@@ -358,6 +358,23 @@ class MatriculasController extends Controller
         return $valor;
     }
     /**
+     * Metodo para pegar o id da aeronave principal
+     * @param array $arr_modu array com as aeronaves
+     * @return int id da aeronave principal
+     */
+    public function get_id_aronve($arr_modu){
+        $id_aronve_principal = 0;
+        if(is_array($arr_modu)){
+            foreach($arr_modu as $key => $value){
+                if(isset($value['aviao'][$key]) && !empty($value['aviao'][$key])){
+                    $id_aronve_principal = $value['aviao'][$key];
+                    break;
+                }
+            }
+        }
+        return $id_aronve_principal;
+    }
+    /**
      * Metodo para gerar um orçamento atualizado
      * @param string $tokenOrc token do orçamento
      * @param string $exibir_parcelamento 's' para sim 'n' para não
@@ -379,7 +396,7 @@ class MatriculasController extends Controller
             if($dados){
                 // if(Qlib::isAdmin(2)){
                     // dd($arr_modu,$id_aronve_principal);
-                    dd($dados);
+                    // dd($dados);
 
                 // }
 				$dadosOrc = false;
@@ -1334,7 +1351,7 @@ class MatriculasController extends Controller
 								<td><div align="right"> <b>'.number_format($subtotal1,'2',',','.').'</b></div></td>
 							</tr>';
 							$footer .= $descontoFooter;
-                            $id_aronve_principal = $arr_modu[0]['aviao'] ?? 0;
+                            $id_aronve_principal = $this->get_id_aronve($arr_modu);
 
                             $valor_hora_rescisao = $this->valor_hora_rescisao($id_aronve_principal);
                             //coloca mascara
