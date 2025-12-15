@@ -1331,8 +1331,6 @@ class MatriculasController extends Controller
 							</tr>';
 							$footer .= $descontoFooter;
                             $id_aronve_principal = $arr_modu[0]['aviao'] ?? 0;
-                            if(Qlib::isAdmin(1))
-                                dd($arr_modu,$id_aronve_principal);
 
                             $valor_hora_rescisao = $this->valor_hora_rescisao($id_aronve_principal);
                             //coloca mascara
@@ -1373,6 +1371,9 @@ class MatriculasController extends Controller
 					}else{
 						$ret['table'] = Qlib::formatMensagem0('Erro: Cliente ou curso não encontrado(s)!!','danger',10000);
 					}
+                    if(Qlib::isAdmin(1))
+                                dd($arr_modu,$id_aronve_principal);
+
 				}elseif($dados['tipo_curso']==1 || $dados['tipo_curso']==3 || $dados['tipo_curso']==4){
 					$arr_wid2 = array('5%','80%','15%');
 					if(isset($dados['Nome']) && isset($dados['nome_curso'])){
