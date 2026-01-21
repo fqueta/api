@@ -660,7 +660,7 @@ class MatriculasController extends Controller
 									$arr_totais = Qlib::lib_json_array($dados['totais']);
 								// }
                                 $ret['custo'] = 0;
-                                $desconto_ge = 600;
+                                $desconto_ge = -600;
                                 //inicio do conteudo da tabela da etapa1
                                 $tr_etapa1='';
                                 $table_etapa1 = '';
