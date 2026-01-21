@@ -35,11 +35,5 @@ class WebhookController extends Controller
             $ret = (new OrcamentoController)->webhook($request->all());
         }
         return $ret;
-        // Route::prefix('webhook')->group(function(){
-//     Route::post('/zenvia',[ZenviaController::class,'salvar_eventos']);
-//     Route::post('/rd',[RdstationController::class,'webhook']);
-//     Route::post('/zapguru',[ZapguruController::class,'webhook']);
-// });
-
     }
 }

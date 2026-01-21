@@ -660,7 +660,7 @@ class MatriculasController extends Controller
 									$arr_totais = Qlib::lib_json_array($dados['totais']);
 								// }
                                 $ret['custo'] = 0;
-                                $desconto_ge = 0;
+                                $desconto_ge = 600;
                                 //inicio do conteudo da tabela da etapa1
                                 $tr_etapa1='';
                                 $table_etapa1 = '';
@@ -764,7 +764,7 @@ class MatriculasController extends Controller
                                         if(is_string($total)){
                                             $total = (double)$total;
                                         }
-                                        $desconto_ge -=$total;
+                                        // $desconto_ge -=$total;
                                         $aula = 'Ground School';
                                         $tr_etapa1 .= str_replace('{kei}',$kei,$tem2_etp1);
                                         $tr_etapa1 = str_replace('{i}',$i,$tr_etapa1);
