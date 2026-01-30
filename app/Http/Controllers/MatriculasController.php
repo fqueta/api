@@ -5368,17 +5368,21 @@ class MatriculasController extends Controller
 				// $ret['exec'] = salvarAlterar($sql);
                 $token_matricula = $config['token_matricula'];
                 $id_matricula = $this->get_id_by_token($token_matricula);
-                $contrato = [
-                    "declaracao" => "on",
-                    "aceito_contrato_combustivel" => "on",
-                    "data_aceito_contrato" => "2023-04-17 13:30:14",
-                    "id_matricula" => $id_matricula,
-                    "ip" => $_SERVER['REMOTE_ADDR'],
-                    "id" => $id_matricula,
-                    "ac" => "alt",
-                    "status" => 1,
-                    "tab" => "matriculas",
-                ];
+                if(isset($config['contrato']) && is_array($config['contrato'])){
+                    $contrato = $config['contrato'];
+                }else{
+                    $contrato = [
+                        "declaracao" => "on",
+                        "aceito_contrato_combustivel" => "on",
+                        "data_aceito_contrato" => "2023-04-17 13:30:14",
+                        "id_matricula" => $id_matricula,
+                        "ip" => $_SERVER['REMOTE_ADDR'],
+                        "id" => $id_matricula,
+                        "ac" => "alt",
+                        "status" => 1,
+                        "tab" => "matriculas",
+                    ];
+                }
 				$ret['exec'] = Qlib::update_tab($GLOBALS['tab12'],[
                     'contrato'=> Qlib::lib_array_json($contrato),
                     'etapa_atual'=> 11,
