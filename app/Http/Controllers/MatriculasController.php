@@ -5361,12 +5361,12 @@ class MatriculasController extends Controller
         // }
         if(isset($config['pagina']) && $config['pagina']==2){
             //salvar conteudo da página 2
-            if(isset($config['token_matricula']) && isset($config['contrato']) && is_array($config['contrato'])){
+            // if(isset($config['token_matricula']) && isset($config['contrato']) && is_array($config['contrato'])){
+            if(isset($config['token_matricula'])){
                 //11 o id da etapa 'Proposta aprovada' do flow de atendimento
 				// $sql = "UPDATE IGNORE ".$GLOBALS['tab12']." SET contrato='".Qlib::lib_array_json($config['contrato'])."',etapa_atual='11' WHERE token='".$config['token_matricula']."'";
 				// $ret['exec'] = salvarAlterar($sql);
 				$ret['exec'] = Qlib::update_tab($GLOBALS['tab12'],[
-                    'contrato'=> Qlib::lib_array_json($config['contrato']),
                     'etapa_atual'=> 11,
                     'status'=> 1,
                 ],"WHERE token='".$config['token_matricula']."'"); //salvarAlterar($sql);
