@@ -5366,14 +5366,28 @@ class MatriculasController extends Controller
                 //11 o id da etapa 'Proposta aprovada' do flow de atendimento
 				// $sql = "UPDATE IGNORE ".$GLOBALS['tab12']." SET contrato='".Qlib::lib_array_json($config['contrato'])."',etapa_atual='11' WHERE token='".$config['token_matricula']."'";
 				// $ret['exec'] = salvarAlterar($sql);
+                $token_matricula = $config['token_matricula'];
+                $id_matricula = $this->get_id_by_token($token_matricula);
+                $contrato = [
+                    "declaracao" => "on",
+                    "aceito_contrato_combustivel" => "on",
+                    "data_aceito_contrato" => "2023-04-17 13:30:14",
+                    "id_matricula" => $id_matricula,
+                    "ip" => $_SERVER['REMOTE_ADDR'],
+                    "id" => $id_matricula,
+                    "ac" => "alt",
+                    "status" => 1,
+                    "tab" => "matriculas",
+                ];
 				$ret['exec'] = Qlib::update_tab($GLOBALS['tab12'],[
+                    'contrato'=> Qlib::lib_array_json($contrato),
                     'etapa_atual'=> 11,
                     'status'=> 1,
-                ],"WHERE token='".$config['token_matricula']."'"); //salvarAlterar($sql);
+                ],"WHERE token='".$token_matricula."'"); //salvarAlterar($sql);
             	if($ret['exec']){
 					// $id_matricula = cursos::get_id_by_token($config['token_matricula']);
 					//gravar contrato estatico...
-					$ret['validar'] = $this->valida_respostas_assinatura($config['token_matricula'],'token');
+					$ret['validar'] = $this->valida_respostas_assinatura($token_matricula,'token');
 					if($ret['validar']){
 						// $ret['gravar_copia'] = $this->grava_contrato_statico($config['token_matricula']);
                         GeraPdfPropostaJoub::dispatch($config['token_matricula']);
