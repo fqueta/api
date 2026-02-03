@@ -5389,6 +5389,7 @@ class MatriculasController extends Controller
                     'etapa_atual'=> 11,
                     'status'=> 1,
                 ],"WHERE token='".$token_matricula."'"); //salvarAlterar($sql);
+                // dd($ret);
             	if($ret['exec']){
 					// $id_matricula = cursos::get_id_by_token($config['token_matricula']);
 					//gravar contrato estatico...
@@ -5760,6 +5761,10 @@ class MatriculasController extends Controller
                 if($token_envelope && is_array($contatos_anexos)){
                     $zp = new ZapsingController;
                     $lastKey = array_key_last($contatos_anexos); // Obtém a última chave
+                    //salvar lista em metacampo
+                    $ret['anexo_meta'] = Qlib::update_matriculameta($id,'anexos_enviados_'.$tk_periodo,Qlib::lib_array_json([$contatos_anexos]));
+                    $ret['anexo'] = [];
+                    // dd($contatos_anexos,$ret);
                     foreach($contatos_anexos As $k=>$v){
                         $link = isset($v['meta_value']) ? $v['meta_value'] : false;
                         if ($k === $lastKey) {
@@ -5826,7 +5831,7 @@ class MatriculasController extends Controller
 	public function assinar_proposta_periodo($config){
 		$ret['exec'] = false;
 		$ret['valida']['mens'] = false;
-		//salvar conteudo da página 2
+        //salvar conteudo da página 2
 		if(isset($config['token_matricula']) && isset($config['meta']) && is_array($config['meta'])){
 			//11 o id da etapa 'Proposta aprovada' do flow de atendimento
 			$config['id'] = $this->get_id_by_token($config['token_matricula']);

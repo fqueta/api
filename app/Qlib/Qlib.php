@@ -2444,6 +2444,7 @@ class Qlib
                 // dd($dados,$filteredData);
                 if(!empty($where)){
                     $d = DB::select("SELECT id FROM $tab $where");
+                    // dd($d);
                     $id = isset($d[0]->id) ? $d[0]->id : null;
                     if($id){
                         if($edit==='edit_all'){
@@ -2470,6 +2471,7 @@ class Qlib
                             }
                         }elseif($edit===true){
                             $salva = DB::table($tab)->where('id', $id)->update($filteredData);
+                            // dd($filteredData);
                             if($salva){
                                 $ret['exec'] = true;
                                 $ret['idCad'] = $id;

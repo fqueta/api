@@ -30,12 +30,12 @@ class TesteController extends Controller
         // dd($token);
         // $ret['orcamento'] = (new MatriculasController)->orcamento_pdf_estatico($token);
         // $ret['proposta'] = (new OrcamentoController)->proposta_periodos_estatica($token,'');
-        $ret['contrato'] = (new MatriculasController)->grava_contrato_statico($token);
+        // $ret['contrato'] = (new MatriculasController)->grava_contrato_statico($token);
         // $ret = (new MetricasController)->total_metricas($request);
         // $ret = (new MetricasController)->intervaloPeriodo(2025, 36, 'semana', 'Y-m-d');
         // dd($ret);
         // $ret = (new MatriculasController)->grava_contrato_statico_periodo($token,$periodo='68758c8e76cfb');
-        // $ret = (new MatriculasController)->send_to_zapSing($token,false);
+        $ret = (new MatriculasController)->send_to_zapSing($token,false);
         // $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         // $ret = (new ZapsingController )->painel_assinaturas($token);
         // $ret = (new OrcamentoController)->resumo_proposta_periodos($token);
@@ -170,8 +170,8 @@ class TesteController extends Controller
         //*teste de documentos gerados para a assinatura
         // $dm = (new MatriculasController)->dm($token);
         // $id = isset($dm['id']) ? $dm['id'] : 0;
-        // // $ret = (new MatriculasController)->enviar_contratos_anexos(false,false,$dm);
-        // // dd($token);
+        // // // $ret = (new MatriculasController)->enviar_contratos_anexos(false,false,$dm);
+        // // // dd($token);
         // $ret = (new MatriculasController)->contatos_estaticos_pdf($id,true,$dm);
         // $signed_file = 'https://zapsign.s3.amazonaws.com/sandbox/dev/2025/2/pdf/f787046f-616b-4d0d-9924-769862f0d13f/63d6a30f-b5ac-4c00-ac5d-f230c95ea0ff.pdf?AWSAccessKeyId=AKIASUFZJ7JCTI2ZRGWX&Signature=RGvYrlWIkuwzB1YwQ49RLNkGhM0%3D&Expires=1741026569';
         // $ret = (new MatriculasController)->baixar_arquivo($token, $signed_file);
