@@ -65,9 +65,10 @@ return [
         'mysql2' => [ // Segunda conexão
             'driver' => 'mysql',
             'host' => env('DB2_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
             'database' => env('DB2_DATABASE', 'database2'),
             'username' => env('DB2_USERNAME', 'root'),
-            'password' => env('DB2_PASSWORD', ''),
+            'password' => env('DB2_PASSWORD', 'root'),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
