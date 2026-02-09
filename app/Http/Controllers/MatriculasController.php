@@ -5924,7 +5924,7 @@ class MatriculasController extends Controller
                     $short_code_periodo = 'contrato_'.$periodo.'°_periodo';
                     $short_code_periodo = str_replace('°_','_',$short_code_periodo);
                     // dd($short_code_periodo);
-                    $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." $compleSql AND tag='$short_code_periodo' ORDER BY ordenar ASC";
+                    $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." $compleSql AND tag LIKE '%$short_code_periodo%' ORDER BY ordenar ASC";
                     // if($periodo=='1'){
                     // }else{
                     //     $where = "WHERE ativo='s' AND id_curso='".$id_curso."' AND tipo_conteudo='9' AND ".Qlib::compleDelete()." AND (short_code='$short_code_periodo' OR short_code='contrato1') ORDER BY ordenar ASC";
