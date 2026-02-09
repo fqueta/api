@@ -5964,7 +5964,7 @@ class MatriculasController extends Controller
         }else{
             $lista_contratos = false;
         }
-        // dd($lista_contratos);
+        dd($lista_contratos);
         //Gerar a propostas estatica por aqui...
         // $ret = (new MatriculasController)->orcamento_pdf_estatico($token_matricula);
         // if(!$ret['exec']){
