@@ -59,6 +59,10 @@ Route::prefix('v1')->group(function(){
     // Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing'])->middleware('auth:sanctum');
     Route::get('/gerar-enviar/{token}',[ApiZapsingController::class,'gerar_doc_envia_zapsing']);
     Route::get('/documentos/{token}',[MatriculasController::class,'documentos_estaticos']);
+
+    // Rota de conteudo_site
+    Route::get('/conteudo-site', [\App\Http\Controllers\api\ConteudoSiteController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/conteudo-site/{id}', [\App\Http\Controllers\api\ConteudoSiteController::class, 'show'])->middleware('auth:sanctum');
 });
 // Route::post('/tokens/create', function (Request $request) {
 //     //$token = $request->user()->createToken($request->token_name);
