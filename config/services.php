@@ -30,4 +30,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+        'api_url' => env('BREVO_API_URL', 'https://api.brevo.com/v3'),
+        'sender' => [
+            'email' => env('BREVO_SENDER_EMAIL'),
+            'name' => env('BREVO_SENDER_NAME', env('MAIL_FROM_NAME', 'CRM Aeroclube')),
+        ],
+    ],
+
 ];

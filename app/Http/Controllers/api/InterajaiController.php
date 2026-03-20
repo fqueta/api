@@ -17,6 +17,7 @@ class InterajaiController extends Controller
 		$arr_json = Qlib::lib_json_array($json);
         $event = isset($arr_json['origem']) ? $arr_json['origem'] : '';
         $telefonezap = $this->get_telefone($arr_json);
+        // dd($arr_json);
         $nome = $this->get_nome($arr_json);
         // $email = $this->get_email($arr_json);
         // $id_cliente = $this->get_client_id($arr_json);
@@ -68,7 +69,7 @@ class InterajaiController extends Controller
             $whereLead2 = "WHERE nome='$nome'";
             $tabLead = 'capta_lead';
             $busc = Qlib::totalReg($tabLead,$whereLead);
-            // dd($whereLead2);
+            // dd($whereLead2,$busc,$tabLead,Qlib::totalReg($tabLead,$whereLead2));
             if($busc>0){
                 $ddlead = [
                     'interajai' => $json,
@@ -143,10 +144,10 @@ class InterajaiController extends Controller
                 $int = Qlib::lib_json_array($int);
             }
         }
-        $nome = isset($int['name']) ? $int['name'] : null;
-        // if(empty($nome)){
-        //     $nome = isset($int['campos_personalizados']['Nome']) ? $int['campos_personalizados']['Nome'] : '';
-        // }
+        $nome = $int['name'] ?? $int['nome'] ?? null;
+        if(!$nome){
+            $nome = $int['campos_personalizados']['Nome'] ?? null;
+        }
         $nome = trim($nome);
 
         return $nome;

@@ -10,6 +10,7 @@ use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\BrevoService;
 class ZapsingController extends Controller
 {
 
@@ -110,6 +111,12 @@ class ZapsingController extends Controller
             return $ret;
         }
     }
+    /**
+     * Recebe e processa o webhook do Zapsing.
+     * - Salva histórico e arquivos assinados.
+     * - Quando status='signed', envia notificação de conclusão via Brevo.
+     * @return array Resultado da operação
+     */
     public function webhook(){
         $ret['exec'] = false;
 		@header("Content-Type: application/json");
@@ -138,6 +145,15 @@ class ZapsingController extends Controller
             }else{
                 $ret['salvar_webhook'] = Qlib::update_matriculameta($post_id, $this->campo_processo,$json);
             }
+        }
+        // Enviar notificação de conclusão quando status for 'signed'
+        $status = isset($d['status']) ? $d['status'] : '';
+        if($status === 'signed'){
+            $emails = Qlib::qoption('zapsing_notify_emails')?: ['quetafernando1@gmail.com','ger.maisaqui1@gmail.com'];
+            if(is_string($emails)){
+                $emails = Qlib::lib_json_array($emails);
+            }
+            $ret['notify_brevo'] = BrevoService::notifySignatureCompleted($emails, $d);
         }
         return $ret;
     }
