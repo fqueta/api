@@ -259,6 +259,7 @@ class PdfGenerateController extends Controller
                     $url = Storage::url($fileName);
                     $ret['salvo'] = Qlib::update_matriculameta($id_matricula,$short_code.'_pdf',$url);
                     $ret['url'] = $url;
+                    $ret['titulo'] = $titulo;
                     if($ret['salvo']){
                         $ret['exec'] = true;
                     }

@@ -5665,42 +5665,47 @@ class MatriculasController extends Controller
         }
         // dd($contratos);
         $enviar = false;
-        if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
-            //link od ontrato de prestação ou seja o principal contrato
-            $enviar = $this->enviar_envelope($tm,$dm,$link_c,$tk_periodo);
-            if($tk_periodo){
-                if($enviar['exec'] == true){
-                    $ret['exec'] = true;
-                    //gravar o processamento em campo
-                    $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope_'.$tk_periodo,Qlib::lib_array_json($enviar));
-                    //removendo o primiero contrato da lista
-                    if(is_array($contratos)){
-                        $n_cont = array_shift($contratos);
-                        $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
-                        if($token_doc && is_array($n_cont)){
-                            $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm,$tk_periodo);
-                        }
-                    }else{
-                        $ret['exec'] = false;
-                        $ret['mens'] = 'Lista de contratos inválidos';
-                        $ret['color'] = 'danger';
-
-                    }
-                }
-            }else{
-                if($enviar['exec'] == true){
-                    $ret['exec'] = true;
-                    //gravar o processamento em campo
-                    $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope',Qlib::lib_array_json($enviar));
-                    //removendo o primiero contrato da lista
-                    $n_cont = array_shift($contratos);
-                    $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
-                    if($token_doc && is_array($n_cont)){
-                        $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm);
-                    }
+        $link_proposta = Qlib::get_matriculameta($id,'proposta_pdf',true);
+        if($link_proposta){
+            $enviar = $this->enviar_envelope($tm,$dm,$link_proposta,$tk_periodo);
+            if($enviar['exec'] == true){
+                $ret['exec'] = true;
+                //gravar o processamento em campo
+                $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope',Qlib::lib_array_json($enviar));
+                //removendo o primiero contrato da lista
+                $n_cont = array_shift($contratos);
+                $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
+                if($token_doc && is_array($n_cont)){
+                    $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm);
                 }
             }
         }
+        // if(isset($contratos[0]['meta_value']) && ($link_c = $contratos[0]['meta_value'])){
+            //link od ontrato de prestação ou seja o principal contrato
+            // $enviar = $this->enviar_envelope($tm,$dm,$link_c,$tk_periodo);
+            // if($tk_periodo){
+            //     if($enviar['exec'] == true){
+            //         $ret['exec'] = true;
+            //         //gravar o processamento em campo
+            //         $ret['save_process'] = Qlib::update_matriculameta($id,'enviar_envelope_'.$tk_periodo,Qlib::lib_array_json($enviar));
+            //         //removendo o primiero contrato da lista
+            //         if(is_array($contratos)){
+            //             $n_cont = array_shift($contratos);
+            //             $token_doc = isset($enviar['response']['token']) ? $enviar['response']['token'] : false;
+            //             if($token_doc && is_array($n_cont)){
+            //                 $ret['anexos'] = $this->enviar_contratos_anexos(false,false,$dm,$tk_periodo);
+            //             }
+            //         }else{
+            //             $ret['exec'] = false;
+            //             $ret['mens'] = 'Lista de contratos inválidos';
+            //             $ret['color'] = 'danger';
+
+            //         }
+            //     }
+            // }else{
+                
+            // }
+        // }
         $ret['enviar'] = $enviar;
 
         //gravar historico do envio do orçamento
@@ -5744,14 +5749,9 @@ class MatriculasController extends Controller
         }else{
             $contatos_anexos = false;
         }
-        // dd($contatos_anexos);
         if($contatos_anexos){
             //conseguir o token do contrato principal
-            if($tk_periodo){
-                $denv_p = Qlib::get_matriculameta($id,'enviar_envelope_'.$tk_periodo);
-            }else{
-                $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');
-            }
+            $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');
             $ret['exec'] = false;
             $arr = [];
             if($denv_p){
@@ -5766,9 +5766,9 @@ class MatriculasController extends Controller
                     $ret['anexo'] = [];
                     // dd($contatos_anexos,$ret);
                     foreach($contatos_anexos As $k=>$v){
-                        $link = isset($v['meta_value']) ? $v['meta_value'] : false;
+                        $link = isset($v['url']) ? $v['url'] : false;
                         if ($k === $lastKey) {
-                            $nome_arquivo = isset($v['meta_key']) ? $v['meta_key'] : false;
+                            $nome_arquivo = isset($v['titulo']) ? $v['titulo'] : false;
                         } else {
                             $arr_n = explode('/', $link);
                             $nome_arquivo = str_replace('-',' ',end($arr_n));
@@ -5794,13 +5794,18 @@ class MatriculasController extends Controller
      *
      */
     public function contatos_estaticos_pdf($id,$todos=true,$dm=false,$tk_periodo=false){
+        $campo_links = 'links_contratos';
         if($tk_periodo){
-            $where = "WHERE matricula_id='$id' AND meta_key LIKE '%".$tk_periodo."_pdf%' ORDER BY id ASC";
-        }else{
-            $where = "WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC";
+            $campo_links = 'links_contratos_'.$tk_periodo;
         }
-        $dc = Qlib::dados_tab('matriculameta',['where'=>$where]);
-        // dd($dc,$where);
+        // if($tk_periodo){
+        //     $where = "WHERE matricula_id='$id' AND meta_key LIKE '%".$tk_periodo."_pdf%' ORDER BY id ASC";
+        // }else{
+        //     $where = "WHERE matricula_id='$id' AND meta_key LIKE '%_pdf%' ORDER BY id ASC";
+        // }
+        // $dc = Qlib::dados_tab('matriculameta',['where'=>$where]);
+        $dlinks = Qlib::get_matriculameta($id,$campo_links);
+        $dc = Qlib::lib_json_array($dlinks);
         if(!$todos && isset($dc[0])){
             unset($dc[0]);
         }
@@ -6020,6 +6025,10 @@ class MatriculasController extends Controller
                     }
                 }
 
+            }
+            if(isset($ret['grav_pdf']) && count($ret['grav_pdf'])>0){
+                //registrar um metacampo com os links dos contratos
+                $ret['meta_links'] = Qlib::update_matriculameta($dm['id'],'links_contratos',Qlib::lib_array_json($ret['grav_pdf']));
             }
         }else{
             $configCn['tipo_retorno'] = 2;
