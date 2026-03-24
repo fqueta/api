@@ -5749,6 +5749,9 @@ class MatriculasController extends Controller
         }else{
             $contatos_anexos = false;
         }
+        if(request()->input('test')=='true'){
+            dd($contatos_anexos);
+        }
         if($contatos_anexos){
             //conseguir o token do contrato principal
             $denv_p = Qlib::get_matriculameta($id,'enviar_envelope');

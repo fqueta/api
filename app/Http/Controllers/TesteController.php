@@ -23,6 +23,8 @@ class TesteController extends Controller
         $opc = $request->input('opc');
         if($opc=='zapsing'){            
             $ret = (new MatriculasController)->send_to_zapSing($token,false);
+        }elseif($opc=='anexos'){
+            $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         }else{
 
             // $ret = (new MatriculasController)->gerar_orcamento($token);
