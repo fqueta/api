@@ -5765,17 +5765,18 @@ class MatriculasController extends Controller
                     $zp = new ZapsingController;
                     $lastKey = array_key_last($contatos_anexos); // Obtém a última chave
                     //salvar lista em metacampo
-                    $ret['anexo_meta'] = Qlib::update_matriculameta($id,'anexos_enviados_'.$tk_periodo,Qlib::lib_array_json([$contatos_anexos]));
+                    // $ret['anexo_meta'] = Qlib::update_matriculameta($id,'anexos_enviados_'.$tk_periodo,Qlib::lib_array_json([$contatos_anexos]));
+                    $ret['anexo_meta'] = Qlib::update_matriculameta($id,'anexos_enviados',Qlib::lib_array_json([$contatos_anexos]));
                     $ret['anexo'] = [];
                     // dd($contatos_anexos,$ret);
                     foreach($contatos_anexos As $k=>$v){
                         $link = isset($v['url']) ? $v['url'] : false;
-                        if ($k === $lastKey) {
+                        // if ($k === $lastKey) {
                             $nome_arquivo = isset($v['titulo']) ? $v['titulo'] : false;
-                        } else {
-                            $arr_n = explode('/', $link);
-                            $nome_arquivo = str_replace('-',' ',end($arr_n));
-                        }
+                        // } else {
+                        //     $arr_n = explode('/', $link);
+                        //     $nome_arquivo = str_replace('-',' ',end($arr_n));
+                        // }
                         $nome = ucwords($nome_arquivo);
                         // dump($token_envelope,$link,$nome);
                         $ret['anexo'][$k] = $zp->enviar_anexo($token_envelope,$link,$nome);
@@ -5809,9 +5810,6 @@ class MatriculasController extends Controller
         // $dc = Qlib::dados_tab('matriculameta',['where'=>$where]);
         $dlinks = Qlib::get_matriculameta($id,$campo_links);
         $dc = Qlib::lib_json_array($dlinks);
-        if(!$todos && isset($dc[0])){
-            unset($dc[0]);
-        }
         //incluir o mgr Manual geral de regara para o curso caso tenha
         $id_curso = isset($dm['id_curso']) ? $dm['id_curso'] : false;//token matricula
         $token_curso = Qlib::buscaValorDb0('cursos','id',$id_curso,'token');
