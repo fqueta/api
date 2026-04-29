@@ -3226,7 +3226,7 @@ class MatriculasController extends Controller
         if(!$token_matricula){
             return $ret;
         }
-        $d = Qlib::dados_tab($GLOBALS['tab12'],['campos'=>'id,token,status','where'=>"WHERE id_curso='$id_curso' AND status!='5' AND id_cliente='$id_cliente' AND ".Qlib::compleDelete()." ORDER BY id DESC"]);
+        $d = Qlib::dados_tab($GLOBALS['tab12'],['campos'=>'id,token,status','where'=>"WHERE id_curso='$id_curso' AND (status!='5' OR status!='9') AND id_cliente='$id_cliente' AND ".Qlib::compleDelete()." ORDER BY id DESC"]);
         if($d){
             $d = $d[0];
             // dd($d);
@@ -5703,7 +5703,7 @@ class MatriculasController extends Controller
             //         }
             //     }
             // }else{
-                
+
             // }
         // }
         $ret['enviar'] = $enviar;
