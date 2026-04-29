@@ -3240,6 +3240,7 @@ class MatriculasController extends Controller
             $ret['exec'] = true;
             $ret['mens'] = $mensagem;
             $ret['mensa'] = $mensagem;
+            $ret['d'] = $d;
         }
         return $ret;
     }
