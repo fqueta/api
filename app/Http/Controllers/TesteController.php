@@ -21,8 +21,20 @@ class TesteController extends Controller
         $token = $request->get('token');
         $email = $request->get('email');
         $opc = $request->input('opc');
-        if($opc=='zapsing'){            
+
+        if($opc=='zapsing'){
             $ret = (new MatriculasController)->send_to_zapSing($token,false);
+        }elseif($opc=='fila_zapsing'){
+            try {
+                GeraPdfPropostaJoub::dispatch($token);
+                GeraPdfContratoJoub::dispatch($token)->delay(now()->addSeconds(5));
+                SendZapsingJoub::dispatch($token)->delay(now()->addSeconds(5));
+                //code...
+            } catch (\Throwable $th) {
+                return response()->json(['error' => $th->getMessage()], 500);
+            }
+        }elseif($opc=='proposta'){
+            $ret = (new OrcamentoController)->proposta_periodos_estatica($token,'');;
         }elseif($opc=='anexos'){
             $ret = (new MatriculasController)->enviar_contratos_anexos(false,$token,false);
         }else{
@@ -59,7 +71,7 @@ class TesteController extends Controller
             //     'dialog_id'=>'',
             // ]);
             // $ret = (new MatriculasController)->publica_contratos_vencidos_html(2);
-    
+
             // }else{
             //     $ret = (new MatriculasController)->orcamento_pdf_estatico($token);
             // }
@@ -141,14 +153,14 @@ class TesteController extends Controller
             //     "campo_bus": "id",
             //     "campo_id": "id"
             // }';
-    
+
             // // $config = Qlib::lib_json_array($json);
             // $config = Qlib::lib_json_array($json2);
-    
+
             // $ret = (new MatriculasController)->assinar_proposta($config);
-    
+
             //zapsing
-    
+
             // enviar anexo.
             // $body = [
             //     'name'=>'Termo teste',
@@ -163,7 +175,7 @@ class TesteController extends Controller
             // dd($routeName);
             // dd();
             //  GeraPdfPropostaJoub::dispatch($token);
-    
+
             // $ret = (new ZapsingController)->enviar_link_assinatura($token,'686f6d9181250');
             // SendZapsingJoub::dispatch($token);
             // GeraPdfContratoJoub::dispatch($token);

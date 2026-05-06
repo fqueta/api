@@ -194,6 +194,7 @@ class MatriculasController extends Controller
      * @param array $ret
      */
     public function dm($token){
+        $token = rtrim($token);
         $dm = Matricula::select('matriculas.*',
         'clientes.Nome','clientes.sobrenome','clientes.telefonezap','clientes.Tel','clientes.Email','clientes.Cpf as cpf_aluno',
         'clientes.nacionalidade',
@@ -213,12 +214,16 @@ class MatriculasController extends Controller
         ->join('cursos','matriculas.id_curso','=','cursos.id')
         ->where('matriculas.token',$token)
         ->get();
+        // $debug = $_GET['debug']??false;
+        // if($debug){
+        //     dump($dm->count(),$dm);
+        // }
         if($dm->count() > 0){
             $dm = $dm->toArray();
             $dm = $dm[0];
             $link_orcamento = $this->link_orcamento($dm['token']);
             $link_assinatura = $this->link_assinatura($dm['token']);
-            if(isset($dm['contrato']) && is_string($dm['contrato'])){
+            if(null !== ($dm['contrato'] ?? null) && is_string($dm['contrato'])){
                 if(json_validate($dm['contrato'])){
                     $dm['contrato'] = Qlib::lib_json_array($dm['contrato']);
                 }
@@ -228,10 +233,10 @@ class MatriculasController extends Controller
 			$dm['numero_contrato'] = $this->numero_contrato($dm['id']);
             $dm['nome_completo'] = str_replace($dm['sobrenome'],'',$dm['Nome']) .' '.trim($dm['sobrenome']);
 			// $dm['consultor'] = $dm['seguido_por'];
-			$link_guru = isset($dm['zapguru']) ? $dm['zapguru'] : false;
+			$link_guru = null !== ($dm['zapguru'] ?? null) ? $dm['zapguru'] : false;
 			if(is_string($link_guru)){
 				$arr_link = Qlib::lib_json_array($link_guru);
-				$link_guru = isset($arr_link['link_chat']) ? $arr_link['link_chat'] : '';
+				$link_guru = null !== ($arr_link['link_chat'] ?? null) ? $arr_link['link_chat'] : '';
 			}
 			$dm['link_guru'] = $link_guru;
             $dm['valor_orcamento'] = $dm['total'];
@@ -244,6 +249,7 @@ class MatriculasController extends Controller
                 $web = Qlib::get_matriculameta($id_orcamento,$campo_processo_zapsing,true);
                 if($web){
                     $dm['webhook_zapsing'] = Qlib::lib_json_array($web);
+                    $dm['campo_processo_zapsing'] = $campo_processo_zapsing;
                 }
             }
         }else{
