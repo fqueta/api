@@ -93,7 +93,8 @@ class ZapguruController extends Controller
 	}
 
 	public function phone_id(){
-		$ret = '628d294cc5ef6cb21b445e47';
+		// $ret = '628d294cc5ef6cb21b445e47';
+		$ret = '6839f9cdd114c3a1b2f8c9c6';
 		return $ret;
 	}
     /**
@@ -969,7 +970,7 @@ class ZapguruController extends Controller
 
 			$chat_number 	= $Celular;
 
-			$phone_id 		= isset($config['phone_id'])?$config['phone_id']:'628d294cc5ef6cb21b445e47';
+			$phone_id 		= isset($config['phone_id'])?$config['phone_id']: $this->phone_id();//'628d294cc5ef6cb21b445e47';
 
 			$dialog_id 		= isset($config['dialog_id'])?$config['dialog_id'] 	:false;
 
@@ -1417,7 +1418,7 @@ class ZapguruController extends Controller
 			$curl 		 	= curl_init();
 			$compleUrl = false;
 			$key = 'FQXSYNB8GPSPALZ3MIC5O618HDP0OVUBRFCZ2LAZ4XCLVA44ZA8FPOJM8UG08IJ9';
-			$phone_id = '628d294cc5ef6cb21b445e47';
+			$phone_id = $this->phone_id();//'628d294cc5ef6cb21b445e47';
 			$account_id = '5f36da757e786f40069aa881';
 			if($link_orcamento){
 				$compleUrl = '&field__Link_da_proposta='.$link_orcamento;
