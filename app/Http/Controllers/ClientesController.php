@@ -220,6 +220,12 @@ class ClientesController extends Controller
         if ($request->has('search')) {
             $filters['search'] = $request->get('search');
         }
+        if ($request->has('id_curso')) {
+            $filters['id_curso'] = $request->get('id_curso');
+        }
+        if ($request->has('status_matricula')) {
+            $filters['status_matricula'] = $request->get('status_matricula');
+        }
 
         $formato = $request->get('formato', 'xlsx');
 

@@ -20,27 +20,53 @@ class ClientesExport implements FromCollection, WithHeadings, WithMapping
     public function collection(): Collection
     {
         $q = DB::table('clientes')
-            ->where('excluido', 'n')
-            ->where('deletado', 'n');
+            ->where('clientes.excluido', 'n')
+            ->where('clientes.deletado', 'n');
 
         if (!empty($this->filters['id'])) {
-            $q->where('id', $this->filters['id']);
+            $q->where('clientes.id', $this->filters['id']);
         }
         if (!empty($this->filters['status'])) {
-            $q->where('status', $this->filters['status']);
+            $q->where('clientes.status', $this->filters['status']);
         }
         if (!empty($this->filters['search'])) {
             $s = $this->filters['search'];
             $q->where(function ($qq) use ($s) {
-                $qq->where('Nome', 'like', "%{$s}%")
-                   ->orWhere('sobrenome', 'like', "%{$s}%")
-                   ->orWhere('Email', 'like', "%{$s}%")
-                   ->orWhere('Cpf', 'like', "%{$s}%")
-                   ->orWhere('telefonezap', 'like', "%{$s}%");
+                $qq->where('clientes.Nome', 'like', "%{$s}%")
+                   ->orWhere('clientes.sobrenome', 'like', "%{$s}%")
+                   ->orWhere('clientes.Email', 'like', "%{$s}%")
+                   ->orWhere('clientes.Cpf', 'like', "%{$s}%")
+                   ->orWhere('clientes.telefonezap', 'like', "%{$s}%");
+            });
+        }
+        if (!empty($this->filters['id_curso']) || !empty($this->filters['status_matricula'])) {
+            $q->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                      ->from('matriculas')
+                      ->whereColumn('matriculas.id_cliente', 'clientes.id')
+                      ->where('matriculas.excluido', 'n')
+                      ->where('matriculas.deletado', 'n');
+
+                if (!empty($this->filters['id_curso'])) {
+                    $val = $this->filters['id_curso'];
+                    if (is_string($val) && str_contains($val, ',')) {
+                        $query->whereIn('matriculas.id_curso', explode(',', $val));
+                    } else {
+                        $query->where('matriculas.id_curso', $val);
+                    }
+                }
+                if (!empty($this->filters['status_matricula'])) {
+                    $val = $this->filters['status_matricula'];
+                    if (is_string($val) && str_contains($val, ',')) {
+                        $query->whereIn('matriculas.status', explode(',', $val));
+                    } else {
+                        $query->where('matriculas.status', $val);
+                    }
+                }
             });
         }
 
-        $q->orderBy('id', 'asc');
+        $q->orderBy('clientes.id', 'asc');
 
         return $q->get();
     }
