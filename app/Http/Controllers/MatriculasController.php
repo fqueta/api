@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MatriculasExport;
 use App\Helpers\DataHelper;
 use App\Http\Controllers\admin\ZapsingController as AdminZapsingController;
 use App\Http\Controllers\api\OrcamentoController;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MatriculasController extends Controller
 {
@@ -88,6 +90,48 @@ class MatriculasController extends Controller
             $ret['status'] = 200;
         }
         return $ret;
+    }
+    /**
+     * Exportar matriculas com filtros
+     * @param string $request->formato 'xlsx' (padrao) ou 'json'
+     */
+    public function exportar(Request $request)
+    {
+        $filters = [];
+        if ($request->has('situacao')) {
+            $filters['situacao'] = $request->get('situacao');
+        }
+        if ($request->has('id_curso')) {
+            $filters['id_curso'] = $request->get('id_curso');
+        }
+        if ($request->has('id_turma')) {
+            $filters['id_turma'] = $request->get('id_turma');
+        }
+        if ($request->has('status')) {
+            $filters['status'] = $request->get('status');
+        }
+        if ($request->has('id_cliente')) {
+            $filters['id_cliente'] = $request->get('id_cliente');
+        }
+
+        $formato = $request->get('formato', 'xlsx');
+
+        if ($formato === 'json') {
+            $export = new MatriculasExport($filters);
+            $data = $export->collection();
+            $ret = [
+                'exec' => true,
+                'status' => 200,
+                'total' => $data->count(),
+                'data' => $data,
+            ];
+            return response()->json($ret);
+        }
+
+        $export = new MatriculasExport($filters);
+        $nomeArquivo = 'matriculas_'.date('Y-m-d_H-i-s').'.xlsx';
+
+        return Excel::download($export, $nomeArquivo);
     }
     /**
      * Metodo para exibir o numero do contrato
