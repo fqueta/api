@@ -15,6 +15,7 @@ use App\Http\Controllers\MatriculasController;
 // use App\Models\User;
 // use Illuminate\Http\Request;
 use App\Http\Controllers\api\MetricasController;
+use App\Http\Controllers\api\TurmasController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +42,8 @@ Route::prefix('v1')->group(function(){
     Route::middleware('auth:sanctum')->get('/user', [AuthController::class,'user']);
     Route::get('/matriculas',[MatriculasController::class,'index'])->middleware('auth:sanctum');
     Route::get('/matriculas/exportar',[MatriculasController::class,'exportar'])->middleware('auth:sanctum');
+    Route::get('/clientes/exportar',[ClientesController::class,'exportar'])->middleware('auth:sanctum');
+    Route::get('/turmas/exportar',[TurmasController::class,'exportar'])->middleware('auth:sanctum');
     Route::get('/matriculas/{id}',[MatriculasController::class,'show'])->middleware('auth:sanctum');
     Route::put('/matriculas/{id}',[MatriculasController::class,'update'])->middleware('auth:sanctum');
     Route::get('/rab',[RabController::class,'index']);

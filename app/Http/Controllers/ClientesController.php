@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ClientesExport;
 use App\Models\Cliente;
 use App\Qlib\Qlib;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ClientesController extends Controller
 {
@@ -202,6 +204,43 @@ class ClientesController extends Controller
         }
         return $ret;
     }
+    /**
+     * Exportar clientes com filtros
+     * @param string $request->formato 'xlsx' (padrao) ou 'json'
+     */
+    public function exportar(Request $request)
+    {
+        $filters = [];
+        if ($request->has('id')) {
+            $filters['id'] = $request->get('id');
+        }
+        if ($request->has('status')) {
+            $filters['status'] = $request->get('status');
+        }
+        if ($request->has('search')) {
+            $filters['search'] = $request->get('search');
+        }
+
+        $formato = $request->get('formato', 'xlsx');
+
+        if ($formato === 'json') {
+            $export = new ClientesExport($filters);
+            $data = $export->collection();
+            $ret = [
+                'exec' => true,
+                'status' => 200,
+                'total' => $data->count(),
+                'data' => $data,
+            ];
+            return response()->json($ret);
+        }
+
+        $export = new ClientesExport($filters);
+        $nomeArquivo = 'clientes_'.date('Y-m-d_H-i-s').'.xlsx';
+
+        return Excel::download($export, $nomeArquivo);
+    }
+
     public function CorrigeDuplicidadeTabela($tab=''){
         if($tab=='capta_lead'){
 
