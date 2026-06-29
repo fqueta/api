@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Matricula;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -81,7 +82,30 @@ class MatriculasExport implements FromCollection, WithHeadings, WithMapping
 
         $q->orderBy('matriculas.id', 'asc');
 
-        return $q->get();
+        $data = $q->get();
+
+        if ($data->count()) {
+            $ids = $data->pluck('id')->toArray();
+            $metas = DB::table('matriculameta')
+                ->whereIn('matricula_id', $ids)
+                ->get()
+                ->groupBy('matricula_id');
+
+            foreach ($data as $row) {
+                $metaArr = isset($metas[$row->id])
+                    ? $metas[$row->id]->pluck('meta_value', 'meta_key')->toArray()
+                    : [];
+                foreach ($metaArr as $k => $v) {
+                    $decoded = json_decode($v, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $metaArr[$k] = $decoded;
+                    }
+                }
+                $row->metacampos = $metaArr;
+            }
+        }
+
+        return $data;
     }
 
     public function headings(): array
@@ -124,6 +148,7 @@ class MatriculasExport implements FromCollection, WithHeadings, WithMapping
             'Token',
             'Data Criacao',
             'Data Atualizacao',
+            'Metacampos',
         ];
     }
 
@@ -169,6 +194,7 @@ class MatriculasExport implements FromCollection, WithHeadings, WithMapping
             $row->token,
             $row->data,
             $row->atualizado,
+            json_encode($row->metacampos ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ];
     }
 }
