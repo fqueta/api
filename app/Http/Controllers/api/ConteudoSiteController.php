@@ -24,9 +24,12 @@ class ConteudoSiteController extends Controller
             $query->where('id_curso', $request->get('id_curso'));
         }
 
-        // Filtro para registros com id_curso preenchido
+        // Filtro para registros com id_curso preenchido ou não
         if ($request->has('id_curso_preenchido')) {
             $query->whereNotNull('id_curso')->where('id_curso', '!=', '');
+        }
+        if ($request->has('id_curso_vazio')) {
+            $query->whereNull('id_curso')->orWhere('id_curso', '');
         }
 
         // Filtro por short_code if present
