@@ -49,6 +49,11 @@ class ConteudoSiteController extends Controller
             $query->where('ativo', 's');
         }
 
+        // Filtro por excluido if present
+        if ($request->has('excluido')) {
+            $query->where('excluido', $request->get('excluido'));
+        }
+
         $limit = $request->get('limit', 25);
         
         if ($limit === 'all') {
