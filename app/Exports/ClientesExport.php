@@ -39,7 +39,7 @@ class ClientesExport implements FromCollection, WithHeadings, WithMapping
                    ->orWhere('clientes.telefonezap', 'like', "%{$s}%");
             });
         }
-        if (!empty($this->filters['id_curso']) || !empty($this->filters['status_matricula'])) {
+        if (!empty($this->filters['id_curso']) || !empty($this->filters['tipo_curso']) || !empty($this->filters['status_matricula'])) {
             $q->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                       ->from('matriculas')
@@ -53,6 +53,15 @@ class ClientesExport implements FromCollection, WithHeadings, WithMapping
                         $query->whereIn('matriculas.id_curso', explode(',', $val));
                     } else {
                         $query->where('matriculas.id_curso', $val);
+                    }
+                }
+                if (!empty($this->filters['tipo_curso'])) {
+                    $query->join('cursos', 'cursos.id', '=', 'matriculas.id_curso');
+                    $val = $this->filters['tipo_curso'];
+                    if (is_string($val) && str_contains($val, ',')) {
+                        $query->whereIn('cursos.tipo', explode(',', $val));
+                    } else {
+                        $query->where('cursos.tipo', $val);
                     }
                 }
                 if (!empty($this->filters['status_matricula'])) {

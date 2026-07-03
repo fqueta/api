@@ -223,6 +223,9 @@ class ClientesController extends Controller
         if ($request->has('id_curso')) {
             $filters['id_curso'] = $request->get('id_curso');
         }
+        if ($request->has('tipo_curso')) {
+            $filters['tipo_curso'] = $request->get('tipo_curso');
+        }
         if ($request->has('status_matricula')) {
             $filters['status_matricula'] = $request->get('status_matricula');
         }
