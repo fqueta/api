@@ -60,6 +60,14 @@ class MatriculasExport implements FromCollection, WithHeadings, WithMapping
         if (!empty($this->filters['id_curso'])) {
             $q->where('matriculas.id_curso', $this->filters['id_curso']);
         }
+        if (!empty($this->filters['tipo_curso'])) {
+            $val = $this->filters['tipo_curso'];
+            if (is_string($val) && str_contains($val, ',')) {
+                $q->whereIn('cursos.tipo', explode(',', $val));
+            } else {
+                $q->where('cursos.tipo', $val);
+            }
+        }
         if (!empty($this->filters['id_turma'])) {
             $val = $this->filters['id_turma'];
             if (is_string($val) && str_contains($val, ',')) {
