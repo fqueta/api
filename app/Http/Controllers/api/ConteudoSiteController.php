@@ -24,6 +24,11 @@ class ConteudoSiteController extends Controller
             $query->where('id_curso', $request->get('id_curso'));
         }
 
+        // Filtro para registros com id_curso preenchido
+        if ($request->has('id_curso_preenchido')) {
+            $query->whereNotNull('id_curso')->where('id_curso', '!=', '');
+        }
+
         // Filtro por short_code if present
         if ($request->has('short_code')) {
             $query->where('short_code', $request->get('short_code'));
@@ -34,8 +39,10 @@ class ConteudoSiteController extends Controller
             $query->where('tipo_conteudo', $request->get('tipo_conteudo'));
         }
 
-        // Filtro padrão para registros ativos (seguindo padrão do SiteController)
-        if (!$request->has('all')) {
+        // Filtro por ativo if present
+        if ($request->has('ativo')) {
+            $query->where('ativo', $request->get('ativo'));
+        } elseif (!$request->has('all')) {
             $query->where('ativo', 's');
         }
 
