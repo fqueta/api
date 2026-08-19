@@ -5658,7 +5658,7 @@ class MatriculasController extends Controller
         if($dm && $url_pdf){
             $nome = isset($dm['nome_completo']) ? $dm['nome_completo'] : '';
             $email = isset($dm['Email']) ? $dm['Email'] : '';
-            $cpf = isset($dm['Cpf']) ? $dm['Cpf'] : '';
+            $cpf = isset($dm['cpf_aluno']) ? $dm['cpf_aluno'] : (isset($dm['Cpf']) ? $dm['Cpf'] : '');
             $signers = [
                 "name" => $nome,
                 "email" => $email,
